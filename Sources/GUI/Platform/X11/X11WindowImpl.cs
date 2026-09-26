@@ -12,6 +12,8 @@ internal sealed unsafe class X11WindowImpl : IWindowImpl
 
     public event Action? Closed;
     public event Action<int, int>? Resized;
+    public event Action<MouseButton, int, int>? MouseDown;
+    public event Action<MouseButton, int, int>? MouseUp;
 
     internal nuint Handle { get; private set; }
 
@@ -30,7 +32,8 @@ internal sealed unsafe class X11WindowImpl : IWindowImpl
             display, Xlib.XRootWindow(display, screen), 0, 0, (uint)width, (uint)height, 0,
             Xlib.XBlackPixel(display, screen), Xlib.XWhitePixel(display, screen));
 
-        Xlib.XSelectInput(display, Handle, Xlib.ExposureMask | Xlib.StructureNotifyMask);
+        Xlib.XSelectInput(display, Handle,
+            Xlib.ExposureMask | Xlib.StructureNotifyMask | Xlib.ButtonPressMask | Xlib.ButtonReleaseMask);
 
         // Ask the window manager to send WM_DELETE_WINDOW instead of killing the connection
         // when the user clicks the close button.
@@ -87,10 +90,30 @@ internal sealed unsafe class X11WindowImpl : IWindowImpl
                 }
                 break;
 
+            // The X server grabs the pointer on press, so the release comes here even outside the window.
+            case Xlib.ButtonPress:
+                if (ToMouseButton(ev.button) is { } pressed)
+                    MouseDown?.Invoke(pressed, ev.buttonX, ev.buttonY);
+                break;
+
+            case Xlib.ButtonRelease:
+                if (ToMouseButton(ev.button) is { } released)
+                    MouseUp?.Invoke(released, ev.buttonX, ev.buttonY);
+                break;
+
             case Xlib.ClientMessage:
                 if (ev.clientMessageType == _platform.WmProtocols && (nuint)ev.clientData0 == _platform.WmDeleteWindow)
                     Destroy();
                 break;
         }
     }
+
+    // X11 buttons: 1 = left, 2 = middle, 3 = right, 4-7 = scroll wheel (not clicks).
+    private static MouseButton? ToMouseButton(uint button) => button switch
+    {
+        1 => MouseButton.Left,
+        2 => MouseButton.Middle,
+        3 => MouseButton.Right,
+        _ => null,
+    };
 }

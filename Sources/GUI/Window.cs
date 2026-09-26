@@ -9,12 +9,15 @@ public class Window
     private string _title = "";
     private int _width = 800;
     private int _height = 600;
+    private int _pressedButtons; // Bit mask of MouseButton values pressed inside the client area.
 
     public Window()
     {
         _impl = Application.Platform.CreateWindow(_width, _height);
         _impl.Resized += (w, h) => { _width = w; _height = h; };
         _impl.Closed += () => { IsClosed = true; OnClosed(); };
+        _impl.MouseDown += (button, _, _) => _pressedButtons |= 1 << (int)button;
+        _impl.MouseUp += HandleMouseUp;
     }
 
     public string Title
@@ -47,6 +50,9 @@ public class Window
 
     public event EventHandler? Closed;
 
+    /// <summary>Raised when a mouse button is pressed and released inside the client area.</summary>
+    public event EventHandler<MouseEventArgs>? MouseClick;
+
     public void Show()
     {
         ThrowIfClosed();
@@ -60,6 +66,18 @@ public class Window
     }
 
     protected virtual void OnClosed() => Closed?.Invoke(this, EventArgs.Empty);
+
+    protected virtual void OnMouseClick(MouseEventArgs e) => MouseClick?.Invoke(this, e);
+
+    private void HandleMouseUp(MouseButton button, int x, int y)
+    {
+        var mask = 1 << (int)button;
+        var wasPressed = (_pressedButtons & mask) != 0;
+        _pressedButtons &= ~mask;
+
+        if (wasPressed && x >= 0 && y >= 0 && x < _width && y < _height)
+            OnMouseClick(new MouseEventArgs(button, x, y));
+    }
 
     private void Resize(int width, int height)
     {

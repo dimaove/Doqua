@@ -15,5 +15,10 @@ class MainWindow : Window
 static class Program
 {
     [STAThread]
-    static int Main() => Application.Run(new MainWindow());
+    static int Main()
+    {
+        var mainWindow = new MainWindow();
+        mainWindow.MouseClick += (sender, e) => Console.WriteLine($"{e.Button} click at ({e.X}, {e.Y})");
+        return Application.Run(mainWindow);
+    }
 }

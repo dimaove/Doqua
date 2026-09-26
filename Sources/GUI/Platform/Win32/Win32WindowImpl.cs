@@ -16,6 +16,8 @@ internal sealed unsafe class Win32WindowImpl : IWindowImpl
 
     public event Action? Closed;
     public event Action<int, int>? Resized;
+    public event Action<MouseButton, int, int>? MouseDown;
+    public event Action<MouseButton, int, int>? MouseUp;
 
     public Win32WindowImpl(int width, int height)
     {
@@ -78,6 +80,26 @@ internal sealed unsafe class Win32WindowImpl : IWindowImpl
                 Resized?.Invoke((int)(lParam & 0xFFFF), (int)((lParam >> 16) & 0xFFFF));
                 return 0;
 
+            case User32.WM_LBUTTONDOWN:
+                OnButtonDown(MouseButton.Left, lParam);
+                return 0;
+            case User32.WM_MBUTTONDOWN:
+                OnButtonDown(MouseButton.Middle, lParam);
+                return 0;
+            case User32.WM_RBUTTONDOWN:
+                OnButtonDown(MouseButton.Right, lParam);
+                return 0;
+
+            case User32.WM_LBUTTONUP:
+                OnButtonUp(MouseButton.Left, wParam, lParam);
+                return 0;
+            case User32.WM_MBUTTONUP:
+                OnButtonUp(MouseButton.Middle, wParam, lParam);
+                return 0;
+            case User32.WM_RBUTTONUP:
+                OnButtonUp(MouseButton.Right, wParam, lParam);
+                return 0;
+
             case User32.WM_DESTROY:
                 s_windows.Remove(_hwnd);
                 _hwnd = 0;
@@ -87,6 +109,24 @@ internal sealed unsafe class Win32WindowImpl : IWindowImpl
         // WM_CLOSE (title bar X button) is handled by DefWindowProcW, which calls DestroyWindow.
         return User32.DefWindowProcW(_hwnd, msg, wParam, lParam);
     }
+
+    private void OnButtonDown(MouseButton button, nint lParam)
+    {
+        // Capture the mouse so the release is delivered even outside the window.
+        User32.SetCapture(_hwnd);
+        MouseDown?.Invoke(button, GetX(lParam), GetY(lParam));
+    }
+
+    private void OnButtonUp(MouseButton button, nint wParam, nint lParam)
+    {
+        if ((wParam & (User32.MK_LBUTTON | User32.MK_MBUTTON | User32.MK_RBUTTON)) == 0)
+            User32.ReleaseCapture();
+        MouseUp?.Invoke(button, GetX(lParam), GetY(lParam));
+    }
+
+    // Coordinates are signed: they are negative when captured outside the client area.
+    private static int GetX(nint lParam) => (short)(lParam & 0xFFFF);
+    private static int GetY(nint lParam) => (short)((lParam >> 16) & 0xFFFF);
 
     // Note: an exception escaping an [UnmanagedCallersOnly] method terminates the process.
     [UnmanagedCallersOnly]
