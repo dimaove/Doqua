@@ -18,8 +18,18 @@ internal interface IWindowImpl
     /// </summary>
     event Action<MouseButton, int, int>? MouseUp;
 
+    /// <summary>
+    /// Raised when the window needs to be drawn. The handler fills the framebuffer, which is
+    /// already sized to the client area; the backend then copies it to the screen.
+    /// </summary>
+    event Action<Framebuffer>? Paint;
+
     void SetTitle(string title);
     void Resize(int width, int height);
     void Show();
+
+    /// <summary>Schedules a <see cref="Paint"/>. Multiple requests are merged into one.</summary>
+    void Invalidate();
+
     void Destroy();
 }

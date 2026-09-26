@@ -7,6 +7,8 @@ namespace Doqua.GUI.Platform.X11;
 internal sealed unsafe class X11WindowImpl : IWindowImpl
 {
     private readonly X11Platform _platform;
+    private readonly Framebuffer _framebuffer = new();
+    private bool _dirty = true;
     private int _width;
     private int _height;
 
@@ -14,6 +16,7 @@ internal sealed unsafe class X11WindowImpl : IWindowImpl
     public event Action<int, int>? Resized;
     public event Action<MouseButton, int, int>? MouseDown;
     public event Action<MouseButton, int, int>? MouseUp;
+    public event Action<Framebuffer>? Paint;
 
     internal nuint Handle { get; private set; }
 
@@ -26,11 +29,13 @@ internal sealed unsafe class X11WindowImpl : IWindowImpl
         var display = platform.Display;
         var screen = platform.Screen;
 
-        // The X server fills the window with the background pixel on every Expose,
-        // so an empty window needs no drawing code.
+        var black = Xlib.XBlackPixel(display, screen);
         Handle = Xlib.XCreateSimpleWindow(
-            display, Xlib.XRootWindow(display, screen), 0, 0, (uint)width, (uint)height, 0,
-            Xlib.XBlackPixel(display, screen), Xlib.XWhitePixel(display, screen));
+            display, Xlib.XRootWindow(display, screen), 0, 0, (uint)width, (uint)height, 0, black, black);
+
+        // No server-side background: the whole window is drawn from the framebuffer,
+        // so the server clearing it first would only cause flicker.
+        Xlib.XSetWindowBackgroundPixmap(display, Handle, 0);
 
         Xlib.XSelectInput(display, Handle,
             Xlib.ExposureMask | Xlib.StructureNotifyMask | Xlib.ButtonPressMask | Xlib.ButtonReleaseMask);
@@ -62,6 +67,8 @@ internal sealed unsafe class X11WindowImpl : IWindowImpl
         Xlib.XFlush(_platform.Display);
     }
 
+    public void Invalidate() => _dirty = true;
+
     public void Destroy()
     {
         if (Handle == 0)
@@ -78,7 +85,7 @@ internal sealed unsafe class X11WindowImpl : IWindowImpl
         switch (ev.type)
         {
             case Xlib.Expose:
-                // Background is cleared by the server; custom rendering will go here.
+                _dirty = true;
                 break;
 
             case Xlib.ConfigureNotify:
@@ -86,6 +93,7 @@ internal sealed unsafe class X11WindowImpl : IWindowImpl
                 {
                     _width = ev.configureWidth;
                     _height = ev.configureHeight;
+                    _dirty = true;
                     Resized?.Invoke(_width, _height);
                 }
                 break;
@@ -105,6 +113,41 @@ internal sealed unsafe class X11WindowImpl : IWindowImpl
                 if (ev.clientMessageType == _platform.WmProtocols && (nuint)ev.clientData0 == _platform.WmDeleteWindow)
                     Destroy();
                 break;
+        }
+    }
+
+    /// <summary>Called by the event loop when the queue is empty.</summary>
+    internal void RenderIfDirty()
+    {
+        if (!_dirty || Handle == 0 || _width <= 0 || _height <= 0)
+            return;
+        _dirty = false;
+
+        _framebuffer.Resize(_width, _height);
+        Paint?.Invoke(_framebuffer);
+
+        fixed (uint* pixels = _framebuffer.Pixels)
+        {
+            var byteOrder = BitConverter.IsLittleEndian ? Xlib.LSBFirst : Xlib.MSBFirst;
+            var image = new XImage
+            {
+                width = _width,
+                height = _height,
+                format = Xlib.ZPixmap,
+                data = (byte*)pixels,
+                byte_order = byteOrder,
+                bitmap_unit = 32,
+                bitmap_bit_order = byteOrder,
+                bitmap_pad = 32,
+                depth = _platform.Depth,
+                bytes_per_line = _width * 4,
+                bits_per_pixel = 32,
+                red_mask = 0xFF0000,
+                green_mask = 0x00FF00,
+                blue_mask = 0x0000FF,
+            };
+            Xlib.XInitImage(&image);
+            Xlib.XPutImage(_platform.Display, Handle, _platform.Gc, &image, 0, 0, 0, 0, (uint)_width, (uint)_height);
         }
     }
 

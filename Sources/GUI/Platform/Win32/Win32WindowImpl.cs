@@ -12,12 +12,14 @@ internal sealed unsafe class Win32WindowImpl : IWindowImpl
     // Messages sent during CreateWindowExW (before the handle is known) go to DefWindowProcW.
     private static readonly Dictionary<nint, Win32WindowImpl> s_windows = new();
 
+    private readonly Framebuffer _framebuffer = new();
     private nint _hwnd;
 
     public event Action? Closed;
     public event Action<int, int>? Resized;
     public event Action<MouseButton, int, int>? MouseDown;
     public event Action<MouseButton, int, int>? MouseUp;
+    public event Action<Framebuffer>? Paint;
 
     public Win32WindowImpl(int width, int height)
     {
@@ -46,6 +48,12 @@ internal sealed unsafe class Win32WindowImpl : IWindowImpl
         User32.UpdateWindow(_hwnd);
     }
 
+    public void Invalidate()
+    {
+        if (_hwnd != 0)
+            User32.InvalidateRect(_hwnd, null, 0);
+    }
+
     public void Destroy()
     {
         if (_hwnd != 0)
@@ -65,16 +73,11 @@ internal sealed unsafe class Win32WindowImpl : IWindowImpl
         switch (msg)
         {
             case User32.WM_ERASEBKGND:
-                return 1; // The whole client area is filled in WM_PAINT.
+                return 1; // The whole client area is drawn in WM_PAINT.
 
             case User32.WM_PAINT:
-            {
-                PAINTSTRUCT ps;
-                var hdc = User32.BeginPaint(_hwnd, &ps);
-                User32.FillRect(hdc, &ps.rcPaint, Win32Platform.BackgroundBrush);
-                User32.EndPaint(_hwnd, &ps);
+                OnPaint();
                 return 0;
-            }
 
             case User32.WM_SIZE:
                 Resized?.Invoke((int)(lParam & 0xFFFF), (int)((lParam >> 16) & 0xFFFF));
@@ -108,6 +111,38 @@ internal sealed unsafe class Win32WindowImpl : IWindowImpl
         }
         // WM_CLOSE (title bar X button) is handled by DefWindowProcW, which calls DestroyWindow.
         return User32.DefWindowProcW(_hwnd, msg, wParam, lParam);
+    }
+
+    private void OnPaint()
+    {
+        PAINTSTRUCT ps;
+        var hdc = User32.BeginPaint(_hwnd, &ps);
+
+        RECT client;
+        User32.GetClientRect(_hwnd, &client);
+        int width = client.right, height = client.bottom;
+        if (width > 0 && height > 0) // 0 x 0 when minimized.
+        {
+            _framebuffer.Resize(width, height);
+            Paint?.Invoke(_framebuffer);
+
+            var header = new BITMAPINFOHEADER
+            {
+                biSize = (uint)sizeof(BITMAPINFOHEADER),
+                biWidth = width,
+                biHeight = -height, // Negative height: rows go top to bottom.
+                biPlanes = 1,
+                biBitCount = 32,
+                biCompression = Gdi32.BI_RGB,
+            };
+            fixed (uint* bits = _framebuffer.Pixels)
+            {
+                Gdi32.SetDIBitsToDevice(hdc, 0, 0, (uint)width, (uint)height, 0, 0,
+                    0, (uint)height, bits, &header, Gdi32.DIB_RGB_COLORS);
+            }
+        }
+
+        User32.EndPaint(_hwnd, &ps);
     }
 
     private void OnButtonDown(MouseButton button, nint lParam)

@@ -11,13 +11,9 @@ internal sealed unsafe class Win32Platform : IPlatform
 
     internal static nint Instance { get; private set; }
 
-    /// <summary>Brush used to fill the client area (white, COLORREF 0x00BBGGRR).</summary>
-    internal static nint BackgroundBrush { get; private set; }
-
     public Win32Platform()
     {
         Instance = Kernel32.GetModuleHandleW(null);
-        BackgroundBrush = Gdi32.CreateSolidBrush(0x00FFFFFF);
 
         fixed (char* className = WindowClassName)
         {

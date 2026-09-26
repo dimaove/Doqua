@@ -11,6 +11,8 @@ internal sealed unsafe class X11Platform : IPlatform
 
     internal nint Display { get; }
     internal int Screen { get; }
+    internal int Depth { get; }
+    internal nint Gc { get; }
 
     internal nuint WmProtocols { get; }
     internal nuint WmDeleteWindow { get; }
@@ -25,6 +27,12 @@ internal sealed unsafe class X11Platform : IPlatform
             throw new InvalidOperationException("Cannot open X11 display. Is the DISPLAY environment variable set?");
 
         Screen = Xlib.XDefaultScreen(Display);
+
+        // Framebuffer pixels are 0x00RRGGBB, which matches 24/32-bit TrueColor visuals.
+        Depth = Xlib.XDefaultDepth(Display, Screen);
+        if (Depth != 24 && Depth != 32)
+            throw new PlatformNotSupportedException($"X11 display depth {Depth} is not supported (24 or 32 required).");
+        Gc = Xlib.XDefaultGC(Display, Screen);
         WmProtocols = Xlib.XInternAtom(Display, "WM_PROTOCOLS", 0);
         WmDeleteWindow = Xlib.XInternAtom(Display, "WM_DELETE_WINDOW", 0);
         NetWmName = Xlib.XInternAtom(Display, "_NET_WM_NAME", 0);
@@ -46,7 +54,16 @@ internal sealed unsafe class X11Platform : IPlatform
         XEvent ev;
         while (_running)
         {
-            Xlib.XNextEvent(Display, &ev); // Blocks; also flushes pending requests.
+            // Draw invalidated windows once all queued events are handled, so that many
+            // changes made by event handlers produce a single redraw.
+            if (Xlib.XPending(Display) == 0)
+            {
+                foreach (var dirty in _windows.Values.ToArray())
+                    dirty.RenderIfDirty();
+                Xlib.XFlush(Display);
+            }
+
+            Xlib.XNextEvent(Display, &ev); // Blocks until an event arrives.
             if (_windows.TryGetValue(ev.window, out var window))
                 window.HandleEvent(in ev);
         }

@@ -29,6 +29,29 @@ internal struct XEvent
     [FieldOffset(84)] public uint button;
 }
 
+/// <summary>Xlib XImage describing client-side pixels; initialized with XInitImage.</summary>
+[StructLayout(LayoutKind.Sequential)]
+internal unsafe struct XImage
+{
+    public int width;
+    public int height;
+    public int xoffset;
+    public int format;
+    public byte* data;
+    public int byte_order;
+    public int bitmap_unit;
+    public int bitmap_bit_order;
+    public int bitmap_pad;
+    public int depth;
+    public int bytes_per_line;
+    public int bits_per_pixel;
+    public nuint red_mask;
+    public nuint green_mask;
+    public nuint blue_mask;
+    public nint obdata;
+    public fixed long funcs[6]; // Function pointers filled in by XInitImage.
+}
+
 internal static unsafe partial class Xlib
 {
     private const string Lib = "libX11.so.6";
@@ -46,6 +69,10 @@ internal static unsafe partial class Xlib
 
     public const int PropModeReplace = 0;
 
+    public const int ZPixmap = 2;
+    public const int LSBFirst = 0;
+    public const int MSBFirst = 1;
+
     [LibraryImport(Lib)]
     public static partial int XInitThreads();
 
@@ -59,10 +86,13 @@ internal static unsafe partial class Xlib
     public static partial nuint XRootWindow(nint display, int screen);
 
     [LibraryImport(Lib)]
-    public static partial nuint XWhitePixel(nint display, int screen);
+    public static partial nuint XBlackPixel(nint display, int screen);
 
     [LibraryImport(Lib)]
-    public static partial nuint XBlackPixel(nint display, int screen);
+    public static partial int XDefaultDepth(nint display, int screen);
+
+    [LibraryImport(Lib)]
+    public static partial nint XDefaultGC(nint display, int screen);
 
     [LibraryImport(Lib)]
     public static partial nuint XCreateSimpleWindow(
@@ -94,6 +124,20 @@ internal static unsafe partial class Xlib
     public static partial int XChangeProperty(
         nint display, nuint window, nuint property, nuint type,
         int format, int mode, byte* data, int elementCount);
+
+    [LibraryImport(Lib)]
+    public static partial int XSetWindowBackgroundPixmap(nint display, nuint window, nuint pixmap);
+
+    [LibraryImport(Lib)]
+    public static partial int XInitImage(XImage* image);
+
+    [LibraryImport(Lib)]
+    public static partial int XPutImage(
+        nint display, nuint drawable, nint gc, XImage* image,
+        int srcX, int srcY, int destX, int destY, uint width, uint height);
+
+    [LibraryImport(Lib)]
+    public static partial int XPending(nint display);
 
     [LibraryImport(Lib)]
     public static partial int XNextEvent(nint display, XEvent* ev);

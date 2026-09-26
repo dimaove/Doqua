@@ -57,6 +57,22 @@ internal unsafe struct PAINTSTRUCT
     public fixed byte rgbReserved[32];
 }
 
+[StructLayout(LayoutKind.Sequential)]
+internal struct BITMAPINFOHEADER
+{
+    public uint biSize;
+    public int biWidth;
+    public int biHeight;
+    public ushort biPlanes;
+    public ushort biBitCount;
+    public uint biCompression;
+    public uint biSizeImage;
+    public int biXPelsPerMeter;
+    public int biYPelsPerMeter;
+    public uint biClrUsed;
+    public uint biClrImportant;
+}
+
 // BOOL results are returned as int to avoid bool marshalling.
 internal static unsafe partial class User32
 {
@@ -149,13 +165,21 @@ internal static unsafe partial class User32
     public static partial int EndPaint(nint hwnd, PAINTSTRUCT* paint);
 
     [LibraryImport(Lib)]
-    public static partial int FillRect(nint hdc, RECT* rect, nint brush);
+    public static partial int GetClientRect(nint hwnd, RECT* rect);
+
+    [LibraryImport(Lib)]
+    public static partial int InvalidateRect(nint hwnd, RECT* rect, int erase);
 }
 
-internal static partial class Gdi32
+internal static unsafe partial class Gdi32
 {
+    public const uint BI_RGB = 0;
+    public const uint DIB_RGB_COLORS = 0;
+
     [LibraryImport("gdi32.dll")]
-    public static partial nint CreateSolidBrush(uint colorRef);
+    public static partial int SetDIBitsToDevice(
+        nint hdc, int xDest, int yDest, uint width, uint height, int xSrc, int ySrc,
+        uint startScan, uint scanLines, void* bits, BITMAPINFOHEADER* bitmapInfo, uint colorUse);
 }
 
 internal static partial class Kernel32
