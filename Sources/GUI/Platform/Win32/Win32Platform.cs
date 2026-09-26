@@ -9,6 +9,8 @@ internal sealed unsafe class Win32Platform : IPlatform
 {
     internal const string WindowClassName = "DoquaWindow";
 
+    private GdiFontBackend? _fonts;
+
     internal static nint Instance { get; private set; }
 
     public Win32Platform()
@@ -30,6 +32,8 @@ internal sealed unsafe class Win32Platform : IPlatform
                 throw new Win32Exception(Marshal.GetLastPInvokeError());
         }
     }
+
+    public IFontBackend Fonts => _fonts ??= new GdiFontBackend();
 
     public IWindowImpl CreateWindow(int width, int height) => new Win32WindowImpl(width, height);
 

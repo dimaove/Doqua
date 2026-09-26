@@ -1,4 +1,5 @@
 using System.Runtime.Versioning;
+using Doqua.GUI.Platform.FreeType;
 
 namespace Doqua.GUI.Platform.X11;
 
@@ -6,6 +7,7 @@ namespace Doqua.GUI.Platform.X11;
 internal sealed unsafe class X11Platform : IPlatform
 {
     private readonly Dictionary<nuint, X11WindowImpl> _windows = new();
+    private FreeTypeFontBackend? _fonts;
     private bool _running;
     private int _exitCode;
 
@@ -38,6 +40,8 @@ internal sealed unsafe class X11Platform : IPlatform
         NetWmName = Xlib.XInternAtom(Display, "_NET_WM_NAME", 0);
         Utf8String = Xlib.XInternAtom(Display, "UTF8_STRING", 0);
     }
+
+    public IFontBackend Fonts => _fonts ??= new FreeTypeFontBackend();
 
     public IWindowImpl CreateWindow(int width, int height)
     {

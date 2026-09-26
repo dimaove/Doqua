@@ -73,6 +73,58 @@ internal struct BITMAPINFOHEADER
     public uint biClrImportant;
 }
 
+[StructLayout(LayoutKind.Sequential)]
+internal struct TEXTMETRICW
+{
+    public int tmHeight;
+    public int tmAscent;
+    public int tmDescent;
+    public int tmInternalLeading;
+    public int tmExternalLeading;
+    public int tmAveCharWidth;
+    public int tmMaxCharWidth;
+    public int tmWeight;
+    public int tmOverhang;
+    public int tmDigitizedAspectX;
+    public int tmDigitizedAspectY;
+    public char tmFirstChar;
+    public char tmLastChar;
+    public char tmDefaultChar;
+    public char tmBreakChar;
+    public byte tmItalic;
+    public byte tmUnderlined;
+    public byte tmStruckOut;
+    public byte tmPitchAndFamily;
+    public byte tmCharSet;
+}
+
+[StructLayout(LayoutKind.Sequential)]
+internal struct GLYPHMETRICS
+{
+    public uint gmBlackBoxX;
+    public uint gmBlackBoxY;
+    public POINT gmptGlyphOrigin;
+    public short gmCellIncX;
+    public short gmCellIncY;
+}
+
+/// <summary>16.16 fixed-point number.</summary>
+[StructLayout(LayoutKind.Sequential)]
+internal struct FIXED
+{
+    public ushort fract;
+    public short value;
+}
+
+[StructLayout(LayoutKind.Sequential)]
+internal struct MAT2
+{
+    public FIXED eM11;
+    public FIXED eM12;
+    public FIXED eM21;
+    public FIXED eM22;
+}
+
 // BOOL results are returned as int to avoid bool marshalling.
 internal static unsafe partial class User32
 {
@@ -175,6 +227,36 @@ internal static unsafe partial class Gdi32
 {
     public const uint BI_RGB = 0;
     public const uint DIB_RGB_COLORS = 0;
+
+    public const int FW_NORMAL = 400;
+    public const int FW_BOLD = 700;
+    public const uint DEFAULT_CHARSET = 1;
+    public const uint OUT_TT_PRECIS = 4;
+    public const uint CLIP_DEFAULT_PRECIS = 0;
+    public const uint ANTIALIASED_QUALITY = 4;
+    public const uint DEFAULT_PITCH = 0;
+
+    public const uint GGO_GRAY8_BITMAP = 6;
+    public const uint GDI_ERROR = 0xFFFFFFFF;
+
+    [LibraryImport("gdi32.dll")]
+    public static partial nint CreateCompatibleDC(nint hdc);
+
+    [LibraryImport("gdi32.dll", StringMarshalling = StringMarshalling.Utf16)]
+    public static partial nint CreateFontW(
+        int height, int width, int escapement, int orientation, int weight,
+        uint italic, uint underline, uint strikeOut, uint charSet, uint outPrecision,
+        uint clipPrecision, uint quality, uint pitchAndFamily, string faceName);
+
+    [LibraryImport("gdi32.dll")]
+    public static partial nint SelectObject(nint hdc, nint obj);
+
+    [LibraryImport("gdi32.dll")]
+    public static partial int GetTextMetricsW(nint hdc, TEXTMETRICW* metrics);
+
+    [LibraryImport("gdi32.dll")]
+    public static partial uint GetGlyphOutlineW(
+        nint hdc, uint ch, uint format, GLYPHMETRICS* metrics, uint bufferSize, void* buffer, MAT2* matrix);
 
     [LibraryImport("gdi32.dll")]
     public static partial int SetDIBitsToDevice(
