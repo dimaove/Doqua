@@ -88,6 +88,48 @@ public sealed class DrawingContext
         DrawBitmapCore(bitmap, destination, ValidateSource(bitmap, source));
     }
 
+    /// <summary>
+    /// Draws an antialiased line from (<paramref name="x1"/>, <paramref name="y1"/>) to
+    /// (<paramref name="x2"/>, <paramref name="y2"/>) with round ends. Coordinates are in pixels,
+    /// where (0.5, 0.5) is the center of the top-left pixel.
+    /// </summary>
+    public void DrawLine(float x1, float y1, float x2, float y2, Color color, float thickness = 1)
+    {
+        if (!(thickness > 0))
+            return;
+        var shape = new LineShape(x1 + _offsetX, y1 + _offsetY, x2 + _offsetX, y2 + _offsetY, thickness / 2);
+        var reach = thickness / 2 + 1;
+        FillShape(MathF.Min(shape.X1, shape.X2) - reach, MathF.Min(shape.Y1, shape.Y2) - reach,
+            MathF.Max(shape.X1, shape.X2) + reach, MathF.Max(shape.Y1, shape.Y2) + reach, color, shape);
+    }
+
+    /// <summary>Draws the antialiased outline of an ellipse, centered on the curve with the given radii.</summary>
+    public void DrawEllipse(float centerX, float centerY, float radiusX, float radiusY, Color color, float thickness = 1)
+    {
+        if (!(thickness > 0) || !(radiusX > 0) || !(radiusY > 0))
+            return;
+        var shape = new EllipseShape(centerX + _offsetX, centerY + _offsetY, radiusX, radiusY, thickness / 2);
+        FillEllipseBounds(shape, thickness / 2 + 1, color);
+    }
+
+    /// <summary>Draws the outline of the ellipse that fits <paramref name="bounds"/>; the line stays inside the bounds.</summary>
+    public void DrawEllipse(Rect bounds, Color color, float thickness = 1) =>
+        DrawEllipse(bounds.X + bounds.Width / 2f, bounds.Y + bounds.Height / 2f,
+            (bounds.Width - thickness) / 2, (bounds.Height - thickness) / 2, color, thickness);
+
+    /// <summary>Fills an antialiased ellipse.</summary>
+    public void FillEllipse(float centerX, float centerY, float radiusX, float radiusY, Color color)
+    {
+        if (!(radiusX > 0) || !(radiusY > 0))
+            return;
+        var shape = new EllipseShape(centerX + _offsetX, centerY + _offsetY, radiusX, radiusY, -1);
+        FillEllipseBounds(shape, 1, color);
+    }
+
+    /// <summary>Fills the ellipse that fits <paramref name="bounds"/>.</summary>
+    public void FillEllipse(Rect bounds, Color color) =>
+        FillEllipse(bounds.X + bounds.Width / 2f, bounds.Y + bounds.Height / 2f, bounds.Width / 2f, bounds.Height / 2f, color);
+
     /// <summary>Draws the outline of <paramref name="rect"/>, inside its bounds.</summary>
     public void DrawRectangle(Rect rect, Color color, int thickness = 1)
     {
@@ -215,6 +257,89 @@ public sealed class DrawingContext
                 else if (alpha != 0)
                     row[px] = Blend(row[px], (int)(pixel >> 16) & 0xFF, (int)(pixel >> 8) & 0xFF, (int)pixel & 0xFF, alpha);
             }
+        }
+    }
+
+    private void FillEllipseBounds(EllipseShape shape, float reach, Color color) =>
+        FillShape(shape.CenterX - shape.RadiusX - reach, shape.CenterY - shape.RadiusY - reach,
+            shape.CenterX + shape.RadiusX + reach, shape.CenterY + shape.RadiusY + reach, color, shape);
+
+    /// <summary>Blends <paramref name="color"/> into every pixel of the box, weighted by the shape's coverage there.</summary>
+    private void FillShape<TShape>(float left, float top, float right, float bottom, Color color, TShape shape)
+        where TShape : struct, IShape
+    {
+        if (color.A == 0 || !float.IsFinite(left + top + right + bottom))
+            return;
+
+        // Clamp in float first so that huge coordinates cannot overflow the int conversion.
+        var area = Rect.FromEdges(
+            (int)MathF.Floor(Math.Clamp(left, _clip.X, _clip.Right)),
+            (int)MathF.Floor(Math.Clamp(top, _clip.Y, _clip.Bottom)),
+            (int)MathF.Ceiling(Math.Clamp(right, _clip.X, _clip.Right)),
+            (int)MathF.Ceiling(Math.Clamp(bottom, _clip.Y, _clip.Bottom)));
+        if (area.IsEmpty)
+            return;
+
+        var opaque = ToOpaquePixel(color);
+        for (var py = area.Y; py < area.Bottom; py++)
+        {
+            var row = _pixels.AsSpan(py * _stride, _stride);
+            for (var px = area.X; px < area.Right; px++)
+            {
+                var alpha = (int)(shape.Coverage(px + 0.5f, py + 0.5f) * color.A + 0.5f);
+                if (alpha >= 255)
+                    row[px] = opaque;
+                else if (alpha > 0)
+                    row[px] = Blend(row[px], color.R, color.G, color.B, alpha);
+            }
+        }
+    }
+
+    /// <summary>A shape rasterized by coverage: how much of the pixel centered at (x, y) it covers, 0 to 1.</summary>
+    private interface IShape
+    {
+        float Coverage(float x, float y);
+    }
+
+    /// <summary>Segment with round caps: covered where the distance to the segment is below half the thickness.</summary>
+    private readonly struct LineShape(float x1, float y1, float x2, float y2, float halfWidth) : IShape
+    {
+        public float X1 { get; } = x1;
+        public float Y1 { get; } = y1;
+        public float X2 { get; } = x2;
+        public float Y2 { get; } = y2;
+
+        public float Coverage(float x, float y)
+        {
+            float dx = X2 - X1, dy = Y2 - Y1, lengthSquared = dx * dx + dy * dy;
+            var t = lengthSquared > 0 ? Math.Clamp(((x - X1) * dx + (y - Y1) * dy) / lengthSquared, 0, 1) : 0;
+            float ox = X1 + t * dx - x, oy = Y1 + t * dy - y;
+            return Math.Clamp(halfWidth + 0.5f - MathF.Sqrt(ox * ox + oy * oy), 0, 1);
+        }
+    }
+
+    /// <summary>
+    /// Ellipse, filled (negative half width) or stroked. The distance to the curve is approximated by
+    /// f / |grad f| for f = (x/rx)^2 + (y/ry)^2 - 1, which is exact for circles and close for ellipses.
+    /// </summary>
+    private readonly struct EllipseShape(float centerX, float centerY, float radiusX, float radiusY, float halfWidth) : IShape
+    {
+        public float CenterX { get; } = centerX;
+        public float CenterY { get; } = centerY;
+        public float RadiusX { get; } = radiusX;
+        public float RadiusY { get; } = radiusY;
+
+        public float Coverage(float x, float y)
+        {
+            float nx = x - CenterX, ny = y - CenterY;
+            float rx2 = RadiusX * RadiusX, ry2 = RadiusY * RadiusY;
+            var f = nx * nx / rx2 + ny * ny / ry2 - 1;
+            float gx = 2 * nx / rx2, gy = 2 * ny / ry2;
+            var gradient = MathF.Sqrt(gx * gx + gy * gy);
+            var distance = gradient > 1e-6f ? f / gradient : -MathF.Min(RadiusX, RadiusY); // Center: deep inside.
+            return halfWidth < 0
+                ? Math.Clamp(0.5f - distance, 0, 1)
+                : Math.Clamp(halfWidth + 0.5f - MathF.Abs(distance), 0, 1);
         }
     }
 
