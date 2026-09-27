@@ -39,6 +39,7 @@ public class Window
         _impl.MouseDown += HandleMouseDown;
         _impl.MouseUp += HandleMouseUp;
         _impl.MouseMove += HandleMouseMove;
+        _impl.MouseWheel += HandleMouseWheel;
         _impl.MouseLeave += () => SetHoveredControl(null);
         _impl.KeyDown += HandleKeyDown;
         _impl.TextInput += HandleTextInput;
@@ -397,6 +398,21 @@ public class Window
         {
             var (localX, localY) = target.PointFromWindow(x, y);
             target.RaiseMouseMove(new MouseMoveEventArgs(localX, localY, modifiers));
+        }
+    }
+
+    /// <summary>The wheel goes to the control under the pointer, then up through its parents until handled.</summary>
+    private void HandleMouseWheel(int delta, int x, int y, KeyModifiers modifiers)
+    {
+        if (_popup != null)
+            return; // No scrolling behind an open menu.
+        for (var control = EnabledHitTest(x, y, out _, out _); control != null; control = control.Parent)
+        {
+            var (localX, localY) = control.PointFromWindow(x, y);
+            var e = new MouseWheelEventArgs(delta, localX, localY, modifiers);
+            control.RaiseMouseWheel(e);
+            if (e.Handled)
+                return;
         }
     }
 

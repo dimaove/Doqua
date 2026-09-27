@@ -188,6 +188,9 @@ public abstract class Control
     /// </summary>
     public event EventHandler<MouseMoveEventArgs>? MouseMove;
 
+    /// <summary>Raised when the mouse wheel turns over this control or one of its children (until handled).</summary>
+    public event EventHandler<MouseWheelEventArgs>? MouseWheel;
+
     public event EventHandler? MouseEnter;
 
     public event EventHandler? GotFocus;
@@ -251,6 +254,8 @@ public abstract class Control
     protected virtual void OnMouseClick(MouseEventArgs e) => MouseClick?.Invoke(this, e);
 
     protected virtual void OnMouseMove(MouseMoveEventArgs e) => MouseMove?.Invoke(this, e);
+
+    protected virtual void OnMouseWheel(MouseWheelEventArgs e) => MouseWheel?.Invoke(this, e);
 
     protected virtual void OnMouseEnter(EventArgs e) => MouseEnter?.Invoke(this, e);
 
@@ -336,6 +341,8 @@ public abstract class Control
     internal void RaiseMouseClick(MouseEventArgs e) => OnMouseClick(e);
 
     internal void RaiseMouseMove(MouseMoveEventArgs e) => OnMouseMove(e);
+
+    internal void RaiseMouseWheel(MouseWheelEventArgs e) => OnMouseWheel(e);
 
     internal void SetMouseOver(bool value)
     {

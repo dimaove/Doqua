@@ -36,6 +36,32 @@ public class MouseEventArgs : EventArgs
     public int ClickCount { get; }
 }
 
+/// <summary>Mouse wheel rotation; routed from the control under the pointer up through its parents.</summary>
+public class MouseWheelEventArgs : EventArgs
+{
+    public MouseWheelEventArgs(int delta, int x, int y, KeyModifiers modifiers = KeyModifiers.None)
+    {
+        Delta = delta;
+        X = x;
+        Y = y;
+        Modifiers = modifiers;
+    }
+
+    /// <summary>Wheel notches: positive when the wheel is rolled away from the user (scroll up).</summary>
+    public int Delta { get; }
+
+    /// <summary>X coordinate relative to the control receiving the event.</summary>
+    public int X { get; }
+
+    /// <summary>Y coordinate relative to the control receiving the event.</summary>
+    public int Y { get; }
+
+    public KeyModifiers Modifiers { get; }
+
+    /// <summary>Set to true to stop the event from reaching the parent controls.</summary>
+    public bool Handled { get; set; }
+}
+
 public class MouseMoveEventArgs : EventArgs
 {
     public MouseMoveEventArgs(int x, int y, KeyModifiers modifiers = KeyModifiers.None)

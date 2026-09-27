@@ -19,6 +19,7 @@ internal sealed unsafe class X11WindowImpl : IWindowImpl
     public event Action<MouseButton, int, int, KeyModifiers>? MouseUp;
     public event Action<int, int, KeyModifiers>? MouseMove;
     public event Action? MouseLeave;
+    public event Action<int, int, int, KeyModifiers>? MouseWheel;
     public event Action<Key, KeyModifiers>? KeyDown;
     public event Action<string>? TextInput;
     public event Action<bool>? ActiveChanged;
@@ -150,6 +151,8 @@ internal sealed unsafe class X11WindowImpl : IWindowImpl
             case Xlib.ButtonPress:
                 if (ToMouseButton(ev.button) is { } pressed)
                     MouseDown?.Invoke(pressed, ev.pointerX, ev.pointerY, ToModifiers(ev.state));
+                else if (ev.button is 4 or 5) // Wheel away from / toward the user; the release is ignored.
+                    MouseWheel?.Invoke(ev.button == 4 ? 1 : -1, ev.pointerX, ev.pointerY, ToModifiers(ev.state));
                 break;
 
             case Xlib.ButtonRelease:

@@ -21,6 +21,9 @@ internal interface IWindowImpl
     /// <summary>Raised when the pointer moves over the client area (or anywhere, while a button is held).</summary>
     event Action<int, int, KeyModifiers>? MouseMove;
 
+    /// <summary>Raised when the mouse wheel turns: notches (positive = away from the user) and the pointer position.</summary>
+    event Action<int, int, int, KeyModifiers>? MouseWheel;
+
     /// <summary>Raised when the pointer leaves the client area.</summary>
     event Action? MouseLeave;
 

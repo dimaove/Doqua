@@ -235,38 +235,8 @@ public class Input : Control
     /// of <see cref="Control.ContextMenu"/> if one is set. Choosing one of those items raises its Click and
     /// the user menu's Closed event as if that menu had been opened; its font and colors are used too.
     /// </summary>
-    protected override PopupMenu? GetContextMenu()
-    {
-        var user = ContextMenu;
-        var menu = new PopupMenu();
-        if (user != null)
-        {
-            (menu.Font, menu.Color, menu.DisabledColor, menu.Background, menu.SelectionBackground, menu.SelectionColor) =
-                (user.Font, user.Color, user.DisabledColor, user.Background, user.SelectionBackground, user.SelectionColor);
-        }
-
-        var hasSelection = SelectionLength > 0;
-        menu.Items.Add(Command("Cut", "Ctrl+X", hasSelection, Cut));
-        menu.Items.Add(Command("Copy", "Ctrl+C", hasSelection, Copy));
-        menu.Items.Add(Command("Paste", "Ctrl+V", Clipboard.GetText() is { Length: > 0 }, Paste));
-        menu.Items.Add(MenuItem.Separator());
-        menu.Items.Add(Command("Select all", "Ctrl+A", SelectionLength < _text.Length, SelectAll));
-
-        if (user is { Items.Count: > 0 })
-        {
-            menu.Items.Add(MenuItem.Separator());
-            menu.Items.AddRange(user.Items);
-            menu.Closed += (sender, e) => user.RaiseClosed(this, e.SelectedItem);
-        }
-        return menu;
-    }
-
-    private static MenuItem Command(string text, string shortcut, bool enabled, Action action)
-    {
-        var item = new MenuItem(text, shortcut) { Enabled = enabled };
-        item.Click += (sender, e) => action();
-        return item;
-    }
+    protected override PopupMenu? GetContextMenu() =>
+        TextContextMenu.Create(this, ContextMenu, SelectionLength > 0, SelectionLength < _text.Length, Cut, Copy, Paste, SelectAll);
 
     protected virtual void OnTextChanged(EventArgs e) => TextChanged?.Invoke(this, e);
 

@@ -176,6 +176,8 @@ internal static unsafe partial class User32
     public const uint WM_MBUTTONDOWN = 0x0207;
     public const uint WM_MBUTTONUP = 0x0208;
     public const uint WM_MOUSELEAVE = 0x02A3;
+    public const uint WM_MOUSEWHEEL = 0x020A;
+    public const int WHEEL_DELTA = 120;
 
     public const uint TME_LEAVE = 0x00000002;
 
@@ -236,6 +238,9 @@ internal static unsafe partial class User32
 
     [LibraryImport(Lib)]
     public static partial short GetKeyState(int virtualKey);
+
+    [LibraryImport(Lib)]
+    public static partial int ScreenToClient(nint hwnd, POINT* point);
 
     public const int SM_CXDOUBLECLK = 36;
 

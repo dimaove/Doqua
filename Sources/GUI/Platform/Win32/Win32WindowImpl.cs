@@ -18,6 +18,7 @@ internal sealed unsafe class Win32WindowImpl : IWindowImpl
     private nint _smallIcon;
     private nint _bigIcon;
     private char _pendingHighSurrogate;
+    private int _wheelRemainder; // High-resolution wheels send fractions of a notch.
 
     public event Action? Closed;
     public event Action<int, int>? Resized;
@@ -25,6 +26,7 @@ internal sealed unsafe class Win32WindowImpl : IWindowImpl
     public event Action<MouseButton, int, int, KeyModifiers>? MouseUp;
     public event Action<int, int, KeyModifiers>? MouseMove;
     public event Action? MouseLeave;
+    public event Action<int, int, int, KeyModifiers>? MouseWheel;
     public event Action<Key, KeyModifiers>? KeyDown;
     public event Action<string>? TextInput;
     public event Action<bool>? ActiveChanged;
@@ -166,6 +168,10 @@ internal sealed unsafe class Win32WindowImpl : IWindowImpl
                 OnMouseMove(wParam, lParam);
                 return 0;
 
+            case User32.WM_MOUSEWHEEL:
+                OnMouseWheel(wParam, lParam);
+                return 0;
+
             case User32.WM_MOUSELEAVE:
                 _trackingMouseLeave = false;
                 MouseLeave?.Invoke();
@@ -291,6 +297,18 @@ internal sealed unsafe class Win32WindowImpl : IWindowImpl
         >= 0x70 and <= 0x7B => Key.F1 + (vk - 0x70),
         _ => Key.None,
     };
+
+    private void OnMouseWheel(nint wParam, nint lParam)
+    {
+        _wheelRemainder += (short)((wParam >> 16) & 0xFFFF);
+        var notches = _wheelRemainder / User32.WHEEL_DELTA;
+        if (notches == 0)
+            return;
+        _wheelRemainder -= notches * User32.WHEEL_DELTA;
+        var point = new POINT { x = GetX(lParam), y = GetY(lParam) }; // Screen coordinates for this message.
+        User32.ScreenToClient(_hwnd, &point);
+        MouseWheel?.Invoke(notches, point.x, point.y, GetMouseModifiers(wParam));
+    }
 
     private void OnMouseMove(nint wParam, nint lParam)
     {
