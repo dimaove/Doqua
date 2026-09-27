@@ -105,6 +105,13 @@ internal sealed unsafe class X11WindowImpl : IWindowImpl
         Xlib.XFlush(_platform.Display);
     }
 
+    public void SetCursor(Cursor cursor)
+    {
+        // The arrow is "no cursor of our own": the window then shows the desktop's standard pointer.
+        Xlib.XDefineCursor(_platform.Display, Handle, cursor is Cursor.Arrow or Cursor.Default ? 0 : _platform.GetCursor(cursor));
+        Xlib.XFlush(_platform.Display);
+    }
+
     public void Resize(int width, int height) =>
         Xlib.XResizeWindow(_platform.Display, Handle, (uint)width, (uint)height);
 

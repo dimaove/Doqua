@@ -19,6 +19,7 @@ internal sealed unsafe class Win32WindowImpl : IWindowImpl
     private nint _bigIcon;
     private char _pendingHighSurrogate;
     private int _wheelRemainder; // High-resolution wheels send fractions of a notch.
+    private nint _cursor = User32.LoadCursorW(0, User32.IDC_ARROW);
 
     public event Action? Closed;
     public event Action<int, int>? Resized;
@@ -45,6 +46,25 @@ internal sealed unsafe class Win32WindowImpl : IWindowImpl
     }
 
     public void SetTitle(string title) => User32.SetWindowTextW(_hwnd, title);
+
+    public void SetCursor(Cursor cursor)
+    {
+        _cursor = User32.LoadCursorW(0, cursor switch // Shared system cursors: loading is cheap, nothing to free.
+        {
+            Cursor.IBeam => 32513,    // IDC_IBEAM
+            Cursor.Wait => 32514,     // IDC_WAIT
+            Cursor.Crosshair => 32515, // IDC_CROSS
+            Cursor.SizeNWSE => 32642, // IDC_SIZENWSE
+            Cursor.SizeNESW => 32643, // IDC_SIZENESW
+            Cursor.SizeWE => 32644,   // IDC_SIZEWE
+            Cursor.SizeNS => 32645,   // IDC_SIZENS
+            Cursor.SizeAll => 32646,  // IDC_SIZEALL
+            Cursor.No => 32648,       // IDC_NO
+            Cursor.Hand => 32649,     // IDC_HAND
+            _ => User32.IDC_ARROW,
+        });
+        User32.SetCursor(_cursor); // Show it now; WM_SETCURSOR keeps it while the pointer moves.
+    }
 
     /// <summary>Title bar (small) and Alt+Tab / taskbar (big) icons from the closest sizes.</summary>
     public void SetIcons(IReadOnlyList<Bitmap> icons)
@@ -167,6 +187,11 @@ internal sealed unsafe class Win32WindowImpl : IWindowImpl
             case User32.WM_MOUSEMOVE:
                 OnMouseMove(wParam, lParam);
                 return 0;
+
+            // Sent whenever the pointer moves; the frame and borders keep their own resize cursors.
+            case User32.WM_SETCURSOR when (lParam & 0xFFFF) == User32.HTCLIENT:
+                User32.SetCursor(_cursor);
+                return 1;
 
             case User32.WM_MOUSEWHEEL:
                 OnMouseWheel(wParam, lParam);

@@ -73,6 +73,7 @@ public class TextArea : Control
     public TextArea()
     {
         Focusable = true;
+        Cursor = Cursor.IBeam;
         Width = 300;
         Height = 150;
     }
@@ -209,6 +210,10 @@ public class TextArea : Control
 
     protected override PopupMenu? GetContextMenu() =>
         TextContextMenu.Create(this, ContextMenu, SelectionLength > 0, SelectionLength < _text.Length, Cut, Copy, Paste, SelectAll);
+
+    /// <summary>Text cursor over the text, the arrow over the scroll bar.</summary>
+    protected override Cursor GetCursor(int x, int y) =>
+        IsScrollBarVisible && x >= Width - EdgeSize - ScrollBarWidth ? Cursor.Arrow : base.GetCursor(x, y);
 
     protected override void OnSizeChanged(EventArgs e)
     {

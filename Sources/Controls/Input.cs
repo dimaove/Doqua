@@ -16,7 +16,7 @@ namespace Doqua.Controls;
 /// </summary>
 public class Input : Control
 {
-    private const int Padding = 6;
+    private const int Padding = 6; // 2 px sunken edge plus 4 px space before the text.
     private const int CaretBlinkMilliseconds = 530;
 
     private string _text = "";
@@ -31,11 +31,8 @@ public class Input : Control
     private Font? _font;
     private Color _color = Color.Black;
     private Color _background = Color.White;
-    private Color _borderColor = new(122, 122, 122);
-    private Color _focusedBorderColor = new(0, 120, 215);
-    private Color _disabledColor = new(160, 160, 160);
-    private Color _disabledBackground = new(240, 240, 240);
-    private Color _disabledBorderColor = new(204, 204, 204);
+    private Color _disabledColor = ClassicStyle.Shadow;
+    private Color _disabledBackground = ClassicStyle.Face;
     private Color _selectionBackground = new(0, 120, 215);
     private Color _selectionColor = Color.White;
     private Color _inactiveSelectionBackground = new(204, 204, 204);
@@ -43,6 +40,7 @@ public class Input : Control
     public Input()
     {
         Focusable = true;
+        Cursor = Cursor.IBeam;
         Width = 200;
         Height = 30;
     }
@@ -112,27 +110,6 @@ public class Input : Control
         }
     }
 
-    public Color BorderColor
-    {
-        get => _borderColor;
-        set
-        {
-            _borderColor = value;
-            Invalidate();
-        }
-    }
-
-    /// <summary>Border color while the input has keyboard focus.</summary>
-    public Color FocusedBorderColor
-    {
-        get => _focusedBorderColor;
-        set
-        {
-            _focusedBorderColor = value;
-            Invalidate();
-        }
-    }
-
     public Color DisabledColor
     {
         get => _disabledColor;
@@ -149,16 +126,6 @@ public class Input : Control
         set
         {
             _disabledBackground = value;
-            Invalidate();
-        }
-    }
-
-    public Color DisabledBorderColor
-    {
-        get => _disabledBorderColor;
-        set
-        {
-            _disabledBorderColor = value;
             Invalidate();
         }
     }
@@ -395,12 +362,8 @@ public class Input : Control
         var focused = Focused;
         var bounds = new Rect(0, 0, Width, Height);
         dc.FillRectangle(bounds, enabled ? _background : _disabledBackground);
-        if (!enabled)
-            dc.DrawRectangle(bounds, _disabledBorderColor);
-        else if (focused)
-            dc.DrawRectangle(bounds, _focusedBorderColor, 2);
-        else
-            dc.DrawRectangle(bounds, _borderColor);
+        // Classic text box: a sunken edge; the caret alone shows the focus.
+        ClassicStyle.DrawSunkenEdge(dc, bounds, ClassicStyle.Highlight, ClassicStyle.Face, ClassicStyle.Shadow, ClassicStyle.DarkShadow);
 
         var font = Font;
         var visibleWidth = Math.Max(0, Width - 2 * Padding);

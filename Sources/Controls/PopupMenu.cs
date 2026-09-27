@@ -163,6 +163,7 @@ internal sealed class PopupMenuView : Control
 
     public PopupMenuView(PopupMenu menu, MenuItem[] items)
     {
+        Cursor = Cursor.Arrow;
         _menu = menu;
         _items = items;
         _tops = new int[items.Length];

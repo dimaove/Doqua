@@ -16,6 +16,7 @@ public abstract class Control
     private bool _focusable;
     private Anchor _anchor;
     private bool _applyingAnchor;
+    private Cursor _cursor;
 
     public string? Name { get; set; }
 
@@ -213,6 +214,22 @@ public abstract class Control
     internal Window? Host { get; set; }
 
     /// <summary>
+    /// Mouse pointer shape over this control. <see cref="GUI.Cursor.Default"/> (the default) uses the
+    /// parent's cursor, and the arrow at the top of the tree. See <see cref="GetCursor"/>.
+    /// </summary>
+    public Cursor Cursor
+    {
+        get => _cursor;
+        set
+        {
+            if (_cursor == value)
+                return;
+            _cursor = value;
+            GetWindow()?.UpdateCursor();
+        }
+    }
+
+    /// <summary>
     /// Menu opened by a right click on this control (or on a child without its own menu) and by
     /// Shift+F10 while the control has focus. See <see cref="GetContextMenu"/>.
     /// </summary>
@@ -275,6 +292,12 @@ public abstract class Control
     /// supply a different menu, e.g. one with the control's own commands followed by the user's items.
     /// </summary>
     protected virtual PopupMenu? GetContextMenu() => ContextMenu;
+
+    /// <summary>
+    /// Cursor at (<paramref name="x"/>, <paramref name="y"/>) in this control's coordinates; <see cref="Cursor"/>
+    /// by default. Override it to vary the cursor inside the control (e.g. an arrow over a scroll bar).
+    /// </summary>
+    protected virtual Cursor GetCursor(int x, int y) => _cursor;
 
     protected virtual void OnVisibleChanged(EventArgs e) => VisibleChanged?.Invoke(this, e);
 
@@ -356,6 +379,20 @@ public abstract class Control
     }
 
     internal PopupMenu? GetContextMenuForWindow() => GetContextMenu();
+
+    /// <summary>Resolves <see cref="Cursor.Default"/> through the parents; (x, y) is in this control's coordinates.</summary>
+    internal Cursor ResolveCursor(int x, int y)
+    {
+        for (var control = this; control != null; control = control.Parent)
+        {
+            var cursor = control.GetCursor(x, y);
+            if (cursor != Cursor.Default)
+                return cursor;
+            x += control._x;
+            y += control._y;
+        }
+        return Cursor.Arrow;
+    }
 
     /// <summary>Converts a point in this control's coordinates to window client coordinates.</summary>
     internal (int X, int Y) PointToWindow(int x, int y)

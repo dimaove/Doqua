@@ -264,6 +264,12 @@ internal static unsafe partial class Xlib
     public static partial int XFree(void* data);
 
     [LibraryImport(Lib)]
+    public static partial nuint XCreateFontCursor(nint display, uint shape);
+
+    [LibraryImport(Lib)]
+    public static partial int XDefineCursor(nint display, nuint window, nuint cursor);
+
+    [LibraryImport(Lib)]
     public static partial int XSupportsLocale();
 
     [LibraryImport(Lib, StringMarshalling = StringMarshalling.Utf8)]

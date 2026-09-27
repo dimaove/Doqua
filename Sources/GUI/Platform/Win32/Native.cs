@@ -165,6 +165,8 @@ internal static unsafe partial class User32
     public const uint WM_SETFOCUS = 0x0007;
     public const uint WM_KILLFOCUS = 0x0008;
     public const uint WM_PAINT = 0x000F;
+    public const uint WM_SETCURSOR = 0x0020;
+    public const nint HTCLIENT = 1;
     public const uint WM_ERASEBKGND = 0x0014;
     public const uint WM_KEYDOWN = 0x0100;
     public const uint WM_CHAR = 0x0102;
@@ -302,6 +304,9 @@ internal static unsafe partial class User32
 
     [LibraryImport(Lib)]
     public static partial nint LoadCursorW(nint instance, nint cursorName);
+
+    [LibraryImport(Lib)]
+    public static partial nint SetCursor(nint cursor);
 
     [LibraryImport(Lib)]
     public static partial nint BeginPaint(nint hwnd, PAINTSTRUCT* paint);

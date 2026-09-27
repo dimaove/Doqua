@@ -28,6 +28,8 @@ public class Window
     private int _clickCount;
     private Control? _focusedControl;
     private Control? _popup; // Shown above the content and receives input first (a PopupMenu).
+    private (int X, int Y)? _pointer; // Last pointer position over the client area.
+    private Cursor _currentCursor = Cursor.Arrow;
     private Action? _popupClosed;
 
     public Window()
@@ -40,7 +42,11 @@ public class Window
         _impl.MouseUp += HandleMouseUp;
         _impl.MouseMove += HandleMouseMove;
         _impl.MouseWheel += HandleMouseWheel;
-        _impl.MouseLeave += () => SetHoveredControl(null);
+        _impl.MouseLeave += () =>
+        {
+            SetHoveredControl(null);
+            _pointer = null;
+        };
         _impl.KeyDown += HandleKeyDown;
         _impl.TextInput += HandleTextInput;
         _impl.ActiveChanged += active =>
@@ -201,6 +207,7 @@ public class Window
         popup.Host = this;
         SetHoveredControl(null);
         Invalidate();
+        UpdateCursor();
     }
 
     internal void ClosePopup()
@@ -213,7 +220,33 @@ public class Window
         Array.Clear(_pressedControls);
         SetHoveredControl(null);
         Invalidate();
+        UpdateCursor();
         closed?.Invoke();
+    }
+
+    /// <summary>
+    /// Shows the cursor of the control that holds the mouse (dragging) or else of the one under the
+    /// pointer; the arrow over nothing or over a disabled control.
+    /// </summary>
+    internal void UpdateCursor()
+    {
+        if (_pointer is not var (x, y) || IsClosed)
+            return;
+        var target = Array.Find(_pressedControls, control => control != null) ?? EnabledHitTest(x, y, out _, out _);
+        Cursor cursor;
+        if (target == null)
+        {
+            cursor = Cursor.Arrow;
+        }
+        else
+        {
+            var (localX, localY) = target.PointFromWindow(x, y);
+            cursor = target.ResolveCursor(localX, localY);
+        }
+        if (cursor == _currentCursor)
+            return;
+        _currentCursor = cursor;
+        _impl.SetCursor(cursor);
     }
 
     /// <summary>Opens the context menu of <paramref name="target"/> or its nearest ancestor that has one.</summary>
@@ -313,6 +346,7 @@ public class Window
 
     private void HandleMouseDown(MouseButton button, int x, int y, KeyModifiers modifiers)
     {
+        _pointer = (x, y);
         _pressedButtons |= 1 << (int)button;
         var target = EnabledHitTest(x, y, out var localX, out var localY);
         if (_popup != null && target == null)
@@ -356,6 +390,20 @@ public class Window
 
     private void HandleMouseUp(MouseButton button, int x, int y, KeyModifiers modifiers)
     {
+        if (IsInClientArea(x, y))
+            _pointer = (x, y);
+        try
+        {
+            HandleMouseUpCore(button, x, y, modifiers);
+        }
+        finally
+        {
+            UpdateCursor(); // The released control no longer holds the cursor.
+        }
+    }
+
+    private void HandleMouseUpCore(MouseButton button, int x, int y, KeyModifiers modifiers)
+    {
         var mask = 1 << (int)button;
         var wasPressed = (_pressedButtons & mask) != 0;
         var pressedControl = _pressedControls[(int)button];
@@ -389,6 +437,7 @@ public class Window
 
     private void HandleMouseMove(int x, int y, KeyModifiers modifiers)
     {
+        _pointer = (x, y);
         var hovered = EnabledHitTest(x, y, out _, out _);
         SetHoveredControl(hovered);
 
@@ -399,6 +448,7 @@ public class Window
             var (localX, localY) = target.PointFromWindow(x, y);
             target.RaiseMouseMove(new MouseMoveEventArgs(localX, localY, modifiers));
         }
+        UpdateCursor();
     }
 
     /// <summary>The wheel goes to the control under the pointer, then up through its parents until handled.</summary>

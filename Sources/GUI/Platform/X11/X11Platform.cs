@@ -9,6 +9,7 @@ internal sealed unsafe class X11Platform : IPlatform
     private readonly Dictionary<nuint, X11WindowImpl> _windows = new();
     private FreeTypeFontBackend? _fonts;
     private X11Clipboard? _clipboard;
+    private readonly Dictionary<Cursor, nuint> _cursors = new();
     private bool _running;
     private int _exitCode;
 
@@ -69,6 +70,34 @@ internal sealed unsafe class X11Platform : IPlatform
     }
 
     public IFontBackend Fonts => _fonts ??= new FreeTypeFontBackend();
+
+    /// <summary>
+    /// X cursor for <paramref name="cursor"/>, created once. Core cursor-font shapes; Xlib shows them from the
+    /// desktop's cursor theme when libXcursor is available.
+    /// </summary>
+    internal nuint GetCursor(Cursor cursor)
+    {
+        if (!_cursors.TryGetValue(cursor, out var handle))
+        {
+            uint shape = cursor switch // Values from X11/cursorfont.h.
+            {
+                Cursor.IBeam => 152,     // XC_xterm
+                Cursor.Wait => 150,      // XC_watch
+                Cursor.Crosshair => 34,  // XC_crosshair
+                Cursor.Hand => 60,       // XC_hand2
+                Cursor.SizeWE => 108,    // XC_sb_h_double_arrow
+                Cursor.SizeNS => 116,    // XC_sb_v_double_arrow
+                Cursor.SizeNWSE => 14,   // XC_bottom_right_corner
+                Cursor.SizeNESW => 12,   // XC_bottom_left_corner
+                Cursor.SizeAll => 52,    // XC_fleur
+                Cursor.No => 0,          // XC_X_cursor
+                _ => 68,                 // XC_left_ptr
+            };
+            handle = Xlib.XCreateFontCursor(Display, shape);
+            _cursors[cursor] = handle;
+        }
+        return handle;
+    }
 
     public IClipboard Clipboard => _clipboard ??= new X11Clipboard(this);
 

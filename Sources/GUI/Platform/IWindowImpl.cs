@@ -47,6 +47,9 @@ internal interface IWindowImpl
     /// <summary>Sets the title bar / taskbar icon from one or more sizes; an empty list removes it.</summary>
     void SetIcons(IReadOnlyList<Bitmap> icons);
 
+    /// <summary>Shape of the mouse pointer while it is over the client area.</summary>
+    void SetCursor(Cursor cursor);
+
     void Resize(int width, int height);
     void Show();
 
