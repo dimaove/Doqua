@@ -16,7 +16,8 @@ namespace Doqua.Controls;
 /// </summary>
 public class Input : Control
 {
-    private const int Padding = 6; // 2 px sunken edge plus 4 px space before the text.
+    private const int FrameSize = 2;   // Sunken edge.
+    private const int TextSpace = 4;   // Between the edge and the text.
     private const int CaretBlinkMilliseconds = 530;
 
     private string _text = "";
@@ -205,6 +206,15 @@ public class Input : Control
     protected override PopupMenu? GetContextMenu() =>
         TextContextMenu.Create(this, ContextMenu, SelectionLength > 0, SelectionLength < _text.Length, Cut, Copy, Paste, SelectAll);
 
+    /// <summary>False when a containing control draws the frame (e.g. <see cref="NumberInput"/>).</summary>
+    internal bool ShowFrame { get; set; } = true;
+
+    /// <summary>Checked for every user edit (typing, deleting, cut, paste); an edit whose result it rejects is ignored.</summary>
+    internal Func<string, bool>? TextFilter { get; set; }
+
+    // Space before the text: the frame (if drawn) plus some room.
+    private int Padding => (ShowFrame ? FrameSize : 0) + TextSpace;
+
     protected virtual void OnTextChanged(EventArgs e) => TextChanged?.Invoke(this, e);
 
     protected override void OnGotFocus(EventArgs e)
@@ -363,7 +373,8 @@ public class Input : Control
         var bounds = new Rect(0, 0, Width, Height);
         dc.FillRectangle(bounds, enabled ? _background : _disabledBackground);
         // Classic text box: a sunken edge; the caret alone shows the focus.
-        ClassicStyle.DrawSunkenEdge(dc, bounds, ClassicStyle.Highlight, ClassicStyle.Face, ClassicStyle.Shadow, ClassicStyle.DarkShadow);
+        if (ShowFrame)
+            ClassicStyle.DrawSunkenEdge(dc, bounds, ClassicStyle.Highlight, ClassicStyle.Face, ClassicStyle.Shadow, ClassicStyle.DarkShadow);
 
         var font = Font;
         var visibleWidth = Math.Max(0, Width - 2 * Padding);
@@ -411,7 +422,10 @@ public class Input : Control
     private void ReplaceSelection(string text)
     {
         var start = SelectionStart;
-        SetText(_text.Remove(start, SelectionLength).Insert(start, text), start + text.Length);
+        var result = _text.Remove(start, SelectionLength).Insert(start, text);
+        if (TextFilter != null && result != _text && !TextFilter(result))
+            return;
+        SetText(result, start + text.Length);
     }
 
     /// <summary>Moves the caret; without <paramref name="extendSelection"/> the selection is cleared.</summary>

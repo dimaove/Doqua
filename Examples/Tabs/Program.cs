@@ -45,13 +45,9 @@ class MainWindow : Window
         };
         language.SelectionChanged += (sender, e) =>
             ShowMessage(language.HasSelection ? $"Language: {language.SelectedItem}" : "No language selected");
-        var textSize = new ComboBox<int>
-        {
-            Anchor = new Anchor(Left: 110, Top: 232), Width = 120,
-            Items = { 10, 12, 14, 16, 18 }, ItemText = size => $"{size} px",
-        };
-        textSize.SelectedItem = 14;
-        textSize.SelectionChanged += (sender, e) => description.Font = Font.Default with { Size = textSize.SelectedItem };
+        // Font size of the description in pixels: typed, or with the up / down buttons, keys and wheel.
+        var textSize = new NumberInput { Anchor = new Anchor(Left: 110, Top: 232), Width = 70, Min = 8, Max = 32, Value = 14 };
+        textSize.ValueChanged += (sender, e) => description.Font = Font.Default with { Size = textSize.Value };
 
         var general = new TabPage("General")
         {
@@ -63,6 +59,7 @@ class MainWindow : Window
                 language,
                 new Label { Anchor = new Anchor(Left: 16, Top: 236), Text = "Text size:" },
                 textSize,
+                new Label { Anchor = new Anchor(Left: 186, Top: 236), Text = "px (8 to 32)", Color = Color.Gray },
                 new Label { Anchor = new Anchor(Left: 16, Top: 272), Text = "Disabled:" },
                 new ComboBox<string> { Anchor = new Anchor(Left: 110, Top: 268), Width = 200, Items = { "Not available" }, SelectedIndex = 0, Enabled = false },
                 description,
