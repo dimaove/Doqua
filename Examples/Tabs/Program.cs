@@ -34,21 +34,45 @@ class MainWindow : Window
         nameInput.ContextMenu.Closed += (sender, e) =>
             ShowMessage(e.SelectedItem is { } item ? $"Name menu: {item.Text}" : "Name menu closed without a selection");
 
+        var description = new Label { Anchor = new Anchor(Left: 16, Top: 60) };
+
+        // Combo boxes: a list longer than the drop-down (it scrolls), typed values with custom text, a disabled one.
+        var language = new ComboBox<string>
+        {
+            Anchor = new Anchor(Left: 110, Top: 196), Width = 200, PlaceholderText = "Choose a language",
+            Items = { "English", "Русский", "Deutsch", "Français", "Español", "Italiano", "Português", "Polski",
+                      "Українська", "Čeština", "Nederlands", "Svenska", "Suomi", "Türkçe" },
+        };
+        language.SelectionChanged += (sender, e) =>
+            ShowMessage(language.HasSelection ? $"Language: {language.SelectedItem}" : "No language selected");
+        var textSize = new ComboBox<int>
+        {
+            Anchor = new Anchor(Left: 110, Top: 232), Width = 120,
+            Items = { 10, 12, 14, 16, 18 }, ItemText = size => $"{size} px",
+        };
+        textSize.SelectedItem = 14;
+        textSize.SelectionChanged += (sender, e) => description.Font = Font.Default with { Size = textSize.SelectedItem };
+
         var general = new TabPage("General")
         {
             Children =
             {
                 new Label { Anchor = new Anchor(Left: 16, Top: 20), Text = "Name:" },
                 nameInput,
-                new Label
-                {
-                    Anchor = new Anchor(Left: 16, Top: 60),
-                    Text = "Each tab is a TabPage: a Panel with a title.\nOnly the selected page is shown; it fills the area below the tabs.\n\n"
-                        + "Right-click the name field: its Cut / Copy / Paste are merged with the application's items.\n"
-                        + "On the Shapes page, right-click a rectangle to change its color.",
-                },
+                new Label { Anchor = new Anchor(Left: 16, Top: 200), Text = "Language:" },
+                language,
+                new Label { Anchor = new Anchor(Left: 16, Top: 236), Text = "Text size:" },
+                textSize,
+                new Label { Anchor = new Anchor(Left: 16, Top: 272), Text = "Disabled:" },
+                new ComboBox<string> { Anchor = new Anchor(Left: 110, Top: 268), Width = 200, Items = { "Not available" }, SelectedIndex = 0, Enabled = false },
+                description,
             },
         };
+        description.Text =
+            "Each tab is a TabPage: a Panel with a title.\nOnly the selected page is shown; it fills the area below the tabs.\n\n"
+            + "Right-click the name field: its Cut / Copy / Paste are merged with the application's items.\n"
+            + "On the Shapes page, right-click a rectangle to change its color.";
+
         // One menu shared by both rectangles: Owner tells which one was right-clicked.
         var colorMenu = new PopupMenu
         {

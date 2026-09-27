@@ -454,8 +454,7 @@ public class Window
     /// <summary>The wheel goes to the control under the pointer, then up through its parents until handled.</summary>
     private void HandleMouseWheel(int delta, int x, int y, KeyModifiers modifiers)
     {
-        if (_popup != null)
-            return; // No scrolling behind an open menu.
+        // While a popup is open only the popup can scroll (e.g. a combo box list); nothing behind it does.
         for (var control = EnabledHitTest(x, y, out _, out _); control != null; control = control.Parent)
         {
             var (localX, localY) = control.PointFromWindow(x, y);

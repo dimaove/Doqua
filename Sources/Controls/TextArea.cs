@@ -18,12 +18,8 @@ public class TextArea : Control
 {
     private const int EdgeSize = 2;          // Sunken 3D edge.
     private const int Padding = 3;           // Between the edge and the text.
-    private const int ScrollBarWidth = 16;
-    private const int MinThumbSize = 8;
     private const int WheelLines = 3;
     private const int CaretBlinkMilliseconds = 530;
-    private const int RepeatDelayMilliseconds = 400;
-    private const int RepeatIntervalMilliseconds = 50;
 
     private string _text = "";
     private int[] _lineStarts = [0];
@@ -37,9 +33,7 @@ public class TextArea : Control
     private bool _isMouseSelecting;
     private (int Start, int End) _initialUnit;
 
-    private ScrollPart _pressedPart;         // Scroll bar part held with the mouse.
-    private int _thumbGrabOffset;
-    private int _repeatTimer;
+    private readonly ClassicScrollBar _scrollBar;
 
     private int _blinkTimer;
     private bool _caretVisible = true;
@@ -60,18 +54,9 @@ public class TextArea : Control
         Line,
     }
 
-    private enum ScrollPart
-    {
-        None,
-        UpButton,
-        DownButton,
-        TrackAbove,
-        TrackBelow,
-        Thumb,
-    }
-
     public TextArea()
     {
+        _scrollBar = new ClassicScrollBar(this, () => _scrollY, ScrollTo);
         Focusable = true;
         Cursor = Cursor.IBeam;
         Width = 300;
@@ -213,7 +198,7 @@ public class TextArea : Control
 
     /// <summary>Text cursor over the text, the arrow over the scroll bar.</summary>
     protected override Cursor GetCursor(int x, int y) =>
-        IsScrollBarVisible && x >= Width - EdgeSize - ScrollBarWidth ? Cursor.Arrow : base.GetCursor(x, y);
+        IsScrollBarVisible && x >= Width - EdgeSize - ClassicScrollBar.Thickness ? Cursor.Arrow : base.GetCursor(x, y);
 
     protected override void OnSizeChanged(EventArgs e)
     {
@@ -244,10 +229,14 @@ public class TextArea : Control
         if (e.Button != MouseButton.Left)
             return;
 
-        if (HitScrollBar(e.X, e.Y) is var part and not ScrollPart.None)
+        if (IsScrollBarVisible)
         {
-            PressScrollBar(part, e.Y);
-            return;
+            SyncScrollBar();
+            if (_scrollBar.Bounds.Contains(e.X, e.Y))
+            {
+                _scrollBar.Press(e.X, e.Y);
+                return;
+            }
         }
 
         var index = IndexAtPoint(e.X, e.Y);
@@ -275,9 +264,9 @@ public class TextArea : Control
     protected override void OnMouseMove(MouseMoveEventArgs e)
     {
         base.OnMouseMove(e);
-        if (_pressedPart == ScrollPart.Thumb)
+        if (_scrollBar.IsPressed)
         {
-            DragThumb(e.Y);
+            _scrollBar.Drag(e.Y);
             return;
         }
         if (!_isMouseSelecting)
@@ -302,12 +291,7 @@ public class TextArea : Control
         if (e.Button != MouseButton.Left)
             return;
         _isMouseSelecting = false;
-        if (_pressedPart != ScrollPart.None)
-        {
-            _pressedPart = ScrollPart.None;
-            StopRepeat();
-            Invalidate();
-        }
+        _scrollBar.Release();
     }
 
     protected override void OnMouseWheel(MouseWheelEventArgs e)
@@ -472,54 +456,9 @@ public class TextArea : Control
         }
 
         if (IsScrollBarVisible)
-            DrawScrollBar(dc, enabled);
-    }
-
-    private void DrawScrollBar(DrawingContext dc, bool enabled)
-    {
-        var (up, down, track, thumb) = ScrollBarLayout();
-
-        // Classic dotted track: face color with every other pixel in the highlight color.
-        dc.FillRectangle(track, ClassicStyle.Face);
-        for (var y = track.Y; y < track.Bottom; y++)
         {
-            for (var x = track.X + (y & 1); x < track.Right; x += 2)
-                dc.FillRectangle(x, y, 1, 1, ClassicStyle.Highlight);
-        }
-        if (_pressedPart is ScrollPart.TrackAbove or ScrollPart.TrackBelow && enabled)
-        {
-            var pressed = _pressedPart == ScrollPart.TrackAbove ? Rect.FromEdges(track.X, track.Y, track.Right, thumb.Y)
-                : Rect.FromEdges(track.X, thumb.Bottom, track.Right, track.Bottom);
-            dc.FillRectangle(pressed, ClassicStyle.DarkShadow);
-        }
-
-        DrawScrollButton(dc, up, pointsUp: true, _pressedPart == ScrollPart.UpButton, enabled);
-        DrawScrollButton(dc, down, pointsUp: false, _pressedPart == ScrollPart.DownButton, enabled);
-        dc.FillRectangle(thumb, ClassicStyle.Face);
-        ClassicStyle.DrawRaisedEdge(dc, thumb, ClassicStyle.Highlight, ClassicStyle.Shadow, ClassicStyle.DarkShadow);
-    }
-
-    private static void DrawScrollButton(DrawingContext dc, Rect r, bool pointsUp, bool pressed, bool enabled)
-    {
-        dc.FillRectangle(r, ClassicStyle.Face);
-        if (pressed)
-        {
-            dc.DrawRectangle(r, ClassicStyle.Shadow); // Classic pressed scroll button: a flat shadow frame.
-        }
-        else
-        {
-            ClassicStyle.DrawRaisedEdge(dc, r, ClassicStyle.Highlight, ClassicStyle.Shadow, ClassicStyle.DarkShadow);
-        }
-
-        // Arrow: a 7 px wide triangle, 4 rows high, moved 1 px down-right while pressed.
-        var shift = pressed ? 1 : 0;
-        var centerX = r.X + r.Width / 2 + shift;
-        var top = r.Y + (r.Height - 4) / 2 + shift;
-        var color = enabled ? Color.Black : ClassicStyle.Shadow;
-        for (var row = 0; row < 4; row++)
-        {
-            var half = pointsUp ? row : 3 - row;
-            dc.FillRectangle(centerX - half, top + row, 2 * half + 1, 1, color);
+            SyncScrollBar();
+            _scrollBar.Draw(dc, enabled);
         }
     }
 
@@ -532,7 +471,7 @@ public class TextArea : Control
     {
         get
         {
-            var right = Width - EdgeSize - Padding - (IsScrollBarVisible ? ScrollBarWidth : 0);
+            var right = Width - EdgeSize - Padding - (IsScrollBarVisible ? ClassicScrollBar.Thickness : 0);
             return Rect.FromEdges(EdgeSize + Padding, EdgeSize + Padding, Math.Max(EdgeSize + Padding, right), Math.Max(EdgeSize + Padding, Height - EdgeSize - Padding));
         }
     }
@@ -543,79 +482,16 @@ public class TextArea : Control
 
     private int MaxScrollY => Math.Max(0, ContentHeight - ViewHeight);
 
-    private bool IsScrollBarVisible => ContentHeight > ViewHeight && Height >= 2 * EdgeSize + 2 * ScrollBarWidth;
+    private bool IsScrollBarVisible => ContentHeight > ViewHeight && Height >= 2 * EdgeSize + 2 * ClassicScrollBar.Thickness;
 
-    private (Rect Up, Rect Down, Rect Track, Rect Thumb) ScrollBarLayout()
+    private void SyncScrollBar()
     {
-        var bar = Rect.FromEdges(Width - EdgeSize - ScrollBarWidth, EdgeSize, Width - EdgeSize, Height - EdgeSize);
-        var up = bar with { Height = ScrollBarWidth };
-        var down = bar with { Y = bar.Bottom - ScrollBarWidth, Height = ScrollBarWidth };
-        var track = Rect.FromEdges(bar.X, up.Bottom, bar.Right, down.Y);
-        var thumbSize = Math.Clamp((int)((long)track.Height * ViewHeight / Math.Max(1, ContentHeight)), MinThumbSize, Math.Max(MinThumbSize, track.Height));
-        var thumbTop = track.Y + (MaxScrollY == 0 ? 0 : (int)((long)(track.Height - thumbSize) * _scrollY / MaxScrollY));
-        return (up, down, track, new Rect(track.X, thumbTop, track.Width, Math.Min(thumbSize, track.Height)));
-    }
-
-    private ScrollPart HitScrollBar(int x, int y)
-    {
-        if (!IsScrollBarVisible)
-            return ScrollPart.None;
-        var (up, down, track, thumb) = ScrollBarLayout();
-        return up.Contains(x, y) ? ScrollPart.UpButton
-            : down.Contains(x, y) ? ScrollPart.DownButton
-            : thumb.Contains(x, y) ? ScrollPart.Thumb
-            : track.Contains(x, y) ? (y < thumb.Y ? ScrollPart.TrackAbove : ScrollPart.TrackBelow)
-            : ScrollPart.None;
-    }
-
-    /// <summary>Arrows scroll a line and the track a page, repeating while the button is held (like classic scroll bars).</summary>
-    private void PressScrollBar(ScrollPart part, int y)
-    {
-        _pressedPart = part;
-        if (part == ScrollPart.Thumb)
-        {
-            _thumbGrabOffset = y - ScrollBarLayout().Thumb.Y;
-            Invalidate();
-            return;
-        }
-
-        void Step()
-        {
-            var page = Math.Max(LineHeight, ViewHeight - LineHeight);
-            switch (_pressedPart)
-            {
-                case ScrollPart.UpButton: ScrollTo(_scrollY - LineHeight); break;
-                case ScrollPart.DownButton: ScrollTo(_scrollY + LineHeight); break;
-                case ScrollPart.TrackAbove: ScrollTo(_scrollY - page); break;
-                case ScrollPart.TrackBelow: ScrollTo(_scrollY + page); break;
-            }
-            Invalidate();
-        }
-
-        Step();
-        StopRepeat();
-        _repeatTimer = Timer.SetTimeout(() =>
-        {
-            if (_pressedPart is ScrollPart.None or ScrollPart.Thumb)
-                return;
-            _repeatTimer = Timer.SetInterval(Step, RepeatIntervalMilliseconds);
-        }, RepeatDelayMilliseconds);
-    }
-
-    private void DragThumb(int y)
-    {
-        var (_, _, track, thumb) = ScrollBarLayout();
-        var room = track.Height - thumb.Height;
-        if (room <= 0)
-            return;
-        var thumbTop = Math.Clamp(y - _thumbGrabOffset, track.Y, track.Y + room);
-        ScrollTo((int)((long)(thumbTop - track.Y) * MaxScrollY / room));
-    }
-
-    private void StopRepeat()
-    {
-        Timer.ClearTimeout(_repeatTimer);
-        _repeatTimer = 0;
+        _scrollBar.Bounds = Rect.FromEdges(Width - EdgeSize - ClassicScrollBar.Thickness, EdgeSize, Width - EdgeSize, Height - EdgeSize);
+        _scrollBar.Maximum = MaxScrollY;
+        _scrollBar.ViewSize = ViewHeight;
+        _scrollBar.ContentSize = ContentHeight;
+        _scrollBar.SmallChange = LineHeight;
+        _scrollBar.LargeChange = Math.Max(LineHeight, ViewHeight - LineHeight);
     }
 
     private void ScrollTo(int y)
