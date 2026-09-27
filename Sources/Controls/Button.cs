@@ -2,18 +2,23 @@ using Doqua.GUI;
 
 namespace Doqua.Controls;
 
-/// <summary>Push button with centered text. Raises <see cref="Click"/> on a left-button click.</summary>
+/// <summary>
+/// Push button with centered text, drawn in the classic 3D style: a raised edge, a sunken frame while
+/// pressed (the text moves 1 px down and right), a black frame and dotted rectangle when focused, and
+/// embossed grey text when disabled. Raises <see cref="Click"/> on a left-button click or Enter/Space.
+/// </summary>
 public class Button : Control
 {
     private string _text = "";
     private Font? _font;
     private Color _color = Color.Black;
-    private Color _background = new(225, 225, 225);
-    private Color _borderColor = new(173, 173, 173);
-    private Color _focusedBorderColor = new(0, 120, 215);
-    private Color _disabledColor = new(160, 160, 160);
-    private Color _disabledBackground = new(240, 240, 240);
-    private Color _disabledBorderColor = new(204, 204, 204);
+    private Color _background = ClassicStyle.Face;
+    private Color _highlightColor = ClassicStyle.Highlight;
+    private Color _shadowColor = ClassicStyle.Shadow;
+    private Color _darkShadowColor = ClassicStyle.DarkShadow;
+    private Color _focusedBorderColor = Color.Black;
+    private Color _disabledColor = ClassicStyle.Shadow;
+    private Color _disabledBackground = ClassicStyle.Face;
 
     public Button()
     {
@@ -58,7 +63,7 @@ public class Button : Control
         }
     }
 
-    /// <summary>Face color. Hover and pressed colors are derived from it.</summary>
+    /// <summary>Face color; the hover color is derived from it.</summary>
     public Color Background
     {
         get => _background;
@@ -69,17 +74,40 @@ public class Button : Control
         }
     }
 
-    public Color BorderColor
+    /// <summary>Light edge on the top and left.</summary>
+    public Color HighlightColor
     {
-        get => _borderColor;
+        get => _highlightColor;
         set
         {
-            _borderColor = value;
+            _highlightColor = value;
             Invalidate();
         }
     }
 
-    /// <summary>Border color while the button has keyboard focus.</summary>
+    /// <summary>Inner dark edge on the bottom and right (and the inner frame while pressed).</summary>
+    public Color ShadowColor
+    {
+        get => _shadowColor;
+        set
+        {
+            _shadowColor = value;
+            Invalidate();
+        }
+    }
+
+    /// <summary>Outer dark edge on the bottom and right (and the outer frame while pressed).</summary>
+    public Color DarkShadowColor
+    {
+        get => _darkShadowColor;
+        set
+        {
+            _darkShadowColor = value;
+            Invalidate();
+        }
+    }
+
+    /// <summary>Outer frame drawn around the button while it has keyboard focus.</summary>
     public Color FocusedBorderColor
     {
         get => _focusedBorderColor;
@@ -90,7 +118,7 @@ public class Button : Control
         }
     }
 
-    /// <summary>Text color used when the button is not <see cref="Control.IsEffectivelyEnabled"/>.</summary>
+    /// <summary>Text color (embossed with <see cref="HighlightColor"/>) used when the button is not <see cref="Control.IsEffectivelyEnabled"/>.</summary>
     public Color DisabledColor
     {
         get => _disabledColor;
@@ -107,16 +135,6 @@ public class Button : Control
         set
         {
             _disabledBackground = value;
-            Invalidate();
-        }
-    }
-
-    public Color DisabledBorderColor
-    {
-        get => _disabledBorderColor;
-        set
-        {
-            _disabledBorderColor = value;
             Invalidate();
         }
     }
@@ -191,27 +209,48 @@ public class Button : Control
     protected override void OnRender(DrawingContext dc)
     {
         var enabled = IsEffectivelyEnabled;
-
         // Pressed look only while the pointer is still over the button, like native buttons.
+        var pressed = enabled && IsPressed && IsMouseOver;
         var face = !enabled ? _disabledBackground
-            : IsPressed && IsMouseOver ? Color.Lerp(_background, Color.Black, 0.15f)
-            : IsMouseOver ? Color.Lerp(_background, Color.White, 0.5f)
+            : IsMouseOver && !pressed ? Color.Lerp(_background, Color.White, 0.25f)
             : _background;
-        var bounds = new Rect(0, 0, Width, Height);
-        dc.FillRectangle(bounds, face);
-        if (!enabled)
-            dc.DrawRectangle(bounds, _disabledBorderColor);
-        else if (Focused)
-            dc.DrawRectangle(bounds, _focusedBorderColor, 2);
+
+        var edge = new Rect(0, 0, Width, Height);
+        var focused = enabled && Focused;
+        if (focused)
+        {
+            dc.DrawRectangle(edge, _focusedBorderColor); // Classic focused / default button: a black frame.
+            edge = Shrink(edge, 1);
+        }
+        dc.FillRectangle(edge, face);
+        if (pressed)
+        {
+            dc.DrawRectangle(edge, _darkShadowColor);
+            dc.DrawRectangle(Shrink(edge, 1), _shadowColor);
+        }
         else
-            dc.DrawRectangle(bounds, _borderColor);
+        {
+            ClassicStyle.DrawRaisedEdge(dc, edge, _highlightColor, _shadowColor, _darkShadowColor);
+        }
 
         if (_text.Length > 0)
         {
             var font = Font;
             var textWidth = font.MeasureText(_text).Width;
             var textHeight = font.Ascent + font.Descent; // Visual height, without line gap.
-            dc.DrawText(_text, font, enabled ? _color : _disabledColor, (Width - textWidth) / 2, (Height - textHeight) / 2);
+            var shift = pressed ? 1 : 0;
+            var textX = (Width - textWidth) / 2 + shift;
+            var textY = (Height - textHeight) / 2 + shift;
+            if (enabled)
+                dc.DrawText(_text, font, _color, textX, textY);
+            else
+                ClassicStyle.DrawEmbossedText(dc, _text, font, _disabledColor, _highlightColor, textX, textY);
         }
+
+        if (focused)
+            ClassicStyle.DrawFocusRectangle(dc, Shrink(edge, 3), _color);
     }
+
+    private static Rect Shrink(Rect r, int amount) =>
+        new(r.X + amount, r.Y + amount, Math.Max(0, r.Width - 2 * amount), Math.Max(0, r.Height - 2 * amount));
 }

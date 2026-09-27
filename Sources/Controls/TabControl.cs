@@ -19,10 +19,10 @@ public class TabControl : Control
     private Font? _font;
     private Color _color = Color.Black;
     private Color _disabledColor = new(128, 128, 128);
-    private Color _background = new(212, 208, 200); // Classic "button face".
-    private Color _highlightColor = Color.White;
-    private Color _shadowColor = new(128, 128, 128);
-    private Color _darkShadowColor = new(64, 64, 64);
+    private Color _background = ClassicStyle.Face;
+    private Color _highlightColor = ClassicStyle.Highlight;
+    private Color _shadowColor = ClassicStyle.Shadow;
+    private Color _darkShadowColor = ClassicStyle.DarkShadow;
 
     public TabControl()
     {
@@ -218,7 +218,7 @@ public class TabControl : Control
         var header = HeaderHeight;
         var body = new Rect(0, header, Width, Height - header);
         dc.FillRectangle(body, _background);
-        DrawRaisedBorder(dc, body);
+        ClassicStyle.DrawRaisedEdge(dc, body, _highlightColor, _shadowColor, _darkShadowColor);
 
         // The selected tab is drawn last so that it overlaps its neighbours and the border below it.
         (TabPage Page, Rect Rect)? selected = null;
@@ -250,19 +250,6 @@ public class TabControl : Control
         }
     }
 
-    /// <summary>Classic raised edge: highlight top and left, shadow and dark shadow bottom and right.</summary>
-    private void DrawRaisedBorder(DrawingContext dc, Rect r)
-    {
-        if (r.Width < 4 || r.Height < 4)
-            return;
-        dc.FillRectangle(r.X, r.Y, r.Width - 1, 1, _highlightColor);
-        dc.FillRectangle(r.X, r.Y, 1, r.Height - 1, _highlightColor);
-        dc.FillRectangle(r.X, r.Bottom - 1, r.Width, 1, _darkShadowColor);
-        dc.FillRectangle(r.Right - 1, r.Y, 1, r.Height, _darkShadowColor);
-        dc.FillRectangle(r.X + 1, r.Bottom - 2, r.Width - 2, 1, _shadowColor);
-        dc.FillRectangle(r.Right - 2, r.Y + 1, 1, r.Height - 2, _shadowColor);
-    }
-
     private void DrawTab(DrawingContext dc, TabPage page, Rect r, bool isSelected)
     {
         // Rounded top corners: the corner pixels are cut and replaced by one diagonal pixel.
@@ -284,8 +271,7 @@ public class TabControl : Control
         }
         else
         {
-            dc.DrawText(page.Title, font, _highlightColor, textX + 1, textY + 1); // Embossed, like classic disabled text.
-            dc.DrawText(page.Title, font, _disabledColor, textX, textY);
+            ClassicStyle.DrawEmbossedText(dc, page.Title, font, _disabledColor, _highlightColor, textX, textY);
         }
     }
 

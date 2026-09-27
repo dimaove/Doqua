@@ -30,10 +30,10 @@ public class CheckBox : Control
     private Color _color = Color.Black;
     private Color _disabledColor = new(128, 128, 128);
     private Color _boxColor = Color.White;
-    private Color _faceColor = new(212, 208, 200);
-    private Color _highlightColor = Color.White;
-    private Color _shadowColor = new(128, 128, 128);
-    private Color _darkShadowColor = new(64, 64, 64);
+    private Color _faceColor = ClassicStyle.Face;
+    private Color _highlightColor = ClassicStyle.Highlight;
+    private Color _shadowColor = ClassicStyle.Shadow;
+    private Color _darkShadowColor = ClassicStyle.DarkShadow;
 
     public CheckBox()
     {
@@ -214,15 +214,7 @@ public class CheckBox : Control
         var boxY = (Height - BoxSize) / 2;
         var box = new Rect(0, boxY, BoxSize, BoxSize);
 
-        // Sunken edge: shadow / dark shadow on the top-left, highlight / face on the bottom-right.
-        dc.FillRectangle(box.X, box.Y, BoxSize - 1, 1, _shadowColor);
-        dc.FillRectangle(box.X, box.Y, 1, BoxSize - 1, _shadowColor);
-        dc.FillRectangle(box.X + 1, box.Y + 1, BoxSize - 3, 1, _darkShadowColor);
-        dc.FillRectangle(box.X + 1, box.Y + 1, 1, BoxSize - 3, _darkShadowColor);
-        dc.FillRectangle(box.X, box.Bottom - 1, BoxSize, 1, _highlightColor);
-        dc.FillRectangle(box.Right - 1, box.Y, 1, BoxSize, _highlightColor);
-        dc.FillRectangle(box.X + 1, box.Bottom - 2, BoxSize - 2, 1, _faceColor);
-        dc.FillRectangle(box.Right - 2, box.Y + 1, 1, BoxSize - 2, _faceColor);
+        ClassicStyle.DrawSunkenEdge(dc, box, _highlightColor, _faceColor, _shadowColor, _darkShadowColor);
 
         var pressed = IsPressed && IsMouseOver;
         dc.FillRectangle(box.X + 2, box.Y + 2, BoxSize - 4, BoxSize - 4, enabled && !pressed ? _boxColor : _faceColor);
@@ -250,27 +242,11 @@ public class CheckBox : Control
         }
         else
         {
-            dc.DrawText(_text, font, _highlightColor, textX + 1, textY + 1); // Embossed, like classic disabled text.
-            dc.DrawText(_text, font, _disabledColor, textX, textY);
+            ClassicStyle.DrawEmbossedText(dc, _text, font, _disabledColor, _highlightColor, textX, textY);
         }
 
         if (Focused)
-            DrawFocusRectangle(dc, new Rect(textX - 2, textY - 1, font.MeasureText(_text).Width + 4, textHeight + 2), markColor);
-    }
-
-    /// <summary>Classic focus indicator: a dotted rectangle (every other pixel).</summary>
-    private static void DrawFocusRectangle(DrawingContext dc, Rect r, Color color)
-    {
-        for (var x = r.X; x < r.Right; x += 2)
-        {
-            dc.FillRectangle(x, r.Y, 1, 1, color);
-            dc.FillRectangle(x, r.Bottom - 1, 1, 1, color);
-        }
-        for (var y = r.Y; y < r.Bottom; y += 2)
-        {
-            dc.FillRectangle(r.X, y, 1, 1, color);
-            dc.FillRectangle(r.Right - 1, y, 1, 1, color);
-        }
+            ClassicStyle.DrawFocusRectangle(dc, new Rect(textX - 2, textY - 1, font.MeasureText(_text).Width + 4, textHeight + 2), markColor);
     }
 
     private void UpdateSize()
