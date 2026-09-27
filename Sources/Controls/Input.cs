@@ -1,4 +1,5 @@
 using Doqua.GUI;
+using Timer = Doqua.GUI.Timer;
 
 namespace Doqua.Controls;
 
@@ -16,6 +17,7 @@ namespace Doqua.Controls;
 public class Input : Control
 {
     private const int Padding = 6;
+    private const int CaretBlinkMilliseconds = 530;
 
     private string _text = "";
     private int _caretIndex;
@@ -23,6 +25,8 @@ public class Input : Control
     private bool _isMouseSelecting;
     private bool _isWordSelecting; // Dragging after a double click extends by whole words.
     private (int Start, int End) _initialWord; // Word selected by the double click.
+    private int _blinkTimer; // Timer id while focused, otherwise 0.
+    private bool _caretVisible = true;
     private int _scrollX; // Pixels of text hidden on the left; updated when rendering.
     private Font? _font;
     private Color _color = Color.Black;
@@ -231,12 +235,15 @@ public class Input : Control
     protected override void OnGotFocus(EventArgs e)
     {
         base.OnGotFocus(e);
-        Invalidate();
+        RestartCaretBlink();
     }
 
     protected override void OnLostFocus(EventArgs e)
     {
         base.OnLostFocus(e);
+        Timer.ClearInterval(_blinkTimer);
+        _blinkTimer = 0;
+        _caretVisible = true;
         Invalidate();
     }
 
@@ -414,7 +421,7 @@ public class Input : Control
                     dc.DrawText(_text, font, _selectionColor, textX, textY);
             }
 
-            if (active)
+            if (active && _caretVisible)
                 dc.FillRectangle(textX + XFromIndex(_caretIndex), textY, 1, textHeight, _color);
         }
     }
@@ -447,6 +454,21 @@ public class Input : Control
             return;
         _caretIndex = index;
         _anchorIndex = anchor;
+        Invalidate();
+        if (_blinkTimer != 0)
+            RestartCaretBlink(); // Keep the caret solid while it is being moved or typed at.
+    }
+
+    /// <summary>Shows the caret and starts toggling it; runs while the input is focused.</summary>
+    private void RestartCaretBlink()
+    {
+        Timer.ClearInterval(_blinkTimer);
+        _caretVisible = true;
+        _blinkTimer = Timer.SetInterval(() =>
+        {
+            _caretVisible = !_caretVisible;
+            Invalidate();
+        }, CaretBlinkMilliseconds);
         Invalidate();
     }
 

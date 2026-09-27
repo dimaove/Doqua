@@ -232,6 +232,14 @@ internal static unsafe partial class User32
     [LibraryImport(Lib)]
     public static partial uint GetDoubleClickTime();
 
+    public const uint USER_TIMER_MINIMUM = 10;
+
+    [LibraryImport(Lib)]
+    public static partial nuint SetTimer(nint hwnd, nuint id, uint milliseconds, delegate* unmanaged<nint, uint, nuint, uint, void> callback);
+
+    [LibraryImport(Lib)]
+    public static partial int KillTimer(nint hwnd, nuint id);
+
     [LibraryImport(Lib)]
     public static partial int GetSystemMetrics(int index);
 

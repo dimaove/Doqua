@@ -90,16 +90,25 @@ internal sealed unsafe class X11Platform : IPlatform
         XEvent ev;
         while (_running)
         {
+            TimerQueue.RunDue();
+            if (!_running)
+                break;
+
             // Draw invalidated windows once all queued events are handled, so that many
-            // changes made by event handlers produce a single redraw.
+            // changes made by event handlers produce a single redraw. Then sleep until an
+            // X event arrives or the next timer is due.
             if (Xlib.XPending(Display) == 0)
             {
                 foreach (var dirty in _windows.Values.ToArray())
                     dirty.RenderIfDirty();
                 Xlib.XFlush(Display);
+
+                var fd = new PollFd { fd = Xlib.XConnectionNumber(Display), events = LibC.POLLIN };
+                LibC.poll(&fd, 1, TimerQueue.GetTimeout());
+                continue;
             }
 
-            Xlib.XNextEvent(Display, &ev); // Blocks until an event arrives.
+            Xlib.XNextEvent(Display, &ev); // An event is pending, so this does not block.
             if (InputMethod != 0 && Xlib.XFilterEvent(&ev, 0) != 0)
                 continue;
             if (_clipboard != null && ev.window == _clipboard.Window)

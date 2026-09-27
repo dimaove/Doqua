@@ -1,5 +1,6 @@
 using Doqua.Controls;
 using Doqua.GUI;
+using Timer = Doqua.GUI.Timer;
 
 namespace Simple;
 
@@ -79,9 +80,18 @@ class MainWindow : Window
         var nameInput = new Input { X = 110, Y = 598, Width = 330, Height = 32 };
         var greetButton = new Button { X = 450, Y = 598, Width = 110, Height = 32, Text = "Greet" };
 
-        void Greet() => SetStatus(
-            nameInput.Text.Length > 0 ? $"Hello, {nameInput.Text}!" : "Type your name first",
-            Color.Purple);
+        void Greet()
+        {
+            if (nameInput.Text.Length > 0)
+            {
+                SetStatus($"Hello, {nameInput.Text}!", Color.Purple);
+                return;
+            }
+            // Show a hint for two seconds, then restore what was there.
+            var (previousText, previousColor) = (_status.Text, _status.Color);
+            SetStatus("Type your name first", Color.Red);
+            Timer.SetTimeout(() => SetStatus(previousText, previousColor), 2000);
+        }
 
         greetButton.Click += (sender, e) => Greet();
         nameInput.KeyDown += (sender, e) =>
@@ -95,13 +105,18 @@ class MainWindow : Window
         nameInput.TextChanged += (sender, e) =>
             Title = nameInput.Text.Length > 0 ? $"Doqua Simple – {nameInput.Text}" : "Doqua Simple";
 
+        var clock = new Label { X = 590, Y = 604, Font = Font.Default with { Size = 18 }, Color = Color.Gray };
+        void UpdateClock() => clock.Text = DateTime.Now.ToString("HH:mm:ss");
+        UpdateClock();
+        Timer.SetInterval(UpdateClock, 1000);
+
         // Children order is also the Tab order.
         Content = new Panel
         {
             Children =
             {
                 leftPanel, rightPanel, _status, hideButton, disableButton, _resetButton,
-                nameLabel, nameInput, greetButton,
+                nameLabel, nameInput, greetButton, clock,
             },
         };
         nameInput.Focus();
