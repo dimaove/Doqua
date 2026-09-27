@@ -1,3 +1,4 @@
+using Doqua.GUI;
 namespace Doqua.Controls;
 
 /// <summary>
@@ -92,7 +93,7 @@ public class RadioGroup<T> : RadioGroup
                     return;
                 }
             }
-            throw new ArgumentException($"No radio button in the group has the value '{value}'.", nameof(value));
+            throw new ArgumentException(Localization.Format("Doqua.Error.NoRadioButtonWithValue", value), nameof(value));
         }
     }
 }

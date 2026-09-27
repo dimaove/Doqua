@@ -25,7 +25,7 @@ internal static class PngDecoder
         }
         catch (EndOfStreamException exception)
         {
-            throw new InvalidDataException("The PNG data is truncated.", exception);
+            throw new InvalidDataException(Localization.Get("Doqua.Error.PngTruncated"), exception);
         }
     }
 
@@ -33,7 +33,7 @@ internal static class PngDecoder
     {
         Span<byte> buffer = stackalloc byte[8];
         if (stream.ReadAtLeast(buffer, buffer.Length, throwOnEndOfStream: false) < buffer.Length || !buffer.SequenceEqual(Signature))
-            throw new InvalidDataException("Not a PNG file.");
+            throw new InvalidDataException(Localization.Get("Doqua.Error.NotPng"));
 
         Header? header = null;
         byte[]? palette = null;
@@ -44,7 +44,7 @@ internal static class PngDecoder
             stream.ReadExactly(buffer); // Chunk length and type.
             var length = BinaryPrimitives.ReadInt32BigEndian(buffer);
             if (length < 0)
-                throw new InvalidDataException("Invalid PNG chunk length.");
+                throw new InvalidDataException(Localization.Get("Doqua.Error.PngChunkLength"));
             var type = BinaryPrimitives.ReadUInt32BigEndian(buffer[4..]);
             var data = new byte[length];
             stream.ReadExactly(data);
@@ -66,7 +66,7 @@ internal static class PngDecoder
                     break;
                 case 0x49454E44: // IEND
                     if (header is not { } h)
-                        throw new InvalidDataException("The PNG has no IHDR chunk.");
+                        throw new InvalidDataException(Localization.Get("Doqua.Error.PngNoHeader"));
                     compressed.Position = 0;
                     return DecodeImage(h, compressed, palette, transparency);
             }
@@ -76,7 +76,7 @@ internal static class PngDecoder
     private static Bitmap DecodeImage(Header header, Stream compressed, byte[]? palette, byte[]? transparency)
     {
         if (header.ColorType == 3 && palette == null)
-            throw new InvalidDataException("The PNG has a palette color type but no PLTE chunk.");
+            throw new InvalidDataException(Localization.Get("Doqua.Error.PngNoPalette"));
 
         var bitmap = new Bitmap(header.Width, header.Height);
         var converter = new PixelConverter(header, palette, transparency);
@@ -150,7 +150,7 @@ internal static class PngDecoder
                     row[i] += Paeth(i >= bpp ? row[i - bpp] : (byte)0, previous[i], i >= bpp ? previous[i - bpp] : (byte)0);
                 break;
             default:
-                throw new InvalidDataException($"Unknown PNG filter type {filter}.");
+                throw new InvalidDataException(Localization.Format("Doqua.Error.PngFilter", filter));
         }
     }
 
@@ -167,13 +167,13 @@ internal static class PngDecoder
         public static Header Parse(ReadOnlySpan<byte> data)
         {
             if (data.Length < 13)
-                throw new InvalidDataException("Invalid PNG IHDR chunk.");
+                throw new InvalidDataException(Localization.Get("Doqua.Error.PngHeader"));
             var width = BinaryPrimitives.ReadInt32BigEndian(data);
             var height = BinaryPrimitives.ReadInt32BigEndian(data[4..]);
             int bitDepth = data[8], colorType = data[9], interlace = data[12];
 
             if (width <= 0 || height <= 0 || (long)width * height > Bitmap.MaxPixels)
-                throw new InvalidDataException($"Unsupported PNG size {width} x {height}.");
+                throw new InvalidDataException(Localization.Format("Doqua.Error.PngSize", width, height));
             var validDepth = colorType switch
             {
                 0 => bitDepth is 1 or 2 or 4 or 8 or 16,
@@ -182,9 +182,9 @@ internal static class PngDecoder
                 _ => false,
             };
             if (!validDepth)
-                throw new InvalidDataException($"Invalid PNG color type {colorType} with bit depth {bitDepth}.");
+                throw new InvalidDataException(Localization.Format("Doqua.Error.PngColorType", colorType, bitDepth));
             if (data[10] != 0 || data[11] != 0 || interlace > 1)
-                throw new InvalidDataException("Unsupported PNG compression, filter or interlace method.");
+                throw new InvalidDataException(Localization.Get("Doqua.Error.PngMethod"));
             return new Header(width, height, bitDepth, colorType, interlace == 1);
         }
     }
@@ -245,7 +245,7 @@ internal static class PngDecoder
                 {
                     var index = Sample(row, x, 0);
                     if (index * 3 + 2 >= _palette!.Length)
-                        throw new InvalidDataException("PNG palette index out of range.");
+                        throw new InvalidDataException(Localization.Get("Doqua.Error.PngPaletteIndex"));
                     var alpha = _paletteAlpha != null && index < _paletteAlpha.Length ? _paletteAlpha[index] : 255;
                     return Argb(alpha, _palette[index * 3], _palette[index * 3 + 1], _palette[index * 3 + 2]);
                 }

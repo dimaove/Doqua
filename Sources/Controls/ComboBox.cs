@@ -77,7 +77,7 @@ public class ComboBox<T> : Control
         {
             var index = Items.IndexOf(value!);
             if (index < 0)
-                throw new ArgumentException($"The item '{value}' is not in the list.", nameof(value));
+                throw new ArgumentException(Localization.Format("Doqua.Error.ItemNotInList", value), nameof(value));
             SelectedIndex = index;
         }
     }

@@ -18,7 +18,7 @@ public static class Application
     {
         ArgumentNullException.ThrowIfNull(mainWindow);
         if (MainWindow != null)
-            throw new InvalidOperationException("Application is already running.");
+            throw new InvalidOperationException(Localization.Get("Doqua.Error.AlreadyRunning"));
 
         MainWindow = mainWindow;
         mainWindow.Closed += (_, _) => Platform.Quit(0);

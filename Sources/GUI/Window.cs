@@ -8,6 +8,8 @@ namespace Doqua.GUI;
 /// </summary>
 public class Window
 {
+    private static readonly List<Window> s_openWindows = [];
+
     private readonly IWindowImpl _impl;
     private string _title = "";
     private IReadOnlyList<Bitmap> _icons = [];
@@ -36,7 +38,13 @@ public class Window
     {
         _impl = Application.Platform.CreateWindow(_width, _height);
         _impl.Resized += UpdateSize;
-        _impl.Closed += () => { IsClosed = true; OnClosed(); };
+        _impl.Closed += () =>
+        {
+            IsClosed = true;
+            s_openWindows.Remove(this);
+            OnClosed();
+        };
+        s_openWindows.Add(this);
         _impl.Paint += Render;
         _impl.MouseDown += HandleMouseDown;
         _impl.MouseUp += HandleMouseUp;
@@ -81,7 +89,7 @@ public class Window
         {
             ArgumentNullException.ThrowIfNull(value);
             if (value.Any(icon => icon == null))
-                throw new ArgumentException("Icons cannot contain null.", nameof(value));
+                throw new ArgumentException(Localization.Get("Doqua.Error.IconsContainNull"), nameof(value));
             ThrowIfClosed();
             _icons = [.. value];
             _impl.SetIcons(_icons);
@@ -122,7 +130,7 @@ public class Window
             if (ReferenceEquals(value, _content))
                 return;
             if (value != null && (value.Parent != null || value.Host != null))
-                throw new InvalidOperationException("The control already has a parent.");
+                throw new InvalidOperationException(Localization.Get("Doqua.Error.ControlHasParent"));
 
             if (_content != null)
                 _content.Host = null;
@@ -149,7 +157,7 @@ public class Window
             if (value == null)
                 SetFocus(null);
             else if (!TrySetFocus(value))
-                throw new InvalidOperationException("The control cannot receive focus: it must be focusable, visible, enabled and in this window.");
+                throw new InvalidOperationException(Localization.Get("Doqua.Error.CannotFocus"));
         }
     }
 
@@ -179,6 +187,13 @@ public class Window
     {
         if (!IsClosed)
             _impl.Destroy();
+    }
+
+    /// <summary>Redraws every open window (e.g. after the language changed).</summary>
+    internal static void InvalidateAll()
+    {
+        foreach (var window in s_openWindows)
+            window.Invalidate();
     }
 
     /// <summary>Schedules a redraw. Multiple requests are merged into one.</summary>

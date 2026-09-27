@@ -52,7 +52,7 @@ public class PopupMenu
     public void Show(Control owner, int x, int y, Action<MenuItem?>? onClosed = null)
     {
         ArgumentNullException.ThrowIfNull(owner);
-        var window = owner.GetWindow() ?? throw new InvalidOperationException("The control is not shown in a window.");
+        var window = owner.GetWindow() ?? throw new InvalidOperationException(Localization.Get("Doqua.Error.NotInWindow"));
         Close();
 
         var view = new PopupMenuView(this, [.. Items]);

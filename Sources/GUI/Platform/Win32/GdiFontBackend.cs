@@ -61,7 +61,7 @@ internal sealed unsafe class GdiFontFace : IFontFace
             Gdi32.DEFAULT_CHARSET, Gdi32.OUT_TT_PRECIS, Gdi32.CLIP_DEFAULT_PRECIS,
             Gdi32.ANTIALIASED_QUALITY, Gdi32.DEFAULT_PITCH, family);
         if (_dc == 0 || font == 0)
-            throw new InvalidOperationException($"Cannot create GDI font '{family}'.");
+            throw new InvalidOperationException(Localization.Format("Doqua.Error.GdiFont", family));
         Gdi32.SelectObject(_dc, font);
 
         TEXTMETRICW metrics;

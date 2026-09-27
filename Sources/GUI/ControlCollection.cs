@@ -56,11 +56,11 @@ public sealed class ControlCollection : Collection<Control>
     {
         ArgumentNullException.ThrowIfNull(item);
         if (item.Parent != null || item.Host != null)
-            throw new InvalidOperationException("The control already has a parent.");
+            throw new InvalidOperationException(Localization.Get("Doqua.Error.ControlHasParent"));
         for (var ancestor = _owner; ancestor != null; ancestor = ancestor.Parent)
         {
             if (ReferenceEquals(ancestor, item))
-                throw new InvalidOperationException("A control cannot be added to itself or its descendant.");
+                throw new InvalidOperationException(Localization.Get("Doqua.Error.ControlInsideItself"));
         }
         item.Parent = _owner;
     }

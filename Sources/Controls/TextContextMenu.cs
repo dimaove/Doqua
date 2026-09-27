@@ -20,11 +20,11 @@ internal static class TextContextMenu
                 (userMenu.Font, userMenu.Color, userMenu.DisabledColor, userMenu.Background, userMenu.SelectionBackground, userMenu.SelectionColor);
         }
 
-        menu.Items.Add(Command("Cut", "Ctrl+X", hasSelection, cut));
-        menu.Items.Add(Command("Copy", "Ctrl+C", hasSelection, copy));
-        menu.Items.Add(Command("Paste", "Ctrl+V", Clipboard.GetText() is { Length: > 0 }, paste));
+        menu.Items.Add(Command(Localization.Get("Doqua.Menu.Cut"), "Ctrl+X", hasSelection, cut));
+        menu.Items.Add(Command(Localization.Get("Doqua.Menu.Copy"), "Ctrl+C", hasSelection, copy));
+        menu.Items.Add(Command(Localization.Get("Doqua.Menu.Paste"), "Ctrl+V", Clipboard.GetText() is { Length: > 0 }, paste));
         menu.Items.Add(MenuItem.Separator());
-        menu.Items.Add(Command("Select all", "Ctrl+A", canSelectAll, selectAll));
+        menu.Items.Add(Command(Localization.Get("Doqua.Menu.SelectAll"), "Ctrl+A", canSelectAll, selectAll));
 
         if (userMenu is { Items.Count: > 0 })
         {

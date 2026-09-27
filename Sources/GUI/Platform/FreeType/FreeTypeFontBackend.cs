@@ -12,16 +12,16 @@ internal sealed unsafe class FreeTypeFontBackend : IFontBackend
     public FreeTypeFontBackend()
     {
         if (!Environment.Is64BitProcess)
-            throw new PlatformNotSupportedException("The FreeType backend supports only 64-bit processes.");
+            throw new PlatformNotSupportedException(Localization.Get("Doqua.Error.FreeType64Bit"));
 
         nint library;
         var error = FT.FT_Init_FreeType(&library);
         if (error != 0)
-            throw new InvalidOperationException($"FT_Init_FreeType failed with error {error}.");
+            throw new InvalidOperationException(Localization.Format("Doqua.Error.FreeTypeInit", error));
         _library = library;
 
         if (Fc.FcInit() == 0)
-            throw new InvalidOperationException("Cannot initialize fontconfig.");
+            throw new InvalidOperationException(Localization.Get("Doqua.Error.FontconfigInit"));
     }
 
     // fontconfig alias resolved to the desktop's default sans-serif font.
@@ -82,12 +82,12 @@ internal sealed unsafe class FreeTypeFontBackend : IFontBackend
             int result;
             var match = Fc.FcFontMatch(0, pattern, &result);
             if (match == 0)
-                throw new InvalidOperationException($"No font found for '{family}'.");
+                throw new InvalidOperationException(Localization.Format("Doqua.Error.NoFont", family));
             try
             {
                 byte* file;
                 if (Fc.FcPatternGetString(match, "file", 0, &file) != Fc.ResultMatch)
-                    throw new InvalidOperationException($"No font file found for '{family}'.");
+                    throw new InvalidOperationException(Localization.Format("Doqua.Error.NoFontFile", family));
                 int index;
                 if (Fc.FcPatternGetInteger(match, "index", 0, &index) != Fc.ResultMatch)
                     index = 0;
@@ -116,12 +116,12 @@ internal sealed unsafe class FreeTypeFontFace : IFontFace
         FT_FaceRec* face;
         var error = FT.FT_New_Face(library, path, index, &face);
         if (error != 0)
-            throw new InvalidOperationException($"Cannot open font '{path}' (FreeType error {error}).");
+            throw new InvalidOperationException(Localization.Format("Doqua.Error.OpenFont", path, error));
 
         // Char size in 26.6 points at 72 dpi equals the size in pixels.
         error = FT.FT_Set_Char_Size(face, 0, (nint)MathF.Round(size * 64), 72, 72);
         if (error != 0)
-            throw new InvalidOperationException($"Cannot set size {size} for font '{path}' (FreeType error {error}).");
+            throw new InvalidOperationException(Localization.Format("Doqua.Error.SetFontSize", size, path, error));
         _face = face;
 
         var metrics = face->size;

@@ -11,6 +11,6 @@ internal static class PlatformFactory
             return new Win32Platform();
         if (OperatingSystem.IsLinux())
             return new X11Platform();
-        throw new PlatformNotSupportedException("Doqua supports only Windows and Linux.");
+        throw new PlatformNotSupportedException(Localization.Get("Doqua.Error.UnsupportedPlatform"));
     }
 }

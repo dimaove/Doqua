@@ -9,7 +9,7 @@ public sealed class Bitmap
         ArgumentOutOfRangeException.ThrowIfLessThan(width, 1);
         ArgumentOutOfRangeException.ThrowIfLessThan(height, 1);
         if ((long)width * height > MaxPixels)
-            throw new ArgumentOutOfRangeException(nameof(width), "The bitmap is too large.");
+            throw new ArgumentOutOfRangeException(nameof(width), Localization.Get("Doqua.Error.BitmapTooLarge"));
         Width = width;
         Height = height;
         Pixels = new uint[width * height];

@@ -55,7 +55,7 @@ public sealed record Font
         init
         {
             if (!float.IsFinite(value) || value <= 0)
-                throw new ArgumentOutOfRangeException(nameof(value), value, "Font size must be a positive number.");
+                throw new ArgumentOutOfRangeException(nameof(value), value, Localization.Get("Doqua.Error.FontSize"));
             _size = value;
         }
     }

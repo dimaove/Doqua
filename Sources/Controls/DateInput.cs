@@ -102,10 +102,13 @@ public class DateInput : Control
         }
     }
 
-    /// <summary>Culture for the field text, month and weekday names and the first day of the week; the current culture unless set.</summary>
+    /// <summary>
+    /// Culture for the field text, month and weekday names and the first day of the week;
+    /// <see cref="Localization.Culture"/> (English by default) unless set.
+    /// </summary>
     public CultureInfo Culture
     {
-        get => _culture ?? CultureInfo.CurrentCulture;
+        get => _culture ?? Localization.Culture;
         set
         {
             _culture = value ?? throw new ArgumentNullException(nameof(value));
@@ -493,7 +496,8 @@ internal sealed class DateInputCalendar : Control
         // Footer: today.
         var footer = FooterArea;
         dc.FillRectangle(footer.X, footer.Y, footer.Width, 1, ClassicStyle.Shadow);
-        var todayText = $"Today: {DateTime.Today.ToString(_owner.Format, Culture)}";
+        // Always the short date: the field's format (e.g. "D") may be wider than the calendar.
+        var todayText = Localization.Format("Doqua.Calendar.Today", DateTime.Today.ToString("d", Culture));
         DrawCentered(dc, todayText, _owner.Font, _owner.IsInRange(DateTime.Today) ? _owner.Color : OutOfRange, footer);
     }
 

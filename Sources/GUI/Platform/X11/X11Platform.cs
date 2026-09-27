@@ -32,14 +32,14 @@ internal sealed unsafe class X11Platform : IPlatform
         Xlib.XInitThreads();
         Display = Xlib.XOpenDisplay(null);
         if (Display == 0)
-            throw new InvalidOperationException("Cannot open X11 display. Is the DISPLAY environment variable set?");
+            throw new InvalidOperationException(Localization.Get("Doqua.Error.X11Display"));
 
         Screen = Xlib.XDefaultScreen(Display);
 
         // Framebuffer pixels are 0x00RRGGBB, which matches 24/32-bit TrueColor visuals.
         Depth = Xlib.XDefaultDepth(Display, Screen);
         if (Depth != 24 && Depth != 32)
-            throw new PlatformNotSupportedException($"X11 display depth {Depth} is not supported (24 or 32 required).");
+            throw new PlatformNotSupportedException(Localization.Format("Doqua.Error.X11Depth", Depth));
         Gc = Xlib.XDefaultGC(Display, Screen);
         WmProtocols = Xlib.XInternAtom(Display, "WM_PROTOCOLS", 0);
         WmDeleteWindow = Xlib.XInternAtom(Display, "WM_DELETE_WINDOW", 0);

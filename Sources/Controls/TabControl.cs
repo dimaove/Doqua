@@ -48,15 +48,15 @@ public class TabControl : Control
             if (value == null)
             {
                 if (Pages.Any(page => page.Enabled))
-                    throw new InvalidOperationException("A page must be selected while any page is enabled.");
+                    throw new InvalidOperationException(Localization.Get("Doqua.Error.PageMustBeSelected"));
             }
             else if (!Pages.Contains(value))
             {
-                throw new ArgumentException("The page does not belong to this TabControl.", nameof(value));
+                throw new ArgumentException(Localization.Get("Doqua.Error.PageNotInTabControl"), nameof(value));
             }
             else if (!value.Enabled)
             {
-                throw new InvalidOperationException("A disabled page cannot be selected.");
+                throw new InvalidOperationException(Localization.Get("Doqua.Error.DisabledPage"));
             }
             SetSelectedPage(value);
         }

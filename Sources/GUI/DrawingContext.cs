@@ -235,7 +235,7 @@ public sealed class DrawingContext
         if (source is not { } rect)
             return whole;
         if (rect.IsEmpty || rect.Intersect(whole) != rect)
-            throw new ArgumentOutOfRangeException(nameof(source), rect, "The source rectangle must be non-empty and inside the bitmap.");
+            throw new ArgumentOutOfRangeException(nameof(source), rect, Localization.Get("Doqua.Error.BitmapSource"));
         return rect;
     }
 
