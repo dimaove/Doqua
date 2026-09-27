@@ -1,11 +1,41 @@
+using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 
 namespace Doqua.GUI.Platform.Win32;
 
 [SupportedOSPlatform("windows")]
-internal sealed class GdiFontBackend : IFontBackend
+internal sealed unsafe class GdiFontBackend : IFontBackend
 {
     public string DefaultFamily => "Segoe UI";
+
+    /// <summary>Font families from EnumFontFamiliesExW; "@" names (vertical variants for East Asian text) are skipped.</summary>
+    public IEnumerable<string> GetFamilies()
+    {
+        var families = new List<string>();
+        var handle = GCHandle.Alloc(families);
+        var dc = Gdi32.CreateCompatibleDC(0);
+        try
+        {
+            var logFont = new LOGFONTW { lfCharSet = (byte)Gdi32.DEFAULT_CHARSET }; // Empty name: every family.
+            Gdi32.EnumFontFamiliesExW(dc, &logFont, &OnFont, GCHandle.ToIntPtr(handle), 0);
+        }
+        finally
+        {
+            Gdi32.DeleteDC(dc);
+            handle.Free();
+        }
+        return families;
+    }
+
+    // Note: an exception escaping an [UnmanagedCallersOnly] method terminates the process.
+    [UnmanagedCallersOnly]
+    private static int OnFont(LOGFONTW* logFont, void* metrics, uint fontType, nint lParam)
+    {
+        var name = new string(logFont->lfFaceName);
+        if (!name.StartsWith('@'))
+            ((List<string>)GCHandle.FromIntPtr(lParam).Target!).Add(name);
+        return 1;
+    }
 
     // GDI maps unknown family names to a similar installed font itself.
     public IFontFace CreateFace(string family, float size, FontStyle style) => new GdiFontFace(family, size, style);

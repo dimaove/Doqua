@@ -27,6 +27,40 @@ internal sealed unsafe class FreeTypeFontBackend : IFontBackend
     // fontconfig alias resolved to the desktop's default sans-serif font.
     public string DefaultFamily => "sans-serif";
 
+    /// <summary>Every installed font's family name, from fontconfig (the first, primary name of each font).</summary>
+    public IEnumerable<string> GetFamilies()
+    {
+        var families = new List<string>();
+        var pattern = Fc.FcPatternCreate();
+        var objectSet = Fc.FcObjectSetCreate();
+        try
+        {
+            Fc.FcObjectSetAdd(objectSet, "family");
+            var fontSet = Fc.FcFontList(0, pattern, objectSet);
+            if (fontSet == null)
+                return families;
+            try
+            {
+                for (var i = 0; i < fontSet->nfont; i++)
+                {
+                    byte* name;
+                    if (Fc.FcPatternGetString(fontSet->fonts[i], "family", 0, &name) == Fc.ResultMatch)
+                        families.Add(Marshal.PtrToStringUTF8((nint)name)!);
+                }
+            }
+            finally
+            {
+                Fc.FcFontSetDestroy(fontSet);
+            }
+        }
+        finally
+        {
+            Fc.FcObjectSetDestroy(objectSet);
+            Fc.FcPatternDestroy(pattern);
+        }
+        return families;
+    }
+
     public IFontFace CreateFace(string family, float size, FontStyle style)
     {
         var (path, index) = FindFontFile(family, style);

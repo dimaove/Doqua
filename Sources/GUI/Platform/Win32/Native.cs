@@ -108,6 +108,25 @@ internal struct GLYPHMETRICS
     public short gmCellIncY;
 }
 
+[StructLayout(LayoutKind.Sequential)]
+internal unsafe struct LOGFONTW
+{
+    public int lfHeight;
+    public int lfWidth;
+    public int lfEscapement;
+    public int lfOrientation;
+    public int lfWeight;
+    public byte lfItalic;
+    public byte lfUnderline;
+    public byte lfStrikeOut;
+    public byte lfCharSet;
+    public byte lfOutPrecision;
+    public byte lfClipPrecision;
+    public byte lfQuality;
+    public byte lfPitchAndFamily;
+    public fixed char lfFaceName[32];
+}
+
 /// <summary>16.16 fixed-point number.</summary>
 [StructLayout(LayoutKind.Sequential)]
 internal struct FIXED
@@ -349,6 +368,9 @@ internal static unsafe partial class Gdi32
     [LibraryImport("gdi32.dll")]
     public static partial nint CreateCompatibleDC(nint hdc);
 
+    [LibraryImport("gdi32.dll")]
+    public static partial int DeleteDC(nint hdc);
+
     [LibraryImport("gdi32.dll", StringMarshalling = StringMarshalling.Utf16)]
     public static partial nint CreateFontW(
         int height, int width, int escapement, int orientation, int weight,
@@ -357,6 +379,11 @@ internal static unsafe partial class Gdi32
 
     [LibraryImport("gdi32.dll")]
     public static partial nint SelectObject(nint hdc, nint obj);
+
+    /// <summary>Calls <paramref name="callback"/>(LOGFONTW*, TEXTMETRICW*, font type, lParam) for each font; it returns nonzero to continue.</summary>
+    [LibraryImport("gdi32.dll")]
+    public static partial int EnumFontFamiliesExW(nint hdc, LOGFONTW* logFont,
+        delegate* unmanaged<LOGFONTW*, void*, uint, nint, int> callback, nint lParam, uint flags);
 
     [LibraryImport("gdi32.dll")]
     public static partial int GetTextMetricsW(nint hdc, TEXTMETRICW* metrics);

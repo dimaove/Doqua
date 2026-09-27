@@ -6,6 +6,9 @@ internal interface IFontBackend
     /// <summary>Family used by <see cref="Font.Default"/>.</summary>
     string DefaultFamily { get; }
 
+    /// <summary>Names of the installed font families, distinct, in any order.</summary>
+    IEnumerable<string> GetFamilies();
+
     /// <summary>Opens the closest installed match; unknown families fall back to a system default.</summary>
     IFontFace CreateFace(string family, float size, FontStyle style);
 }

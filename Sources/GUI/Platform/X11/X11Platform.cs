@@ -132,7 +132,11 @@ internal sealed unsafe class X11Platform : IPlatform
             {
                 foreach (var dirty in _windows.Values.ToArray())
                     dirty.RenderIfDirty();
-                Xlib.XFlush(Display);
+
+                // Sending a large image makes Xlib read incoming events into its own queue (so that the
+                // connection cannot deadlock); poll() would not see those, so check the queue again first.
+                if (Xlib.XPending(Display) != 0)
+                    continue;
 
                 var fd = new PollFd { fd = Xlib.XConnectionNumber(Display), events = LibC.POLLIN };
                 LibC.poll(&fd, 1, TimerQueue.GetTimeout());

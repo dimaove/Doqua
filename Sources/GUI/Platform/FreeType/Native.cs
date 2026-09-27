@@ -101,4 +101,27 @@ internal static unsafe partial class Fc
 
     [LibraryImport(Lib)]
     public static partial nint FcFontMatch(nint config, nint pattern, int* result);
+
+    [LibraryImport(Lib)]
+    public static partial nint FcObjectSetCreate();
+
+    [LibraryImport(Lib, StringMarshalling = StringMarshalling.Utf8)]
+    public static partial int FcObjectSetAdd(nint objectSet, string obj);
+
+    [LibraryImport(Lib)]
+    public static partial void FcObjectSetDestroy(nint objectSet);
+
+    [LibraryImport(Lib)]
+    public static partial FcFontSet* FcFontList(nint config, nint pattern, nint objectSet);
+
+    [LibraryImport(Lib)]
+    public static partial void FcFontSetDestroy(FcFontSet* fontSet);
+}
+
+[StructLayout(LayoutKind.Sequential)]
+internal unsafe struct FcFontSet
+{
+    public int nfont;
+    public int sfont;
+    public nint* fonts; // FcPattern*[nfont]
 }

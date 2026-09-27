@@ -26,6 +26,16 @@ public sealed record Font
         Style = style;
     }
 
+    /// <summary>
+    /// Names of the font families installed on the system, sorted alphabetically; any of them can be
+    /// passed to the constructor. Asks the operating system each time, so keep the result if needed often.
+    /// </summary>
+    public static IReadOnlyList<string> GetInstalledFamilies() =>
+        [.. Application.Platform.Fonts.GetFamilies()
+            .Where(name => !string.IsNullOrWhiteSpace(name))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Order(StringComparer.CurrentCultureIgnoreCase)];
+
     /// <summary>System UI font at 14 pixels.</summary>
     public static Font Default => s_default ??= new Font(Application.Platform.Fonts.DefaultFamily, 14);
 
