@@ -87,6 +87,7 @@ public abstract class Control
             _visible = value;
             Invalidate();
             GetWindow()?.ValidateFocus();
+            OnVisibleChanged(EventArgs.Empty);
         }
     }
 
@@ -104,6 +105,7 @@ public abstract class Control
             _enabled = value;
             Invalidate();
             GetWindow()?.ValidateFocus();
+            OnEnabledChanged(EventArgs.Empty);
         }
     }
 
@@ -158,6 +160,12 @@ public abstract class Control
     public bool IsMouseOver { get; private set; }
 
     /// <summary>Raised when a mouse button is pressed over this control.</summary>
+    /// <summary>Raised after <see cref="Visible"/> changed.</summary>
+    public event EventHandler? VisibleChanged;
+
+    /// <summary>Raised after <see cref="Enabled"/> changed (not when only a parent's Enabled changed).</summary>
+    public event EventHandler? EnabledChanged;
+
     /// <summary>Raised after Width or Height changed; anchored children have already been rearranged.</summary>
     public event EventHandler? SizeChanged;
 
@@ -242,6 +250,10 @@ public abstract class Control
             child.ApplyAnchor();
         SizeChanged?.Invoke(this, e);
     }
+
+    protected virtual void OnVisibleChanged(EventArgs e) => VisibleChanged?.Invoke(this, e);
+
+    protected virtual void OnEnabledChanged(EventArgs e) => EnabledChanged?.Invoke(this, e);
 
     protected virtual void OnGotFocus(EventArgs e) => GotFocus?.Invoke(this, e);
 
