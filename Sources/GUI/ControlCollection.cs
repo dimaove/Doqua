@@ -14,6 +14,7 @@ public sealed class ControlCollection : Collection<Control>
         Attach(item);
         base.InsertItem(index, item);
         item.ApplyAnchor();
+        _owner.OnChildLayoutChanged();
         _owner.Invalidate();
     }
 
@@ -46,6 +47,7 @@ public sealed class ControlCollection : Collection<Control>
 
     private void OnRemoved()
     {
+        _owner.OnChildLayoutChanged();
         _owner.Invalidate();
         _owner.GetWindow()?.ValidateFocus(); // The focused control may have been removed.
     }

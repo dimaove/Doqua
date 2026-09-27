@@ -266,7 +266,7 @@ public class TextArea : Control
         base.OnMouseMove(e);
         if (_scrollBar.IsPressed)
         {
-            _scrollBar.Drag(e.Y);
+            _scrollBar.Drag(e.X, e.Y);
             return;
         }
         if (!_isMouseSelecting)

@@ -60,6 +60,7 @@ public abstract class Control
             Invalidate();
             if (resized)
                 OnSizeChanged(EventArgs.Empty);
+            Parent?.OnChildLayoutChanged();
         }
     }
 
@@ -90,6 +91,7 @@ public abstract class Control
             _visible = value;
             Invalidate();
             GetWindow()?.ValidateFocus();
+            Parent?.OnChildLayoutChanged();
             OnVisibleChanged(EventArgs.Empty);
         }
     }
@@ -327,8 +329,9 @@ public abstract class Control
         _applyingAnchor = true; // Setting Bounds below calls back here through OnSizeChanged.
         try
         {
-            var (x, width) = Anchor.Arrange(_x, _width, _anchor.Left, _anchor.Right, parent._width);
-            var (y, height) = Anchor.Arrange(_y, _height, _anchor.Top, _anchor.Bottom, parent._height);
+            var (areaWidth, areaHeight) = parent.AnchorArea;
+            var (x, width) = Anchor.Arrange(_x, _width, _anchor.Left, _anchor.Right, areaWidth);
+            var (y, height) = Anchor.Arrange(_y, _height, _anchor.Top, _anchor.Bottom, areaHeight);
             Bounds = new Rect(x, y, width, height);
         }
         finally
@@ -388,8 +391,9 @@ public abstract class Control
             var cursor = control.GetCursor(x, y);
             if (cursor != Cursor.Default)
                 return cursor;
-            x += control._x;
-            y += control._y;
+            var (offsetX, offsetY) = control.Parent?.ChildOffset ?? default;
+            x += control._x + offsetX;
+            y += control._y + offsetY;
         }
         return Cursor.Arrow;
     }
@@ -399,8 +403,9 @@ public abstract class Control
     {
         for (var control = this; control != null; control = control.Parent)
         {
-            x += control._x;
-            y += control._y;
+            var (offsetX, offsetY) = control.Parent?.ChildOffset ?? default;
+            x += control._x + offsetX;
+            y += control._y + offsetY;
         }
         return (x, y);
     }
@@ -410,10 +415,33 @@ public abstract class Control
     {
         for (var control = this; control != null; control = control.Parent)
         {
-            x -= control._x;
-            y -= control._y;
+            var (offsetX, offsetY) = control.Parent?.ChildOffset ?? default;
+            x -= control._x + offsetX;
+            y -= control._y + offsetY;
         }
         return (x, y);
+    }
+
+    /// <summary>
+    /// Shift applied to the children when they are drawn and hit-tested, in this control's coordinates
+    /// (a scrolling panel returns minus its scroll position). Children's X and Y are not changed by it.
+    /// </summary>
+    internal virtual (int X, int Y) ChildOffset => default;
+
+    /// <summary>Area (in this control's coordinates) outside which children are neither drawn nor hit; null = the whole control.</summary>
+    internal virtual Rect? ChildClip => null;
+
+    /// <summary>Size that children's anchors refer to: the whole control, or a scrolling panel's visible area.</summary>
+    internal virtual (int Width, int Height) AnchorArea => (_width, _height);
+
+    /// <summary>Called when a child moved, resized, was shown or hidden, added or removed.</summary>
+    internal virtual void OnChildLayoutChanged()
+    {
+    }
+
+    /// <summary>Called on each ancestor, innermost first, when <paramref name="descendant"/> gets the keyboard focus.</summary>
+    internal virtual void OnDescendantFocused(Control descendant)
+    {
     }
 
     internal void Render(DrawingContext dc)
@@ -424,8 +452,17 @@ public abstract class Control
         if (!dc.IsClipEmpty)
         {
             OnRender(dc);
-            foreach (var child in VisualChildren)
-                child.Render(dc);
+            var children = VisualChildren;
+            if (children.Count > 0)
+            {
+                var beforeChildren = dc.PushChildArea(ChildClip, ChildOffset);
+                if (!dc.IsClipEmpty)
+                {
+                    foreach (var child in children)
+                        child.Render(dc);
+                }
+                dc.Restore(beforeChildren);
+            }
         }
         dc.Restore(saved);
     }
@@ -441,10 +478,14 @@ public abstract class Control
         if (!_visible || localX < 0 || localY < 0 || localX >= _width || localY >= _height)
             return null;
 
+        // Outside the children's area (e.g. over a scroll bar) the control itself is hit.
+        if (ChildClip is { } clip && !clip.Contains(localX, localY))
+            return this;
+        var (offsetX, offsetY) = ChildOffset;
         var children = VisualChildren;
         for (var i = children.Count - 1; i >= 0; i--)
         {
-            var hit = children[i].HitTest(localX, localY, out var childX, out var childY);
+            var hit = children[i].HitTest(localX - offsetX, localY - offsetY, out var childX, out var childY);
             if (hit != null)
             {
                 (localX, localY) = (childX, childY);

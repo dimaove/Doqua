@@ -20,7 +20,7 @@ class MainWindow : Window
     {
         Title = "Doqua Tabs";
         Icons = ExampleIcon.Load();
-        Width = 640;
+        Width = 760;
         Height = 480;
         Background = new Color(212, 208, 200);
 
@@ -107,6 +107,35 @@ class MainWindow : Window
         };
         var locked = new TabPage("Locked") { Enabled = false }; // Disabled from the start: grey tab.
 
+        // Scrolling panels: a vertical list taller than its panel, and a grid larger than a stretching panel.
+        var options = new Panel
+        {
+            Anchor = new Anchor(Left: 16, Top: 16, Bottom: 16), Width = 220,
+            Background = Color.White, ScrollBars = ScrollBars.Vertical,
+        };
+        for (var i = 1; i <= 20; i++)
+            options.Children.Add(new CheckBox($"Option {i}") { X = 8, Y = 6 + (i - 1) * 24, Checked = i % 3 == 0 });
+
+        var grid = new Panel
+        {
+            Anchor = new Anchor(Left: 252, Top: 16, Right: 16, Bottom: 16),
+            Background = Color.White, ScrollBars = ScrollBars.Both,
+        };
+        Color[] palette = [Color.Red, Color.Orange, Color.Yellow, Color.Green, Color.Blue, Color.Purple];
+        for (var row = 0; row < 6; row++)
+        {
+            for (var column = 0; column < 6; column++)
+            {
+                grid.Children.Add(new Rectangle
+                {
+                    X = 10 + column * 90, Y = 10 + row * 70, Width = 80, Height = 60,
+                    Color = Color.Lerp(palette[(row + column) % palette.Length], Color.White, 0.35f),
+                });
+                grid.Children.Add(new Label { X = 18 + column * 90, Y = 30 + row * 70, Text = $"{(char)('A' + column)}{row + 1}" });
+            }
+        }
+        var scrolling = new TabPage("Scrolling") { Children = { options, grid } };
+
         // Check boxes: one drives the status line, one mirrors the Locked page, one shows the disabled look.
         var showStatus = new CheckBox("Show the status line") { Anchor = new Anchor(Left: 16, Top: 16), Checked = true };
         var lockedEnabled = new CheckBox("Enable the \"Locked\" page") { Anchor = new Anchor(Left: 16, Top: 44) };
@@ -156,7 +185,7 @@ class MainWindow : Window
         _tabs = new TabControl
         {
             Anchor = new Anchor(Left: 10, Top: 10, Right: 10, Bottom: 90),
-            Pages = { general, shapes, settings, locked },
+            Pages = { general, shapes, settings, scrolling, locked },
         };
         _tabs.SelectedPageChanged += (sender, e) => UpdateStatus();
 

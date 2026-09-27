@@ -286,6 +286,8 @@ public class Window
         _focusedControl = control;
         previous?.RaiseLostFocus();
         control?.RaiseGotFocus();
+        for (var ancestor = control?.Parent; ancestor != null; ancestor = ancestor.Parent)
+            ancestor.OnDescendantFocused(control!); // Lets scrolling panels bring it into view.
         Invalidate();
     }
 

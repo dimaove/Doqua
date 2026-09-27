@@ -267,7 +267,7 @@ public class ComboBox<T> : Control
 
         var inner = Rect.FromEdges(EdgeSize, EdgeSize, Width - EdgeSize, Height - EdgeSize);
         var button = Rect.FromEdges(Math.Max(inner.X, inner.Right - ButtonWidth), inner.Y, inner.Right, inner.Bottom);
-        ClassicScrollBar.DrawArrowButton(dc, button, pointsUp: false, pressed: IsDroppedDown, enabled);
+        ClassicScrollBar.DrawArrowButton(dc, button, ArrowDirection.Down, pressed: IsDroppedDown, enabled);
 
         var textArea = Rect.FromEdges(inner.X, inner.Y, button.X, inner.Bottom);
         var font = Font;
@@ -427,7 +427,7 @@ internal sealed class ComboBoxDropDown<T> : Control
         base.OnMouseMove(e);
         if (_scrollBar.IsPressed)
         {
-            _scrollBar.Drag(e.Y);
+            _scrollBar.Drag(e.X, e.Y);
             return;
         }
         if (IndexAt(e.X, e.Y) is var index and >= 0)

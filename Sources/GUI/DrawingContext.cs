@@ -211,6 +211,17 @@ public sealed class DrawingContext
         return saved;
     }
 
+    /// <summary>Narrows the clip to <paramref name="clip"/> (if any) and then shifts the origin, for drawing children.</summary>
+    internal State PushChildArea(Rect? clip, (int X, int Y) offset)
+    {
+        var saved = new State(_offsetX, _offsetY, _clip);
+        if (clip is { } rect)
+            _clip = _clip.Intersect(rect.Offset(_offsetX, _offsetY));
+        _offsetX += offset.X;
+        _offsetY += offset.Y;
+        return saved;
+    }
+
     internal void Restore(State state)
     {
         _offsetX = state.OffsetX;
