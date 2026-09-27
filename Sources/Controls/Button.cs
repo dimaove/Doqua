@@ -10,12 +10,14 @@ public class Button : Control
     private Color _color = Color.Black;
     private Color _background = new(225, 225, 225);
     private Color _borderColor = new(173, 173, 173);
+    private Color _focusedBorderColor = new(0, 120, 215);
     private Color _disabledColor = new(160, 160, 160);
     private Color _disabledBackground = new(240, 240, 240);
     private Color _disabledBorderColor = new(204, 204, 204);
 
     public Button()
     {
+        Focusable = true;
         Width = 100;
         Height = 32;
     }
@@ -73,6 +75,17 @@ public class Button : Control
         set
         {
             _borderColor = value;
+            Invalidate();
+        }
+    }
+
+    /// <summary>Border color while the button has keyboard focus.</summary>
+    public Color FocusedBorderColor
+    {
+        get => _focusedBorderColor;
+        set
+        {
+            _focusedBorderColor = value;
             Invalidate();
         }
     }
@@ -140,6 +153,29 @@ public class Button : Control
             OnClick(EventArgs.Empty);
     }
 
+    /// <summary>Enter or Space on a focused button clicks it.</summary>
+    protected override void OnKeyDown(KeyEventArgs e)
+    {
+        base.OnKeyDown(e);
+        if (!e.Handled && e.Modifiers == KeyModifiers.None && e.Key is Key.Enter or Key.Space)
+        {
+            e.Handled = true;
+            OnClick(EventArgs.Empty);
+        }
+    }
+
+    protected override void OnGotFocus(EventArgs e)
+    {
+        base.OnGotFocus(e);
+        Invalidate();
+    }
+
+    protected override void OnLostFocus(EventArgs e)
+    {
+        base.OnLostFocus(e);
+        Invalidate();
+    }
+
     protected override void OnMouseEnter(EventArgs e)
     {
         base.OnMouseEnter(e);
@@ -163,7 +199,12 @@ public class Button : Control
             : _background;
         var bounds = new Rect(0, 0, Width, Height);
         dc.FillRectangle(bounds, face);
-        dc.DrawRectangle(bounds, enabled ? _borderColor : _disabledBorderColor);
+        if (!enabled)
+            dc.DrawRectangle(bounds, _disabledBorderColor);
+        else if (Focused)
+            dc.DrawRectangle(bounds, _focusedBorderColor, 2);
+        else
+            dc.DrawRectangle(bounds, _borderColor);
 
         if (_text.Length > 0)
         {

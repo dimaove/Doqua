@@ -17,6 +17,7 @@ public class Window
     private int _pressedButtons; // Bit mask of MouseButton values pressed inside the client area.
     private readonly Control?[] _pressedControls = new Control?[3]; // Indexed by MouseButton.
     private Control? _hoveredControl;
+    private Control? _focusedControl;
 
     public Window()
     {
@@ -28,6 +29,13 @@ public class Window
         _impl.MouseUp += HandleMouseUp;
         _impl.MouseMove += HandleMouseMove;
         _impl.MouseLeave += () => SetHoveredControl(null);
+        _impl.KeyDown += HandleKeyDown;
+        _impl.TextInput += HandleTextInput;
+        _impl.ActiveChanged += active =>
+        {
+            IsActive = active;
+            Invalidate(); // Focus visuals such as the caret depend on it.
+        };
     }
 
     public string Title
@@ -87,12 +95,35 @@ public class Window
                 value.Bounds = new Rect(0, 0, _width, _height);
             }
             Invalidate();
+            ValidateFocus();
         }
     }
+
+    /// <summary>
+    /// Control that receives keyboard input, or null. Setting it is the same as <see cref="Control.Focus"/>,
+    /// but throws if the control cannot be focused.
+    /// </summary>
+    public Control? FocusedControl
+    {
+        get => _focusedControl;
+        set
+        {
+            if (value == null)
+                SetFocus(null);
+            else if (!TrySetFocus(value))
+                throw new InvalidOperationException("The control cannot receive focus: it must be focusable, visible, enabled and in this window.");
+        }
+    }
+
+    /// <summary>True while the window has the keyboard focus of the operating system.</summary>
+    public bool IsActive { get; private set; }
 
     public bool IsClosed { get; private set; }
 
     public event EventHandler? Closed;
+
+    /// <summary>Raised for keys not handled by the focused control or its parents. Tab navigation runs after it.</summary>
+    public event EventHandler<KeyEventArgs>? KeyDown;
 
     /// <summary>
     /// Raised when a mouse button is pressed and released inside the client area,
@@ -123,6 +154,67 @@ public class Window
 
     protected virtual void OnMouseClick(MouseEventArgs e) => MouseClick?.Invoke(this, e);
 
+    protected virtual void OnKeyDown(KeyEventArgs e) => KeyDown?.Invoke(this, e);
+
+    internal bool TrySetFocus(Control control)
+    {
+        if (!control.CanFocus || control.GetWindow() != this)
+            return false;
+        SetFocus(control);
+        return true;
+    }
+
+    /// <summary>Clears focus if the focused control was hidden, disabled or removed.</summary>
+    internal void ValidateFocus()
+    {
+        if (_focusedControl != null && !(_focusedControl.CanFocus && _focusedControl.GetWindow() == this))
+            SetFocus(null);
+    }
+
+    private void SetFocus(Control? control)
+    {
+        if (control == _focusedControl)
+            return;
+        var previous = _focusedControl;
+        _focusedControl = control;
+        previous?.RaiseLostFocus();
+        control?.RaiseGotFocus();
+        Invalidate();
+    }
+
+    /// <summary>Tab / Shift+Tab: next or previous focusable control in tree order, wrapping around.</summary>
+    private void MoveFocus(bool forward)
+    {
+        var candidates = new List<Control>();
+        _content?.CollectFocusable(candidates);
+        if (candidates.Count == 0)
+            return;
+
+        var index = _focusedControl == null ? -1 : candidates.IndexOf(_focusedControl);
+        var next = forward
+            ? (index + 1) % candidates.Count
+            : (index <= 0 ? candidates.Count : index) - 1;
+        SetFocus(candidates[next]);
+    }
+
+    private void HandleKeyDown(Key key, KeyModifiers modifiers)
+    {
+        var e = new KeyEventArgs(key, modifiers);
+        for (var control = _focusedControl; control != null && !e.Handled; control = control.Parent)
+            control.RaiseKeyDown(e);
+        if (!e.Handled)
+            OnKeyDown(e);
+        if (!e.Handled && key == Key.Tab && (modifiers & ~KeyModifiers.Shift) == KeyModifiers.None)
+            MoveFocus(forward: !modifiers.HasFlag(KeyModifiers.Shift));
+    }
+
+    private void HandleTextInput(string text)
+    {
+        var e = new TextInputEventArgs(text);
+        for (var control = _focusedControl; control != null && !e.Handled; control = control.Parent)
+            control.RaiseTextInput(e);
+    }
+
     private void Render(Framebuffer framebuffer)
     {
         var dc = new DrawingContext(framebuffer);
@@ -135,6 +227,17 @@ public class Window
         _pressedButtons |= 1 << (int)button;
         var target = EnabledHitTest(x, y, out var localX, out var localY);
         _pressedControls[(int)button] = target;
+
+        // Focus the nearest focusable control under the pointer; clicks elsewhere keep the focus.
+        for (var control = target; control != null; control = control.Parent)
+        {
+            if (control.CanFocus)
+            {
+                SetFocus(control);
+                break;
+            }
+        }
+
         target?.RaiseMouseDown(new MouseEventArgs(button, localX, localY));
     }
 

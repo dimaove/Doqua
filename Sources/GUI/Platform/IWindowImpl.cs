@@ -24,6 +24,15 @@ internal interface IWindowImpl
     /// <summary>Raised when the pointer leaves the client area.</summary>
     event Action? MouseLeave;
 
+    /// <summary>Raised when a key is pressed (also on auto-repeat) while the window is active.</summary>
+    event Action<Key, KeyModifiers>? KeyDown;
+
+    /// <summary>Raised with typed text (no control characters) after the matching <see cref="KeyDown"/>.</summary>
+    event Action<string>? TextInput;
+
+    /// <summary>Raised when the window gains (true) or loses (false) the keyboard focus of the OS.</summary>
+    event Action<bool>? ActiveChanged;
+
     /// <summary>
     /// Raised when the window needs to be drawn. The handler fills the framebuffer, which is
     /// already sized to the client area; the backend then copies it to the screen.

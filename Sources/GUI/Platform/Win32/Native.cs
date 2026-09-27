@@ -152,8 +152,12 @@ internal static unsafe partial class User32
 
     public const uint WM_DESTROY = 0x0002;
     public const uint WM_SIZE = 0x0005;
+    public const uint WM_SETFOCUS = 0x0007;
+    public const uint WM_KILLFOCUS = 0x0008;
     public const uint WM_PAINT = 0x000F;
     public const uint WM_ERASEBKGND = 0x0014;
+    public const uint WM_KEYDOWN = 0x0100;
+    public const uint WM_CHAR = 0x0102;
     public const uint WM_MOUSEMOVE = 0x0200;
     public const uint WM_LBUTTONDOWN = 0x0201;
     public const uint WM_LBUTTONUP = 0x0202;
@@ -164,6 +168,10 @@ internal static unsafe partial class User32
     public const uint WM_MOUSELEAVE = 0x02A3;
 
     public const uint TME_LEAVE = 0x00000002;
+
+    public const int VK_SHIFT = 0x10;
+    public const int VK_CONTROL = 0x11;
+    public const int VK_MENU = 0x12; // Alt
 
     // wParam flags of mouse messages: buttons that are still down.
     public const nint MK_LBUTTON = 0x0001;
@@ -213,6 +221,9 @@ internal static unsafe partial class User32
 
     [LibraryImport(Lib)]
     public static partial void PostQuitMessage(int exitCode);
+
+    [LibraryImport(Lib)]
+    public static partial short GetKeyState(int virtualKey);
 
     [LibraryImport(Lib)]
     public static partial int TrackMouseEvent(TRACKMOUSEEVENT* eventTrack);

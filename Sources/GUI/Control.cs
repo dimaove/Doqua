@@ -11,6 +11,7 @@ public abstract class Control
     private int _height;
     private bool _visible = true;
     private bool _enabled = true;
+    private bool _focusable;
 
     public string? Name { get; set; }
 
@@ -72,6 +73,7 @@ public abstract class Control
                 return;
             _visible = value;
             Invalidate();
+            GetWindow()?.ValidateFocus();
         }
     }
 
@@ -88,6 +90,21 @@ public abstract class Control
                 return;
             _enabled = value;
             Invalidate();
+            GetWindow()?.ValidateFocus();
+        }
+    }
+
+    /// <summary>True if this control and all its parents are visible.</summary>
+    public bool IsEffectivelyVisible
+    {
+        get
+        {
+            for (var control = this; control != null; control = control.Parent)
+            {
+                if (!control._visible)
+                    return false;
+            }
+            return true;
         }
     }
 
@@ -104,6 +121,25 @@ public abstract class Control
             return true;
         }
     }
+
+    /// <summary>Whether the control can receive keyboard focus (by click, Tab or <see cref="Focus"/>).</summary>
+    public bool Focusable
+    {
+        get => _focusable;
+        set
+        {
+            if (_focusable == value)
+                return;
+            _focusable = value;
+            GetWindow()?.ValidateFocus();
+        }
+    }
+
+    /// <summary>True if this control is its window's <see cref="Window.FocusedControl"/>.</summary>
+    public bool Focused => GetWindow()?.FocusedControl == this;
+
+    /// <summary>Focusable, visible and enabled (with all parents), and shown in a window.</summary>
+    public bool CanFocus => _focusable && IsEffectivelyVisible && IsEffectivelyEnabled && GetWindow() != null;
 
     /// <summary>True while the mouse pointer is over this control (and not over one of its children).</summary>
     public bool IsMouseOver { get; private set; }
@@ -122,6 +158,19 @@ public abstract class Control
 
     public event EventHandler? MouseEnter;
 
+    public event EventHandler? GotFocus;
+
+    public event EventHandler? LostFocus;
+
+    /// <summary>
+    /// Raised when a key is pressed while this control or one of its children is focused.
+    /// Goes from the focused control up through its parents until handled.
+    /// </summary>
+    public event EventHandler<KeyEventArgs>? KeyDown;
+
+    /// <summary>Raised with typed text; routed like <see cref="KeyDown"/>.</summary>
+    public event EventHandler<TextInputEventArgs>? TextInput;
+
     /// <summary>Raised after <see cref="MouseEnter"/> when the pointer leaves, even if the control was disabled meanwhile.</summary>
     public event EventHandler? MouseLeave;
 
@@ -130,6 +179,9 @@ public abstract class Control
 
     /// <summary>Children in drawing order: the last one is drawn on top and hit-tested first.</summary>
     protected virtual IReadOnlyList<Control> VisualChildren => Array.Empty<Control>();
+
+    /// <summary>Moves keyboard focus to this control. Returns false if it <see cref="CanFocus"/> not.</summary>
+    public bool Focus() => GetWindow()?.TrySetFocus(this) ?? false;
 
     /// <summary>Requests a redraw of the window that contains this control.</summary>
     public void Invalidate()
@@ -157,6 +209,42 @@ public abstract class Control
     protected virtual void OnMouseEnter(EventArgs e) => MouseEnter?.Invoke(this, e);
 
     protected virtual void OnMouseLeave(EventArgs e) => MouseLeave?.Invoke(this, e);
+
+    protected virtual void OnGotFocus(EventArgs e) => GotFocus?.Invoke(this, e);
+
+    protected virtual void OnLostFocus(EventArgs e) => LostFocus?.Invoke(this, e);
+
+    protected virtual void OnKeyDown(KeyEventArgs e) => KeyDown?.Invoke(this, e);
+
+    protected virtual void OnTextInput(TextInputEventArgs e) => TextInput?.Invoke(this, e);
+
+    internal void RaiseGotFocus() => OnGotFocus(EventArgs.Empty);
+
+    internal void RaiseLostFocus() => OnLostFocus(EventArgs.Empty);
+
+    internal void RaiseKeyDown(KeyEventArgs e) => OnKeyDown(e);
+
+    internal void RaiseTextInput(TextInputEventArgs e) => OnTextInput(e);
+
+    /// <summary>Window whose content tree contains this control, if any.</summary>
+    internal Window? GetWindow()
+    {
+        var root = this;
+        while (root.Parent != null)
+            root = root.Parent;
+        return root.Host;
+    }
+
+    /// <summary>Adds focusable controls of this subtree in tree (Tab) order, skipping hidden and disabled ones.</summary>
+    internal void CollectFocusable(List<Control> result)
+    {
+        if (!_visible || !_enabled)
+            return;
+        if (_focusable)
+            result.Add(this);
+        foreach (var child in VisualChildren)
+            child.CollectFocusable(result);
+    }
 
     internal void RaiseMouseDown(MouseEventArgs e) => OnMouseDown(e);
 

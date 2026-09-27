@@ -14,7 +14,7 @@ class MainWindow : Window
     {
         Title = "Doqua Simple";
         Width = 800;
-        Height = 600;
+        Height = 645;
 
         var captionFont = new Font("sans-serif", 20, FontStyle.Bold);
 
@@ -75,10 +75,36 @@ class MainWindow : Window
         _resetButton = new Button { X = 690, Y = 552, Width = 90, Height = 34, Text = "Reset", Enabled = false };
         _resetButton.Click += (sender, e) => SetStatus(InitialStatus, Color.Gray);
 
+        var nameLabel = new Label { X = 20, Y = 606, Text = "Your name:" };
+        var nameInput = new Input { X = 110, Y = 598, Width = 330, Height = 32 };
+        var greetButton = new Button { X = 450, Y = 598, Width = 110, Height = 32, Text = "Greet" };
+
+        void Greet() => SetStatus(
+            nameInput.Text.Length > 0 ? $"Hello, {nameInput.Text}!" : "Type your name first",
+            Color.Purple);
+
+        greetButton.Click += (sender, e) => Greet();
+        nameInput.KeyDown += (sender, e) =>
+        {
+            if (e.Key == Key.Enter)
+            {
+                Greet();
+                e.Handled = true;
+            }
+        };
+        nameInput.TextChanged += (sender, e) =>
+            Title = nameInput.Text.Length > 0 ? $"Doqua Simple – {nameInput.Text}" : "Doqua Simple";
+
+        // Children order is also the Tab order.
         Content = new Panel
         {
-            Children = { leftPanel, rightPanel, _status, hideButton, disableButton, _resetButton },
+            Children =
+            {
+                leftPanel, rightPanel, _status, hideButton, disableButton, _resetButton,
+                nameLabel, nameInput, greetButton,
+            },
         };
+        nameInput.Focus();
     }
 
     private void SetStatus(string text, Color color)

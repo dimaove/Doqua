@@ -24,14 +24,14 @@ public sealed class ControlCollection : Collection<Control>
         Attach(item);
         old.Parent = null;
         base.SetItem(index, item);
-        _owner.Invalidate();
+        OnRemoved();
     }
 
     protected override void RemoveItem(int index)
     {
         this[index].Parent = null;
         base.RemoveItem(index);
-        _owner.Invalidate();
+        OnRemoved();
     }
 
     protected override void ClearItems()
@@ -39,7 +39,13 @@ public sealed class ControlCollection : Collection<Control>
         foreach (var child in this)
             child.Parent = null;
         base.ClearItems();
+        OnRemoved();
+    }
+
+    private void OnRemoved()
+    {
         _owner.Invalidate();
+        _owner.GetWindow()?.ValidateFocus(); // The focused control may have been removed.
     }
 
     private void Attach(Control item)

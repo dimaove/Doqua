@@ -95,6 +95,17 @@ public sealed class DrawingContext
         }
     }
 
+    /// <summary>
+    /// Restricts drawing to <paramref name="rect"/> (in local coordinates) until the returned scope is disposed:
+    /// <c>using (dc.PushClip(rect)) { ... }</c>
+    /// </summary>
+    public ClipScope PushClip(Rect rect)
+    {
+        var saved = new State(_offsetX, _offsetY, _clip);
+        _clip = _clip.Intersect(rect.Offset(_offsetX, _offsetY));
+        return new ClipScope(this, saved);
+    }
+
     internal void Clear(Color color) => _target.Pixels.AsSpan().Fill(color.ToPixel());
 
     /// <summary>Moves the origin to <paramref name="bounds"/> and narrows the clip to it.</summary>
@@ -146,4 +157,18 @@ public sealed class DrawingContext
     }
 
     internal readonly record struct State(int OffsetX, int OffsetY, Rect Clip);
+
+    public readonly struct ClipScope : IDisposable
+    {
+        private readonly DrawingContext? _context;
+        private readonly State _saved;
+
+        internal ClipScope(DrawingContext context, State saved)
+        {
+            _context = context;
+            _saved = saved;
+        }
+
+        public void Dispose() => _context?.Restore(_saved);
+    }
 }

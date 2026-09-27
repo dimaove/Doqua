@@ -8,6 +8,7 @@ internal sealed unsafe class X11WindowImpl : IWindowImpl
 {
     private readonly X11Platform _platform;
     private readonly Framebuffer _framebuffer = new();
+    private readonly nint _inputContext;
     private bool _dirty = true;
     private int _width;
     private int _height;
@@ -18,6 +19,9 @@ internal sealed unsafe class X11WindowImpl : IWindowImpl
     public event Action<MouseButton, int, int>? MouseUp;
     public event Action<int, int>? MouseMove;
     public event Action? MouseLeave;
+    public event Action<Key, KeyModifiers>? KeyDown;
+    public event Action<string>? TextInput;
+    public event Action<bool>? ActiveChanged;
     public event Action<Framebuffer>? Paint;
 
     internal nuint Handle { get; private set; }
@@ -41,7 +45,17 @@ internal sealed unsafe class X11WindowImpl : IWindowImpl
 
         Xlib.XSelectInput(display, Handle,
             Xlib.ExposureMask | Xlib.StructureNotifyMask | Xlib.ButtonPressMask | Xlib.ButtonReleaseMask |
-            Xlib.PointerMotionMask | Xlib.LeaveWindowMask);
+            Xlib.PointerMotionMask | Xlib.LeaveWindowMask |
+            Xlib.KeyPressMask | Xlib.KeyReleaseMask | Xlib.FocusChangeMask);
+
+        if (platform.InputMethod != 0)
+        {
+            _inputContext = Xlib.XCreateIC(platform.InputMethod,
+                "inputStyle", Xlib.XIMPreeditNothing | Xlib.XIMStatusNothing,
+                "clientWindow", Handle,
+                "focusWindow", Handle,
+                0);
+        }
 
         // Ask the window manager to send WM_DELETE_WINDOW instead of killing the connection
         // when the user clicks the close button.
@@ -77,6 +91,8 @@ internal sealed unsafe class X11WindowImpl : IWindowImpl
         if (Handle == 0)
             return;
         _platform.Unregister(Handle);
+        if (_inputContext != 0)
+            Xlib.XDestroyIC(_inputContext);
         Xlib.XDestroyWindow(_platform.Display, Handle);
         Xlib.XFlush(_platform.Display);
         Handle = 0;
@@ -123,6 +139,30 @@ internal sealed unsafe class X11WindowImpl : IWindowImpl
                     MouseLeave?.Invoke();
                 break;
 
+            case Xlib.KeyPress:
+                HandleKeyPress(ev);
+                break;
+
+            // Focus moving because of a keyboard grab (e.g. a window manager shortcut) or into
+            // the window under the pointer is not a real activation change.
+            case Xlib.FocusIn:
+                if (ev.focusMode is not (Xlib.NotifyGrab or Xlib.NotifyUngrab) && ev.focusDetail != Xlib.NotifyPointer)
+                {
+                    if (_inputContext != 0)
+                        Xlib.XSetICFocus(_inputContext);
+                    ActiveChanged?.Invoke(true);
+                }
+                break;
+
+            case Xlib.FocusOut:
+                if (ev.focusMode is not (Xlib.NotifyGrab or Xlib.NotifyUngrab) && ev.focusDetail != Xlib.NotifyPointer)
+                {
+                    if (_inputContext != 0)
+                        Xlib.XUnsetICFocus(_inputContext);
+                    ActiveChanged?.Invoke(false);
+                }
+                break;
+
             case Xlib.ClientMessage:
                 if (ev.clientMessageType == _platform.WmProtocols && (nuint)ev.clientData0 == _platform.WmDeleteWindow)
                     Destroy();
@@ -164,6 +204,70 @@ internal sealed unsafe class X11WindowImpl : IWindowImpl
             Xlib.XPutImage(_platform.Display, Handle, _platform.Gc, &image, 0, 0, 0, 0, (uint)_width, (uint)_height);
         }
     }
+
+    private void HandleKeyPress(XEvent ev)
+    {
+        const int bufferSize = 64;
+        var buffer = stackalloc byte[bufferSize];
+        nuint keysym;
+        string text;
+        if (_inputContext != 0)
+        {
+            int status;
+            var length = Xlib.Xutf8LookupString(_inputContext, &ev, buffer, bufferSize, &keysym, &status);
+            text = status == Xlib.XBufferOverflow ? "" : Encoding.UTF8.GetString(buffer, length);
+        }
+        else
+        {
+            var length = Xlib.XLookupString(&ev, buffer, bufferSize, &keysym, 0);
+            text = Encoding.Latin1.GetString(buffer, length);
+        }
+
+        // Keys come from the first layout, so shortcuts like Ctrl+A work with any active layout.
+        var key = ToKey(Xlib.XkbKeycodeToKeysym(_platform.Display, ev.keycode, 0, 0));
+        if (key != Key.None)
+            KeyDown?.Invoke(key, ToModifiers(ev.keyState));
+
+        // Backspace, Tab, Enter, Esc and Ctrl+letter produce control characters: they are keys, not text.
+        if (text.Length > 0 && !text.Any(ch => ch < 0x20 || ch == 0x7F))
+            TextInput?.Invoke(text);
+    }
+
+    private static KeyModifiers ToModifiers(uint state)
+    {
+        var modifiers = KeyModifiers.None;
+        if ((state & Xlib.ShiftMask) != 0)
+            modifiers |= KeyModifiers.Shift;
+        if ((state & Xlib.ControlMask) != 0)
+            modifiers |= KeyModifiers.Control;
+        if ((state & Xlib.Mod1Mask) != 0)
+            modifiers |= KeyModifiers.Alt;
+        return modifiers;
+    }
+
+    private static Key ToKey(nuint keysym) => keysym switch
+    {
+        0xFF08 => Key.Backspace,
+        0xFF09 or 0xFE20 => Key.Tab, // Tab, ISO_Left_Tab (Shift+Tab)
+        0xFF0D or 0xFF8D => Key.Enter, // Return, KP_Enter
+        0xFF1B => Key.Escape,
+        0x0020 => Key.Space,
+        0xFF55 or 0xFF9A => Key.PageUp,
+        0xFF56 or 0xFF9B => Key.PageDown,
+        0xFF57 or 0xFF9C => Key.End,
+        0xFF50 or 0xFF95 => Key.Home,
+        0xFF51 or 0xFF96 => Key.Left,
+        0xFF52 or 0xFF97 => Key.Up,
+        0xFF53 or 0xFF98 => Key.Right,
+        0xFF54 or 0xFF99 => Key.Down,
+        0xFF63 or 0xFF9E => Key.Insert,
+        0xFFFF or 0xFF9F => Key.Delete,
+        >= 0x30 and <= 0x39 => Key.D0 + (int)(keysym - 0x30),
+        >= 0x61 and <= 0x7A => Key.A + (int)(keysym - 0x61),
+        >= 0x41 and <= 0x5A => Key.A + (int)(keysym - 0x41),
+        >= 0xFFBE and <= 0xFFC9 => Key.F1 + (int)(keysym - 0xFFBE),
+        _ => Key.None,
+    };
 
     // X11 buttons: 1 = left, 2 = middle, 3 = right, 4-7 = scroll wheel (not clicks).
     private static MouseButton? ToMouseButton(uint button) => button switch

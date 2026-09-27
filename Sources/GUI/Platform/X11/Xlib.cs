@@ -30,6 +30,14 @@ internal struct XEvent
     // XButtonEvent
     [FieldOffset(84)] public uint button;
 
+    // XKeyEvent (same layout as XButtonEvent)
+    [FieldOffset(80)] public uint keyState;
+    [FieldOffset(84)] public uint keycode;
+
+    // XFocusChangeEvent
+    [FieldOffset(40)] public int focusMode;
+    [FieldOffset(44)] public int focusDetail;
+
     // XCrossingEvent
     [FieldOffset(80)] public int crossingMode;
 }
@@ -61,22 +69,38 @@ internal static unsafe partial class Xlib
 {
     private const string Lib = "libX11.so.6";
 
+    public const int KeyPress = 2;
     public const int ButtonPress = 4;
     public const int ButtonRelease = 5;
     public const int MotionNotify = 6;
     public const int LeaveNotify = 8;
+    public const int FocusIn = 9;
+    public const int FocusOut = 10;
     public const int Expose = 12;
     public const int ConfigureNotify = 22;
     public const int ClientMessage = 33;
 
+    public const nint KeyPressMask = 1 << 0;
+    public const nint KeyReleaseMask = 1 << 1;
     public const nint ButtonPressMask = 1 << 2;
     public const nint ButtonReleaseMask = 1 << 3;
     public const nint LeaveWindowMask = 1 << 5;
     public const nint PointerMotionMask = 1 << 6;
     public const nint ExposureMask = 1 << 15;
+    public const nint FocusChangeMask = 1 << 21;
     public const nint StructureNotifyMask = 1 << 17;
 
     public const int NotifyGrab = 1;
+    public const int NotifyUngrab = 2;
+    public const int NotifyPointer = 5;
+
+    public const uint ShiftMask = 1 << 0;
+    public const uint ControlMask = 1 << 2;
+    public const uint Mod1Mask = 1 << 3; // Alt
+
+    public const nint XIMPreeditNothing = 0x0008;
+    public const nint XIMStatusNothing = 0x0400;
+    public const int XBufferOverflow = -1;
 
     public const int PropModeReplace = 0;
 
@@ -155,4 +179,51 @@ internal static unsafe partial class Xlib
 
     [LibraryImport(Lib)]
     public static partial int XFlush(nint display);
+
+    [LibraryImport(Lib)]
+    public static partial int XSupportsLocale();
+
+    [LibraryImport(Lib, StringMarshalling = StringMarshalling.Utf8)]
+    public static partial nint XSetLocaleModifiers(string modifiers);
+
+    [LibraryImport(Lib)]
+    public static partial nint XOpenIM(nint display, nint database, nint resourceName, nint resourceClass);
+
+    /// <summary>
+    /// XCreateIC is variadic (name/value pairs ending with NULL). This fixed signature matches the
+    /// SysV x86-64 and AArch64 Linux calling conventions for integer and pointer arguments.
+    /// </summary>
+    [LibraryImport(Lib, StringMarshalling = StringMarshalling.Utf8)]
+    public static partial nint XCreateIC(
+        nint im, string name1, nint value1, string name2, nuint value2, string name3, nuint value3, nint end);
+
+    [LibraryImport(Lib)]
+    public static partial void XDestroyIC(nint ic);
+
+    [LibraryImport(Lib)]
+    public static partial void XSetICFocus(nint ic);
+
+    [LibraryImport(Lib)]
+    public static partial void XUnsetICFocus(nint ic);
+
+    /// <summary>Lets the input method consume events (e.g. dead keys, IBus); true means skip the event.</summary>
+    [LibraryImport(Lib)]
+    public static partial int XFilterEvent(XEvent* ev, nuint window);
+
+    [LibraryImport(Lib)]
+    public static partial int Xutf8LookupString(nint ic, XEvent* ev, byte* buffer, int size, nuint* keysym, int* status);
+
+    [LibraryImport(Lib)]
+    public static partial int XLookupString(XEvent* ev, byte* buffer, int size, nuint* keysym, nint status);
+
+    [LibraryImport(Lib)]
+    public static partial nuint XkbKeycodeToKeysym(nint display, uint keycode, int group, int level);
+}
+
+internal static partial class LibC
+{
+    public const int LC_CTYPE = 0;
+
+    [LibraryImport("libc.so.6", StringMarshalling = StringMarshalling.Utf8)]
+    public static partial nint setlocale(int category, string locale);
 }
