@@ -207,6 +207,12 @@ public abstract class Control
     /// <summary>Window that shows this control as its <see cref="Window.Content"/> (set on the root only).</summary>
     internal Window? Host { get; set; }
 
+    /// <summary>
+    /// Whether Tab / Shift+Tab stops at this focusable control. A radio button returns false unless it
+    /// is the one that represents its group, so a whole group is a single Tab stop.
+    /// </summary>
+    protected virtual bool IsTabStop => true;
+
     /// <summary>Children in drawing order: the last one is drawn on top and hit-tested first.</summary>
     protected virtual IReadOnlyList<Control> VisualChildren => Array.Empty<Control>();
 
@@ -303,7 +309,7 @@ public abstract class Control
     {
         if (!_visible || !_enabled)
             return;
-        if (_focusable)
+        if (_focusable && IsTabStop)
             result.Add(this);
         foreach (var child in VisualChildren)
             child.CollectFocusable(result);

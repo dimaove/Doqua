@@ -3,6 +3,14 @@ using Doqua.GUI;
 
 namespace TabsExample;
 
+enum PreviewSize
+{
+    Small,
+    Medium,
+    Large,
+    Huge,
+}
+
 class MainWindow : Window
 {
     private readonly TabControl _tabs;
@@ -47,14 +55,43 @@ class MainWindow : Window
         var disabledChecked = new CheckBox("Disabled and checked") { Anchor = new Anchor(Left: 16, Top: 72), Checked = true, Enabled = false };
         var disabledUnchecked = new CheckBox("Disabled") { Anchor = new Anchor(Left: 16, Top: 100), Enabled = false };
 
+        // Two independent radio groups; each group holds its value, the buttons only show it.
+        var previewSize = new RadioGroup<PreviewSize>();
+        var previewColor = new RadioGroup<Color>();
+        var preview = new Rectangle { Anchor = new Anchor(Left: 300, Top: 150), Height = 40, Color = Color.LightGray };
+        var summary = new Label { Anchor = new Anchor(Left: 300, Top: 200) };
+        void UpdatePreview()
+        {
+            preview.Width = previewSize.Value switch { PreviewSize.Small => 40, PreviewSize.Medium => 90, _ => 150 };
+            preview.Color = previewColor.HasValue ? previewColor.Value : Color.LightGray;
+            summary.Text = $"Size: {previewSize.Value}, color: {(previewColor.HasValue ? previewColor.Value.ToString() : "none")}";
+        }
+        previewSize.ValueChanged += (sender, e) => UpdatePreview();
+        previewColor.ValueChanged += (sender, e) => UpdatePreview();
+
         var settings = new TabPage("Settings")
         {
             Children =
             {
                 showStatus, lockedEnabled, disabledChecked, disabledUnchecked,
                 new Button { Anchor = new Anchor(Left: 16, Top: 136), Width = 140, Text = "Apply settings" },
+
+                new Label { Anchor = new Anchor(Left: 300, Top: 16), Text = "Preview size:" },
+                new RadioButton<PreviewSize>(previewSize, PreviewSize.Small, "Small") { Anchor = new Anchor(Left: 300, Top: 40) },
+                new RadioButton<PreviewSize>(previewSize, PreviewSize.Medium, "Medium") { Anchor = new Anchor(Left: 300, Top: 62) },
+                new RadioButton<PreviewSize>(previewSize, PreviewSize.Large, "Large") { Anchor = new Anchor(Left: 300, Top: 84) },
+                new RadioButton<PreviewSize>(previewSize, PreviewSize.Huge, "Huge (disabled)") { Anchor = new Anchor(Left: 300, Top: 106), Enabled = false },
+
+                new Label { Anchor = new Anchor(Left: 450, Top: 16), Text = "Preview color:" },
+                new RadioButton<Color>(previewColor, Color.Red, "Red") { Anchor = new Anchor(Left: 450, Top: 40) },
+                new RadioButton<Color>(previewColor, Color.Green, "Green") { Anchor = new Anchor(Left: 450, Top: 62) },
+                new RadioButton<Color>(previewColor, Color.Blue, "Blue") { Anchor = new Anchor(Left: 450, Top: 84) },
+
+                preview, summary,
             },
         };
+        previewSize.Value = PreviewSize.Medium; // From code: checks the "Medium" button.
+        UpdatePreview();
 
         _tabs = new TabControl
         {
