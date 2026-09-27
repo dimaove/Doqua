@@ -27,6 +27,8 @@ public class Window
     private Control? _lastPressControl;
     private int _clickCount;
     private Control? _focusedControl;
+    private Control? _popup; // Shown above the content and receives input first (a PopupMenu).
+    private Action? _popupClosed;
 
     public Window()
     {
@@ -42,6 +44,8 @@ public class Window
         _impl.TextInput += HandleTextInput;
         _impl.ActiveChanged += active =>
         {
+            if (!active)
+                ClosePopup(); // Like native menus, a popup does not survive switching to another window.
             IsActive = active;
             Invalidate(); // Focus visuals such as the caret depend on it.
         };
@@ -183,6 +187,48 @@ public class Window
 
     protected virtual void OnKeyDown(KeyEventArgs e) => KeyDown?.Invoke(this, e);
 
+    /// <summary>
+    /// Shows <paramref name="popup"/> (positioned in client coordinates) above the content, closing any
+    /// open popup first. While it is open it gets all mouse and keyboard input; a press outside it
+    /// closes it. <paramref name="closed"/> runs whenever it closes, for any reason.
+    /// </summary>
+    internal void OpenPopup(Control popup, Action closed)
+    {
+        ClosePopup();
+        _popup = popup;
+        _popupClosed = closed;
+        popup.Host = this;
+        SetHoveredControl(null);
+        Invalidate();
+    }
+
+    internal void ClosePopup()
+    {
+        if (_popup == null)
+            return;
+        var closed = _popupClosed;
+        _popup.Host = null;
+        (_popup, _popupClosed) = (null, null);
+        Array.Clear(_pressedControls);
+        SetHoveredControl(null);
+        Invalidate();
+        closed?.Invoke();
+    }
+
+    /// <summary>Opens the context menu of <paramref name="target"/> or its nearest ancestor that has one.</summary>
+    private void OpenContextMenu(Control target, int windowX, int windowY)
+    {
+        for (var control = target; control != null; control = control.Parent)
+        {
+            if (control.GetContextMenuForWindow() is { } menu)
+            {
+                var (x, y) = control.PointFromWindow(windowX, windowY);
+                menu.Show(control, x, y);
+                return;
+            }
+        }
+    }
+
     internal bool TrySetFocus(Control control)
     {
         if (!control.CanFocus || control.GetWindow() != this)
@@ -227,16 +273,30 @@ public class Window
     private void HandleKeyDown(Key key, KeyModifiers modifiers)
     {
         var e = new KeyEventArgs(key, modifiers);
+        if (_popup != null)
+        {
+            _popup.RaiseKeyDown(e); // An open popup takes every key.
+            return;
+        }
         for (var control = _focusedControl; control != null && !e.Handled; control = control.Parent)
             control.RaiseKeyDown(e);
         if (!e.Handled)
             OnKeyDown(e);
         if (!e.Handled && key == Key.Tab && (modifiers & ~KeyModifiers.Shift) == KeyModifiers.None)
             MoveFocus(forward: !modifiers.HasFlag(KeyModifiers.Shift));
+
+        // Shift+F10: the keyboard way to open the focused control's context menu.
+        if (!e.Handled && key == Key.F10 && modifiers == KeyModifiers.Shift && _focusedControl is { } focused)
+        {
+            var (x, y) = focused.PointToWindow(0, focused.Height);
+            OpenContextMenu(focused, x, y);
+        }
     }
 
     private void HandleTextInput(string text)
     {
+        if (_popup != null)
+            return;
         var e = new TextInputEventArgs(text);
         for (var control = _focusedControl; control != null && !e.Handled; control = control.Parent)
             control.RaiseTextInput(e);
@@ -247,12 +307,18 @@ public class Window
         var dc = new DrawingContext(framebuffer);
         dc.Clear(_background);
         _content?.Render(dc);
+        _popup?.Render(dc);
     }
 
     private void HandleMouseDown(MouseButton button, int x, int y, KeyModifiers modifiers)
     {
         _pressedButtons |= 1 << (int)button;
         var target = EnabledHitTest(x, y, out var localX, out var localY);
+        if (_popup != null && target == null)
+        {
+            ClosePopup(); // A press outside an open popup closes it and is not passed on.
+            return;
+        }
         _pressedControls[(int)button] = target;
         var clickCount = CountClicks(button, x, y, target);
 
@@ -310,7 +376,11 @@ public class Window
         {
             var target = EnabledHitTest(x, y, out var localX, out var localY);
             if (target == pressedControl)
+            {
                 target.RaiseMouseClick(new MouseEventArgs(button, localX, localY, modifiers));
+                if (button == MouseButton.Right && target != _popup)
+                    OpenContextMenu(target, x, y);
+            }
         }
 
         OnMouseClick(new MouseEventArgs(button, x, y, modifiers));
@@ -344,7 +414,10 @@ public class Window
     private Control? HitTest(int x, int y, out int localX, out int localY)
     {
         (localX, localY) = (x, y);
-        return IsInClientArea(x, y) ? _content?.HitTest(x, y, out localX, out localY) : null;
+        if (!IsInClientArea(x, y))
+            return null;
+        // While a popup is open only the popup can be hit: the content does not get mouse input.
+        return _popup != null ? _popup.HitTest(x, y, out localX, out localY) : _content?.HitTest(x, y, out localX, out localY);
     }
 
     /// <summary>
@@ -370,6 +443,8 @@ public class Window
 
     private void UpdateSize(int width, int height)
     {
+        if (width != _width || height != _height)
+            ClosePopup();
         _width = width;
         _height = height;
         if (_content != null)

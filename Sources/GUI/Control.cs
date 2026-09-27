@@ -1,3 +1,5 @@
+using Doqua.Controls;
+
 namespace Doqua.GUI;
 
 /// <summary>
@@ -208,6 +210,12 @@ public abstract class Control
     internal Window? Host { get; set; }
 
     /// <summary>
+    /// Menu opened by a right click on this control (or on a child without its own menu) and by
+    /// Shift+F10 while the control has focus. See <see cref="GetContextMenu"/>.
+    /// </summary>
+    public PopupMenu? ContextMenu { get; set; }
+
+    /// <summary>
     /// Whether Tab / Shift+Tab stops at this focusable control. A radio button returns false unless it
     /// is the one that represents its group, so a whole group is a single Tab stop.
     /// </summary>
@@ -256,6 +264,12 @@ public abstract class Control
             child.ApplyAnchor();
         SizeChanged?.Invoke(this, e);
     }
+
+    /// <summary>
+    /// Returns the menu to open as the context menu; <see cref="ContextMenu"/> by default. Override it to
+    /// supply a different menu, e.g. one with the control's own commands followed by the user's items.
+    /// </summary>
+    protected virtual PopupMenu? GetContextMenu() => ContextMenu;
 
     protected virtual void OnVisibleChanged(EventArgs e) => VisibleChanged?.Invoke(this, e);
 
@@ -332,6 +346,19 @@ public abstract class Control
             OnMouseEnter(EventArgs.Empty);
         else
             OnMouseLeave(EventArgs.Empty);
+    }
+
+    internal PopupMenu? GetContextMenuForWindow() => GetContextMenu();
+
+    /// <summary>Converts a point in this control's coordinates to window client coordinates.</summary>
+    internal (int X, int Y) PointToWindow(int x, int y)
+    {
+        for (var control = this; control != null; control = control.Parent)
+        {
+            x += control._x;
+            y += control._y;
+        }
+        return (x, y);
     }
 
     /// <summary>Converts a point in window client coordinates to this control's coordinates.</summary>

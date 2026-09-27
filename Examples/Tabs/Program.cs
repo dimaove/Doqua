@@ -24,25 +24,61 @@ class MainWindow : Window
         Height = 480;
         Background = new Color(212, 208, 200);
 
+        // The input's own Cut / Copy / Paste / Select all come first, then these items.
+        var nameInput = new Input { Anchor = new Anchor(Left: 80, Top: 14, Right: 16), Height = 28 };
+        var clearItem = new MenuItem("Clear");
+        clearItem.Click += (sender, e) => nameInput.Text = "";
+        var timeItem = new MenuItem("Insert time");
+        timeItem.Click += (sender, e) => nameInput.Text += DateTime.Now.ToString("HH:mm:ss");
+        nameInput.ContextMenu = new PopupMenu { Items = { clearItem, timeItem } };
+        nameInput.ContextMenu.Closed += (sender, e) =>
+            ShowMessage(e.SelectedItem is { } item ? $"Name menu: {item.Text}" : "Name menu closed without a selection");
+
         var general = new TabPage("General")
         {
             Children =
             {
                 new Label { Anchor = new Anchor(Left: 16, Top: 20), Text = "Name:" },
-                new Input { Anchor = new Anchor(Left: 80, Top: 14, Right: 16), Height = 28 },
+                nameInput,
                 new Label
                 {
                     Anchor = new Anchor(Left: 16, Top: 60),
-                    Text = "Each tab is a TabPage: a Panel with a title.\nOnly the selected page is shown; it fills the area below the tabs.",
+                    Text = "Each tab is a TabPage: a Panel with a title.\nOnly the selected page is shown; it fills the area below the tabs.\n\n"
+                        + "Right-click the name field: its Cut / Copy / Paste are merged with the application's items.\n"
+                        + "On the Shapes page, right-click a rectangle to change its color.",
                 },
             },
+        };
+        // One menu shared by both rectangles: Owner tells which one was right-clicked.
+        var colorMenu = new PopupMenu
+        {
+            Items =
+            {
+                new MenuItem("Red") { Tag = Color.Red },
+                new MenuItem("Green") { Tag = Color.Green },
+                new MenuItem("Blue") { Tag = Color.Blue },
+                MenuItem.Separator(),
+                new MenuItem("Transparent (not available)") { Enabled = false },
+            },
+        };
+        colorMenu.Closed += (sender, e) =>
+        {
+            if (e.SelectedItem is { Tag: Color color } && colorMenu.Owner is Rectangle rectangle)
+            {
+                rectangle.Color = color;
+                ShowMessage($"Rectangle color: {e.SelectedItem.Text}");
+            }
+            else
+            {
+                ShowMessage("Color menu closed without a selection");
+            }
         };
         var shapes = new TabPage("Shapes")
         {
             Children =
             {
-                new Rectangle { Anchor = new Anchor(Left: 16, Top: 16), Width = 160, Height = 110, Color = Color.Red },
-                new Rectangle { Anchor = new Anchor(Right: 16, Bottom: 16), Width = 160, Height = 110, Color = Color.Blue },
+                new Rectangle { Anchor = new Anchor(Left: 16, Top: 16), Width = 160, Height = 110, Color = Color.Red, ContextMenu = colorMenu },
+                new Rectangle { Anchor = new Anchor(Right: 16, Bottom: 16), Width = 160, Height = 110, Color = Color.Blue, ContextMenu = colorMenu },
             },
         };
         var locked = new TabPage("Locked") { Enabled = false }; // Disabled from the start: grey tab.
@@ -137,6 +173,8 @@ class MainWindow : Window
         Content = root;
         UpdateStatus();
     }
+
+    private void ShowMessage(string text) => _status.Text = text;
 
     private void UpdateStatus() =>
         _status.Text = _tabs.SelectedPage is { } page
