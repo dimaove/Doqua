@@ -37,11 +37,24 @@ class MainWindow : Window
                 new Rectangle { Anchor = new Anchor(Right: 16, Bottom: 16), Width = 160, Height = 110, Color = Color.Blue },
             },
         };
+        var locked = new TabPage("Locked") { Enabled = false }; // Disabled from the start: grey tab.
+
+        // Check boxes: one drives the status line, one mirrors the Locked page, one shows the disabled look.
+        var showStatus = new CheckBox("Show the status line") { Anchor = new Anchor(Left: 16, Top: 16), Checked = true };
+        var lockedEnabled = new CheckBox("Enable the \"Locked\" page") { Anchor = new Anchor(Left: 16, Top: 44) };
+        lockedEnabled.CheckedChanged += (sender, e) => locked.Enabled = lockedEnabled.Checked;
+        locked.EnabledChanged += (sender, e) => lockedEnabled.Checked = locked.Enabled;
+        var disabledChecked = new CheckBox("Disabled and checked") { Anchor = new Anchor(Left: 16, Top: 72), Checked = true, Enabled = false };
+        var disabledUnchecked = new CheckBox("Disabled") { Anchor = new Anchor(Left: 16, Top: 100), Enabled = false };
+
         var settings = new TabPage("Settings")
         {
-            Children = { new Button { Anchor = new Anchor(Left: 16, Top: 16), Width = 140, Text = "Apply settings" } },
+            Children =
+            {
+                showStatus, lockedEnabled, disabledChecked, disabledUnchecked,
+                new Button { Anchor = new Anchor(Left: 16, Top: 136), Width = 140, Text = "Apply settings" },
+            },
         };
-        var locked = new TabPage("Locked") { Enabled = false }; // Disabled from the start: grey tab.
 
         _tabs = new TabControl
         {
@@ -51,6 +64,7 @@ class MainWindow : Window
         _tabs.SelectedPageChanged += (sender, e) => UpdateStatus();
 
         _status = new Label { Anchor = new Anchor(Left: 12, Bottom: 58) };
+        showStatus.CheckedChanged += (sender, e) => _status.Visible = showStatus.Checked;
 
         // One button per page toggles its Enabled; the last one toggles all pages.
         var buttons = new List<Control>();
