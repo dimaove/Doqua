@@ -14,11 +14,14 @@ internal sealed unsafe class Win32WindowImpl : IWindowImpl
 
     private readonly Framebuffer _framebuffer = new();
     private nint _hwnd;
+    private bool _trackingMouseLeave;
 
     public event Action? Closed;
     public event Action<int, int>? Resized;
     public event Action<MouseButton, int, int>? MouseDown;
     public event Action<MouseButton, int, int>? MouseUp;
+    public event Action<int, int>? MouseMove;
+    public event Action? MouseLeave;
     public event Action<Framebuffer>? Paint;
 
     public Win32WindowImpl(int width, int height)
@@ -83,6 +86,15 @@ internal sealed unsafe class Win32WindowImpl : IWindowImpl
                 Resized?.Invoke((int)(lParam & 0xFFFF), (int)((lParam >> 16) & 0xFFFF));
                 return 0;
 
+            case User32.WM_MOUSEMOVE:
+                OnMouseMove(lParam);
+                return 0;
+
+            case User32.WM_MOUSELEAVE:
+                _trackingMouseLeave = false;
+                MouseLeave?.Invoke();
+                return 0;
+
             case User32.WM_LBUTTONDOWN:
                 OnButtonDown(MouseButton.Left, lParam);
                 return 0;
@@ -143,6 +155,22 @@ internal sealed unsafe class Win32WindowImpl : IWindowImpl
         }
 
         User32.EndPaint(_hwnd, &ps);
+    }
+
+    private void OnMouseMove(nint lParam)
+    {
+        // WM_MOUSELEAVE is sent only once per TrackMouseEvent call, so re-arm it after each leave.
+        if (!_trackingMouseLeave)
+        {
+            var track = new TRACKMOUSEEVENT
+            {
+                cbSize = (uint)sizeof(TRACKMOUSEEVENT),
+                dwFlags = User32.TME_LEAVE,
+                hwndTrack = _hwnd,
+            };
+            _trackingMouseLeave = User32.TrackMouseEvent(&track) != 0;
+        }
+        MouseMove?.Invoke(GetX(lParam), GetY(lParam));
     }
 
     private void OnButtonDown(MouseButton button, nint lParam)

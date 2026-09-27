@@ -16,6 +16,8 @@ internal sealed unsafe class X11WindowImpl : IWindowImpl
     public event Action<int, int>? Resized;
     public event Action<MouseButton, int, int>? MouseDown;
     public event Action<MouseButton, int, int>? MouseUp;
+    public event Action<int, int>? MouseMove;
+    public event Action? MouseLeave;
     public event Action<Framebuffer>? Paint;
 
     internal nuint Handle { get; private set; }
@@ -38,7 +40,8 @@ internal sealed unsafe class X11WindowImpl : IWindowImpl
         Xlib.XSetWindowBackgroundPixmap(display, Handle, 0);
 
         Xlib.XSelectInput(display, Handle,
-            Xlib.ExposureMask | Xlib.StructureNotifyMask | Xlib.ButtonPressMask | Xlib.ButtonReleaseMask);
+            Xlib.ExposureMask | Xlib.StructureNotifyMask | Xlib.ButtonPressMask | Xlib.ButtonReleaseMask |
+            Xlib.PointerMotionMask | Xlib.LeaveWindowMask);
 
         // Ask the window manager to send WM_DELETE_WINDOW instead of killing the connection
         // when the user clicks the close button.
@@ -101,12 +104,23 @@ internal sealed unsafe class X11WindowImpl : IWindowImpl
             // The X server grabs the pointer on press, so the release comes here even outside the window.
             case Xlib.ButtonPress:
                 if (ToMouseButton(ev.button) is { } pressed)
-                    MouseDown?.Invoke(pressed, ev.buttonX, ev.buttonY);
+                    MouseDown?.Invoke(pressed, ev.pointerX, ev.pointerY);
                 break;
 
             case Xlib.ButtonRelease:
                 if (ToMouseButton(ev.button) is { } released)
-                    MouseUp?.Invoke(released, ev.buttonX, ev.buttonY);
+                    MouseUp?.Invoke(released, ev.pointerX, ev.pointerY);
+                break;
+
+            case Xlib.MotionNotify:
+                MouseMove?.Invoke(ev.pointerX, ev.pointerY);
+                break;
+
+            // Leaving because another client grabbed the pointer (e.g. a window manager
+            // shortcut) is not a real leave; motion events will resume afterwards.
+            case Xlib.LeaveNotify:
+                if (ev.crossingMode != Xlib.NotifyGrab)
+                    MouseLeave?.Invoke();
                 break;
 
             case Xlib.ClientMessage:

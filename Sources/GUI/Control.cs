@@ -9,7 +9,8 @@ public abstract class Control
     private int _y;
     private int _width;
     private int _height;
-    private bool _isVisible = true;
+    private bool _visible = true;
+    private bool _enabled = true;
 
     public string? Name { get; set; }
 
@@ -61,20 +62,68 @@ public abstract class Control
         }
     }
 
-    public bool IsVisible
+    /// <summary>When false, the control and its children are not drawn and ignore the mouse.</summary>
+    public bool Visible
     {
-        get => _isVisible;
+        get => _visible;
         set
         {
-            if (_isVisible == value)
+            if (_visible == value)
                 return;
-            _isVisible = value;
+            _visible = value;
             Invalidate();
         }
     }
 
+    /// <summary>
+    /// When false, the control and its children are still drawn (usually in disabled colors) but
+    /// get no mouse events. They still cover controls below them, so clicks do not pass through.
+    /// </summary>
+    public bool Enabled
+    {
+        get => _enabled;
+        set
+        {
+            if (_enabled == value)
+                return;
+            _enabled = value;
+            Invalidate();
+        }
+    }
+
+    /// <summary>True if this control and all its parents are enabled.</summary>
+    public bool IsEffectivelyEnabled
+    {
+        get
+        {
+            for (var control = this; control != null; control = control.Parent)
+            {
+                if (!control._enabled)
+                    return false;
+            }
+            return true;
+        }
+    }
+
+    /// <summary>True while the mouse pointer is over this control (and not over one of its children).</summary>
+    public bool IsMouseOver { get; private set; }
+
+    /// <summary>Raised when a mouse button is pressed over this control.</summary>
+    public event EventHandler<MouseEventArgs>? MouseDown;
+
+    /// <summary>
+    /// Raised when a mouse button pressed over this control is released, even if the pointer
+    /// has moved away or the control was disabled meanwhile: every MouseDown gets its MouseUp.
+    /// </summary>
+    public event EventHandler<MouseEventArgs>? MouseUp;
+
     /// <summary>Raised when a mouse button is pressed and released over this control.</summary>
     public event EventHandler<MouseEventArgs>? MouseClick;
+
+    public event EventHandler? MouseEnter;
+
+    /// <summary>Raised after <see cref="MouseEnter"/> when the pointer leaves, even if the control was disabled meanwhile.</summary>
+    public event EventHandler? MouseLeave;
 
     /// <summary>Window that shows this control as its <see cref="Window.Content"/> (set on the root only).</summary>
     internal Window? Host { get; set; }
@@ -99,13 +148,47 @@ public abstract class Control
     {
     }
 
+    protected virtual void OnMouseDown(MouseEventArgs e) => MouseDown?.Invoke(this, e);
+
+    protected virtual void OnMouseUp(MouseEventArgs e) => MouseUp?.Invoke(this, e);
+
     protected virtual void OnMouseClick(MouseEventArgs e) => MouseClick?.Invoke(this, e);
+
+    protected virtual void OnMouseEnter(EventArgs e) => MouseEnter?.Invoke(this, e);
+
+    protected virtual void OnMouseLeave(EventArgs e) => MouseLeave?.Invoke(this, e);
+
+    internal void RaiseMouseDown(MouseEventArgs e) => OnMouseDown(e);
+
+    internal void RaiseMouseUp(MouseEventArgs e) => OnMouseUp(e);
 
     internal void RaiseMouseClick(MouseEventArgs e) => OnMouseClick(e);
 
+    internal void SetMouseOver(bool value)
+    {
+        if (IsMouseOver == value)
+            return;
+        IsMouseOver = value;
+        if (value)
+            OnMouseEnter(EventArgs.Empty);
+        else
+            OnMouseLeave(EventArgs.Empty);
+    }
+
+    /// <summary>Converts a point in window client coordinates to this control's coordinates.</summary>
+    internal (int X, int Y) PointFromWindow(int x, int y)
+    {
+        for (var control = this; control != null; control = control.Parent)
+        {
+            x -= control._x;
+            y -= control._y;
+        }
+        return (x, y);
+    }
+
     internal void Render(DrawingContext dc)
     {
-        if (!_isVisible)
+        if (!_visible)
             return;
         var saved = dc.PushBounds(Bounds);
         if (!dc.IsClipEmpty)
@@ -118,14 +201,14 @@ public abstract class Control
     }
 
     /// <summary>
-    /// Finds the topmost visible control at (<paramref name="x"/>, <paramref name="y"/>), given in the
+    /// Finds the topmost visible control (enabled or not) at (<paramref name="x"/>, <paramref name="y"/>), given in the
     /// parent's coordinates, and returns the point in that control's coordinates.
     /// </summary>
     internal Control? HitTest(int x, int y, out int localX, out int localY)
     {
         localX = x - _x;
         localY = y - _y;
-        if (!_isVisible || localX < 0 || localY < 0 || localX >= _width || localY >= _height)
+        if (!_visible || localX < 0 || localY < 0 || localX >= _width || localY >= _height)
             return null;
 
         var children = VisualChildren;

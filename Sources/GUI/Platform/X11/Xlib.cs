@@ -23,10 +23,15 @@ internal struct XEvent
     [FieldOffset(48)] public int clientFormat;
     [FieldOffset(56)] public nint clientData0;
 
+    // XButtonEvent, XMotionEvent and XCrossingEvent share the pointer position.
+    [FieldOffset(64)] public int pointerX;
+    [FieldOffset(68)] public int pointerY;
+
     // XButtonEvent
-    [FieldOffset(64)] public int buttonX;
-    [FieldOffset(68)] public int buttonY;
     [FieldOffset(84)] public uint button;
+
+    // XCrossingEvent
+    [FieldOffset(80)] public int crossingMode;
 }
 
 /// <summary>Xlib XImage describing client-side pixels; initialized with XInitImage.</summary>
@@ -58,14 +63,20 @@ internal static unsafe partial class Xlib
 
     public const int ButtonPress = 4;
     public const int ButtonRelease = 5;
+    public const int MotionNotify = 6;
+    public const int LeaveNotify = 8;
     public const int Expose = 12;
     public const int ConfigureNotify = 22;
     public const int ClientMessage = 33;
 
     public const nint ButtonPressMask = 1 << 2;
     public const nint ButtonReleaseMask = 1 << 3;
+    public const nint LeaveWindowMask = 1 << 5;
+    public const nint PointerMotionMask = 1 << 6;
     public const nint ExposureMask = 1 << 15;
     public const nint StructureNotifyMask = 1 << 17;
+
+    public const int NotifyGrab = 1;
 
     public const int PropModeReplace = 0;
 

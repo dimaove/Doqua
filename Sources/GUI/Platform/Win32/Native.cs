@@ -125,6 +125,15 @@ internal struct MAT2
     public FIXED eM22;
 }
 
+[StructLayout(LayoutKind.Sequential)]
+internal struct TRACKMOUSEEVENT
+{
+    public uint cbSize;
+    public uint dwFlags;
+    public nint hwndTrack;
+    public uint dwHoverTime;
+}
+
 // BOOL results are returned as int to avoid bool marshalling.
 internal static unsafe partial class User32
 {
@@ -145,12 +154,16 @@ internal static unsafe partial class User32
     public const uint WM_SIZE = 0x0005;
     public const uint WM_PAINT = 0x000F;
     public const uint WM_ERASEBKGND = 0x0014;
+    public const uint WM_MOUSEMOVE = 0x0200;
     public const uint WM_LBUTTONDOWN = 0x0201;
     public const uint WM_LBUTTONUP = 0x0202;
     public const uint WM_RBUTTONDOWN = 0x0204;
     public const uint WM_RBUTTONUP = 0x0205;
     public const uint WM_MBUTTONDOWN = 0x0207;
     public const uint WM_MBUTTONUP = 0x0208;
+    public const uint WM_MOUSELEAVE = 0x02A3;
+
+    public const uint TME_LEAVE = 0x00000002;
 
     // wParam flags of mouse messages: buttons that are still down.
     public const nint MK_LBUTTON = 0x0001;
@@ -200,6 +213,9 @@ internal static unsafe partial class User32
 
     [LibraryImport(Lib)]
     public static partial void PostQuitMessage(int exitCode);
+
+    [LibraryImport(Lib)]
+    public static partial int TrackMouseEvent(TRACKMOUSEEVENT* eventTrack);
 
     [LibraryImport(Lib)]
     public static partial nint SetCapture(nint hwnd);

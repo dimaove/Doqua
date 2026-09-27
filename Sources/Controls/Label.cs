@@ -8,6 +8,7 @@ public class Label : Control
     private string _text = "";
     private Font? _font;
     private Color _color = Color.Black;
+    private Color _disabledColor = new(160, 160, 160);
     private bool _autoSize = true;
 
     public string Text
@@ -47,6 +48,17 @@ public class Label : Control
         }
     }
 
+    /// <summary>Text color used when the label is not <see cref="Control.IsEffectivelyEnabled"/>.</summary>
+    public Color DisabledColor
+    {
+        get => _disabledColor;
+        set
+        {
+            _disabledColor = value;
+            Invalidate();
+        }
+    }
+
     /// <summary>When true (default), Width and Height follow the size of the text.</summary>
     public bool AutoSize
     {
@@ -60,7 +72,8 @@ public class Label : Control
         }
     }
 
-    protected override void OnRender(DrawingContext dc) => dc.DrawText(_text, Font, _color, 0, 0);
+    protected override void OnRender(DrawingContext dc) =>
+        dc.DrawText(_text, Font, IsEffectivelyEnabled ? _color : _disabledColor, 0, 0);
 
     private void UpdateSize()
     {

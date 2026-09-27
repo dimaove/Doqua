@@ -18,6 +18,12 @@ internal interface IWindowImpl
     /// </summary>
     event Action<MouseButton, int, int>? MouseUp;
 
+    /// <summary>Raised when the pointer moves over the client area (or anywhere, while a button is held).</summary>
+    event Action<int, int>? MouseMove;
+
+    /// <summary>Raised when the pointer leaves the client area.</summary>
+    event Action? MouseLeave;
+
     /// <summary>
     /// Raised when the window needs to be drawn. The handler fills the framebuffer, which is
     /// already sized to the client area; the backend then copies it to the screen.

@@ -34,6 +34,14 @@ public readonly record struct Color(byte R, byte G, byte B, byte A = 255)
     /// <summary>Creates an opaque color from 0xRRGGBB.</summary>
     public static Color FromRgb(uint rgb) => new((byte)(rgb >> 16), (byte)(rgb >> 8), (byte)rgb);
 
+    /// <summary>Mixes two colors: <paramref name="amount"/> 0 gives <paramref name="from"/>, 1 gives <paramref name="to"/>.</summary>
+    public static Color Lerp(Color from, Color to, float amount)
+    {
+        amount = Math.Clamp(amount, 0f, 1f);
+        static byte Mix(byte a, byte b, float t) => (byte)MathF.Round(a + (b - a) * t);
+        return new Color(Mix(from.R, to.R, amount), Mix(from.G, to.G, amount), Mix(from.B, to.B, amount), Mix(from.A, to.A, amount));
+    }
+
     /// <summary>Framebuffer pixel value, 0x00RRGGBB.</summary>
     internal uint ToPixel() => (uint)(R << 16 | G << 8 | B);
 

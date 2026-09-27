@@ -16,6 +16,7 @@ public class Window
     private Control? _content;
     private int _pressedButtons; // Bit mask of MouseButton values pressed inside the client area.
     private readonly Control?[] _pressedControls = new Control?[3]; // Indexed by MouseButton.
+    private Control? _hoveredControl;
 
     public Window()
     {
@@ -25,6 +26,8 @@ public class Window
         _impl.Paint += Render;
         _impl.MouseDown += HandleMouseDown;
         _impl.MouseUp += HandleMouseUp;
+        _impl.MouseMove += HandleMouseMove;
+        _impl.MouseLeave += () => SetHoveredControl(null);
     }
 
     public string Title
@@ -130,7 +133,9 @@ public class Window
     private void HandleMouseDown(MouseButton button, int x, int y)
     {
         _pressedButtons |= 1 << (int)button;
-        _pressedControls[(int)button] = _content?.HitTest(x, y, out _, out _);
+        var target = EnabledHitTest(x, y, out var localX, out var localY);
+        _pressedControls[(int)button] = target;
+        target?.RaiseMouseDown(new MouseEventArgs(button, localX, localY));
     }
 
     private void HandleMouseUp(MouseButton button, int x, int y)
@@ -141,19 +146,57 @@ public class Window
         _pressedButtons &= ~mask;
         _pressedControls[(int)button] = null;
 
-        if (!wasPressed || x < 0 || y < 0 || x >= _width || y >= _height)
+        // The control that got MouseDown always gets MouseUp, wherever the pointer is now.
+        if (pressedControl != null)
+        {
+            var (localX, localY) = pressedControl.PointFromWindow(x, y);
+            pressedControl.RaiseMouseUp(new MouseEventArgs(button, localX, localY));
+        }
+
+        if (!wasPressed || !IsInClientArea(x, y))
             return;
 
         // A control is clicked only if the button was pressed and released over it.
-        if (pressedControl != null && _content != null)
+        if (pressedControl != null)
         {
-            var target = _content.HitTest(x, y, out var localX, out var localY);
+            var target = EnabledHitTest(x, y, out var localX, out var localY);
             if (target == pressedControl)
                 target.RaiseMouseClick(new MouseEventArgs(button, localX, localY));
         }
 
         OnMouseClick(new MouseEventArgs(button, x, y));
     }
+
+    private void HandleMouseMove(int x, int y) => SetHoveredControl(EnabledHitTest(x, y, out _, out _));
+
+    private void SetHoveredControl(Control? control)
+    {
+        if (control == _hoveredControl)
+            return;
+        var previous = _hoveredControl;
+        _hoveredControl = control;
+        previous?.SetMouseOver(false);
+        control?.SetMouseOver(true);
+    }
+
+    /// <summary>Topmost control at a client-area point, or null outside the client area.</summary>
+    private Control? HitTest(int x, int y, out int localX, out int localY)
+    {
+        (localX, localY) = (x, y);
+        return IsInClientArea(x, y) ? _content?.HitTest(x, y, out localX, out localY) : null;
+    }
+
+    /// <summary>
+    /// Like <see cref="HitTest"/>, but returns null if the control under the pointer is disabled:
+    /// it swallows the event instead of passing it to the controls below.
+    /// </summary>
+    private Control? EnabledHitTest(int x, int y, out int localX, out int localY)
+    {
+        var target = HitTest(x, y, out localX, out localY);
+        return target is { IsEffectivelyEnabled: true } ? target : null;
+    }
+
+    private bool IsInClientArea(int x, int y) => x >= 0 && y >= 0 && x < _width && y < _height;
 
     private void Resize(int width, int height)
     {

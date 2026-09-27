@@ -50,6 +50,18 @@ public sealed class DrawingContext
         }
     }
 
+    /// <summary>Draws the outline of <paramref name="rect"/>, inside its bounds.</summary>
+    public void DrawRectangle(Rect rect, Color color, int thickness = 1)
+    {
+        var t = Math.Min(thickness, Math.Min(rect.Width, rect.Height) / 2 + 1);
+        if (t <= 0 || rect.IsEmpty)
+            return;
+        FillRectangle(rect.X, rect.Y, rect.Width, t, color);
+        FillRectangle(rect.X, rect.Bottom - t, rect.Width, t, color);
+        FillRectangle(rect.X, rect.Y + t, t, rect.Height - 2 * t, color);
+        FillRectangle(rect.Right - t, rect.Y + t, t, rect.Height - 2 * t, color);
+    }
+
     /// <summary>
     /// Draws <paramref name="text"/> with its top-left corner at (<paramref name="x"/>, <paramref name="y"/>).
     /// Lines are split by '\n'; see <see cref="Font.MeasureText"/> for the size of the result.
