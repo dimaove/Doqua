@@ -51,9 +51,18 @@ class MainWindow : Window
             : "Right click outside the cells";
         _table.ContextMenuOpening += (sender, e) => e.Menu = CreateCellMenu(e.Row, e.Column);
 
-        // Left: fixed width, full height. Right: takes the rest of the width.
-        var left = new Panel { Anchor = new Anchor(Left: 8, Top: 8, Bottom: 78), Width = 230, Children = { _tree } };
-        var right = new Panel { Anchor = new Anchor(Left: 246, Top: 8, Right: 8, Bottom: 78), Children = { _table } };
+        // Left: the tree keeps its width when the window is resized; the user drags the bar between the panels
+        // to change it. Right: the table takes the rest of the width.
+        var split = new SplitContainer
+        {
+            Anchor = new Anchor(Left: 8, Top: 8, Right: 8, Bottom: 78),
+            Panel1MinSize = 120,
+            Panel2MinSize = 200,
+        };
+        split.Panel1.Children.Add(_tree);
+        split.Panel2.Children.Add(_table);
+        split.SplitterDistance = 230;
+        split.SplitterMoved += (sender, e) => _status.Text = $"Tree width: {split.SplitterDistance} px";
 
         var key = new Input { Anchor = new Anchor(Left: 48, Bottom: 38), Width = 190, Height = 28 };
         var value = new Input { Anchor = new Anchor(Left: 300, Bottom: 38, Right: 110), Height = 28 };
@@ -93,7 +102,7 @@ class MainWindow : Window
         {
             Children =
             {
-                left, right,
+                split,
                 new Label { Anchor = new Anchor(Left: 10, Bottom: 44), Text = "Key:" },
                 key,
                 new Label { Anchor = new Anchor(Left: 252, Bottom: 44), Text = "Value:" },
