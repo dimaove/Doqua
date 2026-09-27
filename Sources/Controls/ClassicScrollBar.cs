@@ -143,8 +143,11 @@ internal sealed class ClassicScrollBar
         ClassicStyle.DrawRaisedEdge(dc, thumb, ClassicStyle.Highlight, ClassicStyle.Shadow, ClassicStyle.DarkShadow);
     }
 
-    /// <summary>Raised button with a 7 x 4 arrow; flat shadow frame and arrow moved 1 px while pressed.</summary>
-    public static void DrawArrowButton(DrawingContext dc, Rect r, ArrowDirection direction, bool pressed, bool enabled)
+    /// <summary>
+    /// Raised button with a 7 x 4 arrow (<paramref name="arrows"/> arrows side by side, e.g. 2 for "«");
+    /// flat shadow frame and arrows moved 1 px while pressed.
+    /// </summary>
+    public static void DrawArrowButton(DrawingContext dc, Rect r, ArrowDirection direction, bool pressed, bool enabled, int arrows = 1)
     {
         dc.FillRectangle(r, ClassicStyle.Face);
         if (pressed)
@@ -154,16 +157,22 @@ internal sealed class ClassicScrollBar
 
         var shift = pressed ? 1 : 0;
         var color = enabled ? Color.Black : ClassicStyle.Shadow;
-        var centerX = r.X + r.Width / 2 + shift;
-        var centerY = r.Y + r.Height / 2 + shift;
-        for (var i = 0; i < 4; i++)
+        var vertical = direction is ArrowDirection.Up or ArrowDirection.Down;
+        for (var arrow = 0; arrow < arrows; arrow++)
         {
-            // Row (or column) i of the triangle, from its tip: 1, 3, 5, 7 pixels.
-            var half = direction is ArrowDirection.Up or ArrowDirection.Left ? i : 3 - i;
-            if (direction is ArrowDirection.Up or ArrowDirection.Down)
-                dc.FillRectangle(centerX - half, centerY - 2 + i, 2 * half + 1, 1, color);
-            else
-                dc.FillRectangle(centerX - 2 + i, centerY - half, 1, 2 * half + 1, color);
+            // Arrows are 4 px deep with 1 px between them, centred together along the pointing direction.
+            var along = (arrow - (arrows - 1) / 2.0) * 5;
+            var centerX = r.X + r.Width / 2 + shift + (vertical ? 0 : (int)along);
+            var centerY = r.Y + r.Height / 2 + shift + (vertical ? (int)along : 0);
+            for (var i = 0; i < 4; i++)
+            {
+                // Row (or column) i of the triangle, from its tip: 1, 3, 5, 7 pixels.
+                var half = direction is ArrowDirection.Up or ArrowDirection.Left ? i : 3 - i;
+                if (vertical)
+                    dc.FillRectangle(centerX - half, centerY - 2 + i, 2 * half + 1, 1, color);
+                else
+                    dc.FillRectangle(centerX - 2 + i, centerY - half, 1, 2 * half + 1, color);
+            }
         }
     }
 
