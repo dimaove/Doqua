@@ -12,6 +12,8 @@ public abstract class Control
     private bool _visible = true;
     private bool _enabled = true;
     private bool _focusable;
+    private Anchor _anchor;
+    private bool _applyingAnchor;
 
     public string? Name { get; set; }
 
@@ -32,21 +34,13 @@ public abstract class Control
     public int Width
     {
         get => _width;
-        set
-        {
-            ArgumentOutOfRangeException.ThrowIfNegative(value);
-            SetField(ref _width, value);
-        }
+        set => Bounds = Bounds with { Width = value };
     }
 
     public int Height
     {
         get => _height;
-        set
-        {
-            ArgumentOutOfRangeException.ThrowIfNegative(value);
-            SetField(ref _height, value);
-        }
+        set => Bounds = Bounds with { Height = value };
     }
 
     public Rect Bounds
@@ -58,8 +52,27 @@ public abstract class Control
             ArgumentOutOfRangeException.ThrowIfNegative(value.Height);
             if (value == Bounds)
                 return;
+            var resized = value.Width != _width || value.Height != _height;
             (_x, _y, _width, _height) = (value.X, value.Y, value.Width, value.Height);
             Invalidate();
+            if (resized)
+                OnSizeChanged(EventArgs.Empty);
+        }
+    }
+
+    /// <summary>
+    /// Keeps the control at fixed distances from its parent's edges; see <see cref="GUI.Anchor"/>.
+    /// Applied when the parent is resized, when the control gets a parent or changes size, and when set.
+    /// </summary>
+    public Anchor Anchor
+    {
+        get => _anchor;
+        set
+        {
+            if (_anchor == value)
+                return;
+            _anchor = value;
+            ApplyAnchor();
         }
     }
 
@@ -145,6 +158,9 @@ public abstract class Control
     public bool IsMouseOver { get; private set; }
 
     /// <summary>Raised when a mouse button is pressed over this control.</summary>
+    /// <summary>Raised after Width or Height changed; anchored children have already been rearranged.</summary>
+    public event EventHandler? SizeChanged;
+
     public event EventHandler<MouseEventArgs>? MouseDown;
 
     /// <summary>
@@ -218,6 +234,15 @@ public abstract class Control
 
     protected virtual void OnMouseLeave(EventArgs e) => MouseLeave?.Invoke(this, e);
 
+    /// <summary>Re-applies this control's anchor and rearranges anchored children, then raises <see cref="SizeChanged"/>.</summary>
+    protected virtual void OnSizeChanged(EventArgs e)
+    {
+        ApplyAnchor(); // e.g. an auto-sized label anchored to the right keeps its right edge.
+        foreach (var child in VisualChildren)
+            child.ApplyAnchor();
+        SizeChanged?.Invoke(this, e);
+    }
+
     protected virtual void OnGotFocus(EventArgs e) => GotFocus?.Invoke(this, e);
 
     protected virtual void OnLostFocus(EventArgs e) => LostFocus?.Invoke(this, e);
@@ -233,6 +258,24 @@ public abstract class Control
     internal void RaiseKeyDown(KeyEventArgs e) => OnKeyDown(e);
 
     internal void RaiseTextInput(TextInputEventArgs e) => OnTextInput(e);
+
+    /// <summary>Moves and resizes the control inside its parent according to <see cref="Anchor"/>.</summary>
+    internal void ApplyAnchor()
+    {
+        if (Parent is not { } parent || _anchor.IsNone || _applyingAnchor)
+            return;
+        _applyingAnchor = true; // Setting Bounds below calls back here through OnSizeChanged.
+        try
+        {
+            var (x, width) = Anchor.Arrange(_x, _width, _anchor.Left, _anchor.Right, parent._width);
+            var (y, height) = Anchor.Arrange(_y, _height, _anchor.Top, _anchor.Bottom, parent._height);
+            Bounds = new Rect(x, y, width, height);
+        }
+        finally
+        {
+            _applyingAnchor = false;
+        }
+    }
 
     /// <summary>Window whose content tree contains this control, if any.</summary>
     internal Window? GetWindow()

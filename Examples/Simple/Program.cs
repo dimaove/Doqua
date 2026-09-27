@@ -16,70 +16,62 @@ class MainWindow : Window
         Title = "Doqua Simple";
         Icons = ExampleIcon.Load();
         Width = 800;
-        Height = 645;
+        Height = 600;
 
-        var captionFont = new Font("sans-serif", 20, FontStyle.Bold);
+        const int bottomHeight = 100;
 
-        var leftPanel = new Panel
+        // Fills everything above the bottom panel and follows the window size.
+        var rectanglesPanel = new Panel
         {
-            X = 20, Y = 20, Width = 370, Height = 520,
-            Background = Color.LightGray,
-            Children =
-            {
-                new Label { X = 30, Y = 15, Text = "Left panel", Font = captionFont },
-                CreateRectangle(30, 60, 200, 150, Color.Red),
-                CreateRectangle(100, 250, 220, 230, Color.Green),
-            },
-        };
-
-        var rightPanel = new Panel
-        {
-            X = 410, Y = 20, Width = 370, Height = 520,
+            Anchor = new Anchor(Left: 0, Top: 0, Right: 0, Bottom: bottomHeight),
             Background = Color.LightBlue,
             Children =
             {
-                new Label { X = 30, Y = 15, Text = "Правая панель", Font = captionFont, Color = Color.Blue },
-                CreateRectangle(30, 60, 300, 120, Color.Blue),
-                CreateRectangle(60, 220, 150, 260, Color.Orange),
                 new Label
                 {
-                    X = 70, Y = 235,
-                    Text = "Multi-line\nlabel on top\nof a rectangle",
-                    Font = Font.Default with { Size = 16 },
-                    Color = Color.White,
+                    Anchor = new Anchor(Left: 20, Top: 15),
+                    Text = "Resize the window",
+                    Font = new Font("sans-serif", 20, FontStyle.Bold),
+                    Color = Color.Blue,
                 },
+                // Stays in the top-left corner.
+                CreateRectangle(new Anchor(Left: 20, Top: 60), 220, 150, Color.Red),
+                // Stays in the bottom-right corner.
+                CreateRectangle(new Anchor(Right: 20, Bottom: 20), 220, 150, Color.Green),
             },
         };
 
         _status = new Label
         {
-            X = 20, Y = 555,
+            Anchor = new Anchor(Left: 20, Top: 14),
             Text = InitialStatus,
             Font = new Font("serif", 18, FontStyle.Italic),
             Color = Color.Gray,
         };
 
-        var hideButton = new Button { X = 450, Y = 552, Width = 110, Height = 34, Text = "Hide left" };
+        // Buttons keep their size and stick to the right edge.
+        var hideButton = new Button { Anchor = new Anchor(Top: 10, Right: 220), Width = 90, Height = 34, Text = "Hide" };
         hideButton.Click += (sender, e) =>
         {
-            leftPanel.Visible = !leftPanel.Visible;
-            hideButton.Text = leftPanel.Visible ? "Hide left" : "Show left";
+            rectanglesPanel.Visible = !rectanglesPanel.Visible;
+            hideButton.Text = rectanglesPanel.Visible ? "Hide" : "Show";
         };
 
-        var disableButton = new Button { X = 570, Y = 552, Width = 110, Height = 34, Text = "Disable right" };
+        var disableButton = new Button { Anchor = new Anchor(Top: 10, Right: 120), Width = 90, Height = 34, Text = "Disable" };
         disableButton.Click += (sender, e) =>
         {
-            rightPanel.Enabled = !rightPanel.Enabled;
-            disableButton.Text = rightPanel.Enabled ? "Disable right" : "Enable right";
+            rectanglesPanel.Enabled = !rectanglesPanel.Enabled;
+            disableButton.Text = rectanglesPanel.Enabled ? "Disable" : "Enable";
         };
 
         // Nothing to reset until a rectangle is clicked.
-        _resetButton = new Button { X = 690, Y = 552, Width = 90, Height = 34, Text = "Reset", Enabled = false };
+        _resetButton = new Button { Anchor = new Anchor(Top: 10, Right: 20), Width = 90, Height = 34, Text = "Reset", Enabled = false };
         _resetButton.Click += (sender, e) => SetStatus(InitialStatus, Color.Gray);
 
-        var nameLabel = new Label { X = 20, Y = 606, Text = "Your name:" };
-        var nameInput = new Input { X = 110, Y = 598, Width = 330, Height = 32 };
-        var greetButton = new Button { X = 450, Y = 598, Width = 110, Height = 32, Text = "Greet" };
+        var nameLabel = new Label { Anchor = new Anchor(Left: 20, Top: 62), Text = "Your name:" };
+        // Left and Right: the input stretches with the window.
+        var nameInput = new Input { Anchor = new Anchor(Left: 110, Top: 56, Right: 220), Height = 32 };
+        var greetButton = new Button { Anchor = new Anchor(Top: 56, Right: 120), Width = 90, Height = 32, Text = "Greet" };
 
         void Greet()
         {
@@ -106,20 +98,25 @@ class MainWindow : Window
         nameInput.TextChanged += (sender, e) =>
             Title = nameInput.Text.Length > 0 ? $"Doqua Simple – {nameInput.Text}" : "Doqua Simple";
 
-        var clock = new Label { X = 590, Y = 604, Font = Font.Default with { Size = 18 }, Color = Color.Gray };
+        var clock = new Label { Anchor = new Anchor(Top: 60, Right: 20), Font = Font.Default with { Size = 18 }, Color = Color.Gray };
         void UpdateClock() => clock.Text = DateTime.Now.ToString("HH:mm:ss");
         UpdateClock();
         Timer.SetInterval(UpdateClock, 1000);
 
-        // Children order is also the Tab order.
-        Content = new Panel
+        // Fixed height, full width, at the bottom. Children order is also the Tab order.
+        var bottomPanel = new Panel
         {
+            Anchor = new Anchor(Left: 0, Right: 0, Bottom: 0),
+            Height = bottomHeight,
+            Background = Color.LightGray,
             Children =
             {
-                leftPanel, rightPanel, _status, hideButton, disableButton, _resetButton,
+                _status, hideButton, disableButton, _resetButton,
                 nameLabel, nameInput, greetButton, clock,
             },
         };
+
+        Content = new Panel { Children = { rectanglesPanel, bottomPanel } };
         nameInput.Focus();
     }
 
@@ -130,9 +127,9 @@ class MainWindow : Window
         _resetButton.Enabled = text != InitialStatus;
     }
 
-    private Rectangle CreateRectangle(int x, int y, int width, int height, Color color)
+    private Rectangle CreateRectangle(Anchor anchor, int width, int height, Color color)
     {
-        var rectangle = new Rectangle { X = x, Y = y, Width = width, Height = height, Color = color };
+        var rectangle = new Rectangle { Anchor = anchor, Width = width, Height = height, Color = color };
         rectangle.MouseClick += (sender, e) =>
             SetStatus($"{rectangle.Color} rectangle: {e.Button} click at ({e.X}, {e.Y})", rectangle.Color);
         return rectangle;

@@ -13,6 +13,7 @@ public sealed class ControlCollection : Collection<Control>
     {
         Attach(item);
         base.InsertItem(index, item);
+        item.ApplyAnchor();
         _owner.Invalidate();
     }
 
@@ -24,6 +25,7 @@ public sealed class ControlCollection : Collection<Control>
         Attach(item);
         old.Parent = null;
         base.SetItem(index, item);
+        item.ApplyAnchor();
         OnRemoved();
     }
 
