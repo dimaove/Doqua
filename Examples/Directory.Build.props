@@ -1,0 +1,20 @@
+<Project>
+  <!--
+    Applies to every project under Examples/. The Doqua logo is used directly from Docs/,
+    not copied into the example folders:
+    - logo.ico is the executable's icon (shown by Windows Explorer and the taskbar);
+    - the PNGs are embedded as resources for Window.Icons (title bar and taskbar at run time);
+    - ExampleIcon.cs loads them.
+  -->
+  <PropertyGroup>
+    <DoquaDocs>$(MSBuildThisFileDirectory)../Docs/</DoquaDocs>
+    <ApplicationIcon>$(DoquaDocs)logo.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="$(DoquaDocs)logo_16.png" LogicalName="Doqua.Logo.16.png" Link="Docs/logo_16.png" />
+    <EmbeddedResource Include="$(DoquaDocs)logo_32.png" LogicalName="Doqua.Logo.32.png" Link="Docs/logo_32.png" />
+    <EmbeddedResource Include="$(DoquaDocs)logo_256.png" LogicalName="Doqua.Logo.256.png" Link="Docs/logo_256.png" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common/ExampleIcon.cs" Link="Common/ExampleIcon.cs" />
+  </ItemGroup>
+</Project>

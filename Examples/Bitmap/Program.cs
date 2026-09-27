@@ -68,6 +68,7 @@ class MainWindow : Window
     public MainWindow()
     {
         Title = "Doqua Bitmap";
+        Icons = ExampleIcon.Load();
         Width = 800;
         Height = 620;
 

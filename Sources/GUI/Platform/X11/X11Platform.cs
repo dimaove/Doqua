@@ -21,6 +21,7 @@ internal sealed unsafe class X11Platform : IPlatform
     internal nuint WmDeleteWindow { get; }
     internal nuint NetWmName { get; }
     internal nuint Utf8String { get; }
+    internal nuint NetWmIcon { get; }
 
     /// <summary>X input method for text input, or 0 if none is available (Latin-1 fallback).</summary>
     internal nint InputMethod { get; }
@@ -43,6 +44,7 @@ internal sealed unsafe class X11Platform : IPlatform
         WmDeleteWindow = Xlib.XInternAtom(Display, "WM_DELETE_WINDOW", 0);
         NetWmName = Xlib.XInternAtom(Display, "_NET_WM_NAME", 0);
         Utf8String = Xlib.XInternAtom(Display, "UTF8_STRING", 0);
+        NetWmIcon = Xlib.XInternAtom(Display, "_NET_WM_ICON", 0);
         InputMethod = OpenInputMethod(Display);
     }
 

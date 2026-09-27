@@ -134,6 +134,16 @@ internal struct TRACKMOUSEEVENT
     public uint dwHoverTime;
 }
 
+[StructLayout(LayoutKind.Sequential)]
+internal struct ICONINFO
+{
+    public int fIcon;
+    public uint xHotspot;
+    public uint yHotspot;
+    public nint hbmMask;
+    public nint hbmColor;
+}
+
 // BOOL results are returned as int to avoid bool marshalling.
 internal static unsafe partial class User32
 {
@@ -232,6 +242,21 @@ internal static unsafe partial class User32
     [LibraryImport(Lib)]
     public static partial uint GetDoubleClickTime();
 
+    public const uint WM_SETICON = 0x0080;
+    public const nint ICON_SMALL = 0;
+    public const nint ICON_BIG = 1;
+    public const int SM_CXICON = 11;
+    public const int SM_CXSMICON = 49;
+
+    [LibraryImport(Lib)]
+    public static partial nint SendMessageW(nint hwnd, uint message, nint wParam, nint lParam);
+
+    [LibraryImport(Lib)]
+    public static partial nint CreateIconIndirect(ICONINFO* iconInfo);
+
+    [LibraryImport(Lib)]
+    public static partial int DestroyIcon(nint icon);
+
     public const uint USER_TIMER_MINIMUM = 10;
 
     [LibraryImport(Lib)]
@@ -301,6 +326,15 @@ internal static unsafe partial class Gdi32
 
     public const uint GGO_GRAY8_BITMAP = 6;
     public const uint GDI_ERROR = 0xFFFFFFFF;
+
+    [LibraryImport("gdi32.dll")]
+    public static partial nint CreateDIBSection(nint hdc, BITMAPINFOHEADER* header, uint usage, void** bits, nint section, uint offset);
+
+    [LibraryImport("gdi32.dll")]
+    public static partial nint CreateBitmap(int width, int height, uint planes, uint bitsPerPixel, void* bits);
+
+    [LibraryImport("gdi32.dll")]
+    public static partial int DeleteObject(nint obj);
 
     [LibraryImport("gdi32.dll")]
     public static partial nint CreateCompatibleDC(nint hdc);

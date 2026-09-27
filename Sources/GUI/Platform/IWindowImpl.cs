@@ -40,6 +40,10 @@ internal interface IWindowImpl
     event Action<Framebuffer>? Paint;
 
     void SetTitle(string title);
+
+    /// <summary>Sets the title bar / taskbar icon from one or more sizes; an empty list removes it.</summary>
+    void SetIcons(IReadOnlyList<Bitmap> icons);
+
     void Resize(int width, int height);
     void Show();
 

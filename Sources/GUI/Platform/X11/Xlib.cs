@@ -129,6 +129,7 @@ internal static unsafe partial class Xlib
 
     public const nuint XA_ATOM = 4;
     public const nuint XA_STRING = 31;
+    public const nuint XA_CARDINAL = 6;
     public const nuint AnyPropertyType = 0;
     public const nuint CurrentTime = 0;
 
@@ -231,6 +232,9 @@ internal static unsafe partial class Xlib
 
     [LibraryImport(Lib)]
     public static partial int XFlush(nint display);
+
+    [LibraryImport(Lib)]
+    public static partial int XDeleteProperty(nint display, nuint window, nuint property);
 
     [LibraryImport(Lib)]
     public static partial int XSetSelectionOwner(nint display, nuint selection, nuint owner, nuint time);

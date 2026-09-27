@@ -81,6 +81,7 @@ static class Program
     static int Main() => Application.Run(new Window
     {
         Title = "Doqua Clock",
+        Icons = ExampleIcon.Load(),
         Width = 420,
         Height = 420,
         Background = new Color(60, 70, 90),

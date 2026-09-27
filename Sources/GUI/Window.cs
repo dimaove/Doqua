@@ -10,6 +10,7 @@ public class Window
 {
     private readonly IWindowImpl _impl;
     private string _title = "";
+    private IReadOnlyList<Bitmap> _icons = [];
     private int _width = 800;
     private int _height = 600;
     private Color _background = Color.White;
@@ -55,6 +56,24 @@ public class Window
             ThrowIfClosed();
             _title = value;
             _impl.SetTitle(value);
+        }
+    }
+
+    /// <summary>
+    /// Window icon for the title bar and taskbar, as one bitmap per size (for example 16, 32 and 256
+    /// pixels). The system picks the size it needs and scales the closest one. Empty means no icon.
+    /// </summary>
+    public IReadOnlyList<Bitmap> Icons
+    {
+        get => _icons;
+        set
+        {
+            ArgumentNullException.ThrowIfNull(value);
+            if (value.Any(icon => icon == null))
+                throw new ArgumentException("Icons cannot contain null.", nameof(value));
+            ThrowIfClosed();
+            _icons = [.. value];
+            _impl.SetIcons(_icons);
         }
     }
 

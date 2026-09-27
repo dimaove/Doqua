@@ -15,6 +15,8 @@ internal sealed unsafe class Win32WindowImpl : IWindowImpl
     private readonly Framebuffer _framebuffer = new();
     private nint _hwnd;
     private bool _trackingMouseLeave;
+    private nint _smallIcon;
+    private nint _bigIcon;
     private char _pendingHighSurrogate;
 
     public event Action? Closed;
@@ -41,6 +43,56 @@ internal sealed unsafe class Win32WindowImpl : IWindowImpl
     }
 
     public void SetTitle(string title) => User32.SetWindowTextW(_hwnd, title);
+
+    /// <summary>Title bar (small) and Alt+Tab / taskbar (big) icons from the closest sizes.</summary>
+    public void SetIcons(IReadOnlyList<Bitmap> icons)
+    {
+        var small = icons.Count == 0 ? 0 : CreateIcon(Closest(icons, User32.GetSystemMetrics(User32.SM_CXSMICON)));
+        var big = icons.Count == 0 ? 0 : CreateIcon(Closest(icons, User32.GetSystemMetrics(User32.SM_CXICON)));
+        User32.SendMessageW(_hwnd, User32.WM_SETICON, User32.ICON_SMALL, small);
+        User32.SendMessageW(_hwnd, User32.WM_SETICON, User32.ICON_BIG, big);
+        DestroyIcons();
+        (_smallIcon, _bigIcon) = (small, big);
+    }
+
+    private static Bitmap Closest(IReadOnlyList<Bitmap> icons, int size) =>
+        icons.MinBy(icon => Math.Abs(icon.Width - size))!;
+
+    /// <summary>Icon from a 32-bit top-down DIB; icons use straight (non-premultiplied) alpha like Bitmap.</summary>
+    private static nint CreateIcon(Bitmap bitmap)
+    {
+        var header = new BITMAPINFOHEADER
+        {
+            biSize = (uint)sizeof(BITMAPINFOHEADER),
+            biWidth = bitmap.Width,
+            biHeight = -bitmap.Height,
+            biPlanes = 1,
+            biBitCount = 32,
+            biCompression = Gdi32.BI_RGB,
+        };
+        void* bits;
+        var color = Gdi32.CreateDIBSection(0, &header, Gdi32.DIB_RGB_COLORS, &bits, 0, 0);
+        if (color == 0)
+            return 0;
+        bitmap.Pixels.CopyTo(new Span<uint>(bits, bitmap.Pixels.Length)); // 0xAARRGGBB = BGRA in memory.
+
+        // The mask is required but ignored when the color bitmap has alpha.
+        var mask = Gdi32.CreateBitmap(bitmap.Width, bitmap.Height, 1, 1, null);
+        var info = new ICONINFO { fIcon = 1, hbmMask = mask, hbmColor = color };
+        var icon = User32.CreateIconIndirect(&info);
+        Gdi32.DeleteObject(color); // CreateIconIndirect copies both bitmaps.
+        Gdi32.DeleteObject(mask);
+        return icon;
+    }
+
+    private void DestroyIcons()
+    {
+        if (_smallIcon != 0)
+            User32.DestroyIcon(_smallIcon);
+        if (_bigIcon != 0)
+            User32.DestroyIcon(_bigIcon);
+        (_smallIcon, _bigIcon) = (0, 0);
+    }
 
     public void Resize(int width, int height)
     {
@@ -140,6 +192,7 @@ internal sealed unsafe class Win32WindowImpl : IWindowImpl
                 return 0;
 
             case User32.WM_DESTROY:
+                DestroyIcons();
                 s_windows.Remove(_hwnd);
                 _hwnd = 0;
                 Closed?.Invoke();

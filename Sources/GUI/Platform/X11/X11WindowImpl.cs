@@ -75,6 +75,35 @@ internal sealed unsafe class X11WindowImpl : IWindowImpl
         }
     }
 
+    /// <summary>
+    /// _NET_WM_ICON: for each size, width, height and then the pixels as non-premultiplied ARGB, one
+    /// CARDINAL each. Format-32 properties hold C longs, so every value takes 64 bits on LP64.
+    /// </summary>
+    public void SetIcons(IReadOnlyList<Bitmap> icons)
+    {
+        if (icons.Count == 0)
+        {
+            Xlib.XDeleteProperty(_platform.Display, Handle, _platform.NetWmIcon);
+            return;
+        }
+
+        var data = new nuint[icons.Sum(icon => 2 + icon.Width * icon.Height)];
+        var index = 0;
+        foreach (var icon in icons)
+        {
+            data[index++] = (nuint)icon.Width;
+            data[index++] = (nuint)icon.Height;
+            foreach (var pixel in icon.Pixels)
+                data[index++] = pixel;
+        }
+        fixed (nuint* values = data)
+        {
+            Xlib.XChangeProperty(_platform.Display, Handle, _platform.NetWmIcon, Xlib.XA_CARDINAL, 32,
+                Xlib.PropModeReplace, (byte*)values, data.Length);
+        }
+        Xlib.XFlush(_platform.Display);
+    }
+
     public void Resize(int width, int height) =>
         Xlib.XResizeWindow(_platform.Display, Handle, (uint)width, (uint)height);
 
