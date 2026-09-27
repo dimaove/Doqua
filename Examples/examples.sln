@@ -9,6 +9,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "simple", "Simple\simple.csp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Doqua", "..\Sources\Doqua.csproj", "{66785496-08C8-4C51-9D9D-D3516F1C8297}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Bitmap", "Bitmap", "{6E43DA31-17B4-3723-0A39-7625B9674A06}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "bitmap", "Bitmap\bitmap.csproj", "{C595393D-3216-49C5-B4DC-9C30F07DD3F7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -43,11 +47,24 @@ Global
 		{66785496-08C8-4C51-9D9D-D3516F1C8297}.Release|x64.Build.0 = Release|Any CPU
 		{66785496-08C8-4C51-9D9D-D3516F1C8297}.Release|x86.ActiveCfg = Release|Any CPU
 		{66785496-08C8-4C51-9D9D-D3516F1C8297}.Release|x86.Build.0 = Release|Any CPU
+		{C595393D-3216-49C5-B4DC-9C30F07DD3F7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C595393D-3216-49C5-B4DC-9C30F07DD3F7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C595393D-3216-49C5-B4DC-9C30F07DD3F7}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{C595393D-3216-49C5-B4DC-9C30F07DD3F7}.Debug|x64.Build.0 = Debug|Any CPU
+		{C595393D-3216-49C5-B4DC-9C30F07DD3F7}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{C595393D-3216-49C5-B4DC-9C30F07DD3F7}.Debug|x86.Build.0 = Debug|Any CPU
+		{C595393D-3216-49C5-B4DC-9C30F07DD3F7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C595393D-3216-49C5-B4DC-9C30F07DD3F7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C595393D-3216-49C5-B4DC-9C30F07DD3F7}.Release|x64.ActiveCfg = Release|Any CPU
+		{C595393D-3216-49C5-B4DC-9C30F07DD3F7}.Release|x64.Build.0 = Release|Any CPU
+		{C595393D-3216-49C5-B4DC-9C30F07DD3F7}.Release|x86.ActiveCfg = Release|Any CPU
+		{C595393D-3216-49C5-B4DC-9C30F07DD3F7}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{EDF0E48E-9F55-45A2-885A-26BA942B8D11} = {158EAD96-AA7D-3E83-3B1C-9082B42BE045}
+		{C595393D-3216-49C5-B4DC-9C30F07DD3F7} = {6E43DA31-17B4-3723-0A39-7625B9674A06}
 	EndGlobalSection
 EndGlobal
