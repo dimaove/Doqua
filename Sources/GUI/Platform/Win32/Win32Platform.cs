@@ -10,6 +10,7 @@ internal sealed unsafe class Win32Platform : IPlatform
     internal const string WindowClassName = "DoquaWindow";
 
     private GdiFontBackend? _fonts;
+    private Win32Clipboard? _clipboard;
 
     internal static nint Instance { get; private set; }
 
@@ -34,6 +35,13 @@ internal sealed unsafe class Win32Platform : IPlatform
     }
 
     public IFontBackend Fonts => _fonts ??= new GdiFontBackend();
+
+    public IClipboard Clipboard => _clipboard ??= new Win32Clipboard();
+
+    public int DoubleClickTime => (int)User32.GetDoubleClickTime();
+
+    // SM_CXDOUBLECLK is the width of the whole rectangle around the first click.
+    public int DoubleClickDistance => User32.GetSystemMetrics(User32.SM_CXDOUBLECLK) / 2;
 
     public IWindowImpl CreateWindow(int width, int height) => new Win32WindowImpl(width, height);
 

@@ -30,8 +30,10 @@ internal struct XEvent
     // XButtonEvent
     [FieldOffset(84)] public uint button;
 
+    // Modifier and button state of XKeyEvent, XButtonEvent and XMotionEvent.
+    [FieldOffset(80)] public uint state;
+
     // XKeyEvent (same layout as XButtonEvent)
-    [FieldOffset(80)] public uint keyState;
     [FieldOffset(84)] public uint keycode;
 
     // XFocusChangeEvent
@@ -40,6 +42,48 @@ internal struct XEvent
 
     // XCrossingEvent
     [FieldOffset(80)] public int crossingMode;
+}
+
+[StructLayout(LayoutKind.Explicit, Size = 192)]
+internal struct XSelectionRequestEvent
+{
+    [FieldOffset(0)] public int type;
+    [FieldOffset(32)] public nuint owner;
+    [FieldOffset(40)] public nuint requestor;
+    [FieldOffset(48)] public nuint selection;
+    [FieldOffset(56)] public nuint target;
+    [FieldOffset(64)] public nuint property;
+    [FieldOffset(72)] public nuint time;
+}
+
+/// <summary>SelectionNotify: the answer to XConvertSelection.</summary>
+[StructLayout(LayoutKind.Explicit, Size = 192)]
+internal struct XSelectionEvent
+{
+    [FieldOffset(0)] public int type;
+    [FieldOffset(16)] public int sendEvent;
+    [FieldOffset(24)] public nint display;
+    [FieldOffset(32)] public nuint requestor;
+    [FieldOffset(40)] public nuint selection;
+    [FieldOffset(48)] public nuint target;
+    [FieldOffset(56)] public nuint property; // 0 (None) if the conversion failed.
+    [FieldOffset(64)] public nuint time;
+}
+
+[StructLayout(LayoutKind.Explicit, Size = 192)]
+internal struct XSelectionClearEvent
+{
+    [FieldOffset(0)] public int type;
+    [FieldOffset(32)] public nuint window;
+    [FieldOffset(40)] public nuint selection;
+}
+
+[StructLayout(LayoutKind.Sequential)]
+internal struct PollFd
+{
+    public int fd;
+    public short events;
+    public short revents;
 }
 
 /// <summary>Xlib XImage describing client-side pixels; initialized with XInitImage.</summary>
@@ -78,7 +122,15 @@ internal static unsafe partial class Xlib
     public const int FocusOut = 10;
     public const int Expose = 12;
     public const int ConfigureNotify = 22;
+    public const int SelectionClear = 29;
+    public const int SelectionRequest = 30;
+    public const int SelectionNotify = 31;
     public const int ClientMessage = 33;
+
+    public const nuint XA_ATOM = 4;
+    public const nuint XA_STRING = 31;
+    public const nuint AnyPropertyType = 0;
+    public const nuint CurrentTime = 0;
 
     public const nint KeyPressMask = 1 << 0;
     public const nint KeyReleaseMask = 1 << 1;
@@ -181,6 +233,33 @@ internal static unsafe partial class Xlib
     public static partial int XFlush(nint display);
 
     [LibraryImport(Lib)]
+    public static partial int XSetSelectionOwner(nint display, nuint selection, nuint owner, nuint time);
+
+    [LibraryImport(Lib)]
+    public static partial nuint XGetSelectionOwner(nint display, nuint selection);
+
+    [LibraryImport(Lib)]
+    public static partial int XConvertSelection(
+        nint display, nuint selection, nuint target, nuint property, nuint requestor, nuint time);
+
+    [LibraryImport(Lib)]
+    public static partial int XGetWindowProperty(
+        nint display, nuint window, nuint property, nint offset, nint length, int delete, nuint requestedType,
+        nuint* actualType, int* actualFormat, nuint* itemCount, nuint* bytesAfter, byte** data);
+
+    [LibraryImport(Lib)]
+    public static partial int XSendEvent(nint display, nuint window, int propagate, nint eventMask, XEvent* ev);
+
+    [LibraryImport(Lib)]
+    public static partial int XCheckTypedWindowEvent(nint display, nuint window, int eventType, XEvent* ev);
+
+    [LibraryImport(Lib)]
+    public static partial int XConnectionNumber(nint display);
+
+    [LibraryImport(Lib)]
+    public static partial int XFree(void* data);
+
+    [LibraryImport(Lib)]
     public static partial int XSupportsLocale();
 
     [LibraryImport(Lib, StringMarshalling = StringMarshalling.Utf8)]
@@ -220,9 +299,13 @@ internal static unsafe partial class Xlib
     public static partial nuint XkbKeycodeToKeysym(nint display, uint keycode, int group, int level);
 }
 
-internal static partial class LibC
+internal static unsafe partial class LibC
 {
     public const int LC_CTYPE = 0;
+    public const short POLLIN = 1;
+
+    [LibraryImport("libc.so.6")]
+    public static partial int poll(PollFd* fds, nuint count, int timeoutMilliseconds);
 
     [LibraryImport("libc.so.6", StringMarshalling = StringMarshalling.Utf8)]
     public static partial nint setlocale(int category, string locale);

@@ -156,6 +156,12 @@ public abstract class Control
     /// <summary>Raised when a mouse button is pressed and released over this control.</summary>
     public event EventHandler<MouseEventArgs>? MouseClick;
 
+    /// <summary>
+    /// Raised when the pointer moves over this control, or anywhere while a mouse button
+    /// pressed over this control is held (so dragging keeps reporting positions).
+    /// </summary>
+    public event EventHandler<MouseMoveEventArgs>? MouseMove;
+
     public event EventHandler? MouseEnter;
 
     public event EventHandler? GotFocus;
@@ -206,6 +212,8 @@ public abstract class Control
 
     protected virtual void OnMouseClick(MouseEventArgs e) => MouseClick?.Invoke(this, e);
 
+    protected virtual void OnMouseMove(MouseMoveEventArgs e) => MouseMove?.Invoke(this, e);
+
     protected virtual void OnMouseEnter(EventArgs e) => MouseEnter?.Invoke(this, e);
 
     protected virtual void OnMouseLeave(EventArgs e) => MouseLeave?.Invoke(this, e);
@@ -251,6 +259,8 @@ public abstract class Control
     internal void RaiseMouseUp(MouseEventArgs e) => OnMouseUp(e);
 
     internal void RaiseMouseClick(MouseEventArgs e) => OnMouseClick(e);
+
+    internal void RaiseMouseMove(MouseMoveEventArgs e) => OnMouseMove(e);
 
     internal void SetMouseOver(bool value)
     {

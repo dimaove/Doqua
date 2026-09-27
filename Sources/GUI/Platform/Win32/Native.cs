@@ -177,6 +177,8 @@ internal static unsafe partial class User32
     public const nint MK_LBUTTON = 0x0001;
     public const nint MK_RBUTTON = 0x0002;
     public const nint MK_MBUTTON = 0x0010;
+    public const nint MK_SHIFT = 0x0004;
+    public const nint MK_CONTROL = 0x0008;
 
     public const nint IDC_ARROW = 32512;
 
@@ -224,6 +226,32 @@ internal static unsafe partial class User32
 
     [LibraryImport(Lib)]
     public static partial short GetKeyState(int virtualKey);
+
+    public const int SM_CXDOUBLECLK = 36;
+
+    [LibraryImport(Lib)]
+    public static partial uint GetDoubleClickTime();
+
+    [LibraryImport(Lib)]
+    public static partial int GetSystemMetrics(int index);
+
+    public const nint HWND_MESSAGE = -3;
+    public const uint CF_UNICODETEXT = 13;
+
+    [LibraryImport(Lib)]
+    public static partial int OpenClipboard(nint owner);
+
+    [LibraryImport(Lib)]
+    public static partial int CloseClipboard();
+
+    [LibraryImport(Lib)]
+    public static partial int EmptyClipboard();
+
+    [LibraryImport(Lib)]
+    public static partial nint GetClipboardData(uint format);
+
+    [LibraryImport(Lib)]
+    public static partial nint SetClipboardData(uint format, nint memory);
 
     [LibraryImport(Lib)]
     public static partial int TrackMouseEvent(TRACKMOUSEEVENT* eventTrack);
@@ -293,6 +321,20 @@ internal static unsafe partial class Gdi32
 
 internal static partial class Kernel32
 {
+    public const uint GMEM_MOVEABLE = 0x0002;
+
+    [LibraryImport("kernel32.dll")]
+    public static partial nint GlobalAlloc(uint flags, nuint bytes);
+
+    [LibraryImport("kernel32.dll")]
+    public static partial nint GlobalFree(nint memory);
+
+    [LibraryImport("kernel32.dll")]
+    public static partial nint GlobalLock(nint memory);
+
+    [LibraryImport("kernel32.dll")]
+    public static partial int GlobalUnlock(nint memory);
+
     [LibraryImport("kernel32.dll", StringMarshalling = StringMarshalling.Utf16)]
     public static partial nint GetModuleHandleW(string? moduleName);
 }

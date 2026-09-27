@@ -8,6 +8,7 @@ internal sealed unsafe class X11Platform : IPlatform
 {
     private readonly Dictionary<nuint, X11WindowImpl> _windows = new();
     private FreeTypeFontBackend? _fonts;
+    private X11Clipboard? _clipboard;
     private bool _running;
     private int _exitCode;
 
@@ -67,6 +68,13 @@ internal sealed unsafe class X11Platform : IPlatform
 
     public IFontBackend Fonts => _fonts ??= new FreeTypeFontBackend();
 
+    public IClipboard Clipboard => _clipboard ??= new X11Clipboard(this);
+
+    // X11 has no system setting for these; the values match the GTK defaults.
+    public int DoubleClickTime => 400;
+
+    public int DoubleClickDistance => 5;
+
     public IWindowImpl CreateWindow(int width, int height)
     {
         var window = new X11WindowImpl(this, width, height);
@@ -94,7 +102,9 @@ internal sealed unsafe class X11Platform : IPlatform
             Xlib.XNextEvent(Display, &ev); // Blocks until an event arrives.
             if (InputMethod != 0 && Xlib.XFilterEvent(&ev, 0) != 0)
                 continue;
-            if (_windows.TryGetValue(ev.window, out var window))
+            if (_clipboard != null && ev.window == _clipboard.Window)
+                _clipboard.HandleEvent(&ev);
+            else if (_windows.TryGetValue(ev.window, out var window))
                 window.HandleEvent(in ev);
         }
         return _exitCode;

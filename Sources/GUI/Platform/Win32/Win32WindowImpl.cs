@@ -19,9 +19,9 @@ internal sealed unsafe class Win32WindowImpl : IWindowImpl
 
     public event Action? Closed;
     public event Action<int, int>? Resized;
-    public event Action<MouseButton, int, int>? MouseDown;
-    public event Action<MouseButton, int, int>? MouseUp;
-    public event Action<int, int>? MouseMove;
+    public event Action<MouseButton, int, int, KeyModifiers>? MouseDown;
+    public event Action<MouseButton, int, int, KeyModifiers>? MouseUp;
+    public event Action<int, int, KeyModifiers>? MouseMove;
     public event Action? MouseLeave;
     public event Action<Key, KeyModifiers>? KeyDown;
     public event Action<string>? TextInput;
@@ -111,7 +111,7 @@ internal sealed unsafe class Win32WindowImpl : IWindowImpl
                 return 0;
 
             case User32.WM_MOUSEMOVE:
-                OnMouseMove(lParam);
+                OnMouseMove(wParam, lParam);
                 return 0;
 
             case User32.WM_MOUSELEAVE:
@@ -120,13 +120,13 @@ internal sealed unsafe class Win32WindowImpl : IWindowImpl
                 return 0;
 
             case User32.WM_LBUTTONDOWN:
-                OnButtonDown(MouseButton.Left, lParam);
+                OnButtonDown(MouseButton.Left, wParam, lParam);
                 return 0;
             case User32.WM_MBUTTONDOWN:
-                OnButtonDown(MouseButton.Middle, lParam);
+                OnButtonDown(MouseButton.Middle, wParam, lParam);
                 return 0;
             case User32.WM_RBUTTONDOWN:
-                OnButtonDown(MouseButton.Right, lParam);
+                OnButtonDown(MouseButton.Right, wParam, lParam);
                 return 0;
 
             case User32.WM_LBUTTONUP:
@@ -239,7 +239,7 @@ internal sealed unsafe class Win32WindowImpl : IWindowImpl
         _ => Key.None,
     };
 
-    private void OnMouseMove(nint lParam)
+    private void OnMouseMove(nint wParam, nint lParam)
     {
         // WM_MOUSELEAVE is sent only once per TrackMouseEvent call, so re-arm it after each leave.
         if (!_trackingMouseLeave)
@@ -252,21 +252,34 @@ internal sealed unsafe class Win32WindowImpl : IWindowImpl
             };
             _trackingMouseLeave = User32.TrackMouseEvent(&track) != 0;
         }
-        MouseMove?.Invoke(GetX(lParam), GetY(lParam));
+        MouseMove?.Invoke(GetX(lParam), GetY(lParam), GetMouseModifiers(wParam));
     }
 
-    private void OnButtonDown(MouseButton button, nint lParam)
+    private void OnButtonDown(MouseButton button, nint wParam, nint lParam)
     {
         // Capture the mouse so the release is delivered even outside the window.
         User32.SetCapture(_hwnd);
-        MouseDown?.Invoke(button, GetX(lParam), GetY(lParam));
+        MouseDown?.Invoke(button, GetX(lParam), GetY(lParam), GetMouseModifiers(wParam));
     }
 
     private void OnButtonUp(MouseButton button, nint wParam, nint lParam)
     {
         if ((wParam & (User32.MK_LBUTTON | User32.MK_MBUTTON | User32.MK_RBUTTON)) == 0)
             User32.ReleaseCapture();
-        MouseUp?.Invoke(button, GetX(lParam), GetY(lParam));
+        MouseUp?.Invoke(button, GetX(lParam), GetY(lParam), GetMouseModifiers(wParam));
+    }
+
+    /// <summary>Mouse messages carry Shift and Ctrl in wParam; Alt has to be queried.</summary>
+    private static KeyModifiers GetMouseModifiers(nint wParam)
+    {
+        var modifiers = KeyModifiers.None;
+        if ((wParam & User32.MK_SHIFT) != 0)
+            modifiers |= KeyModifiers.Shift;
+        if ((wParam & User32.MK_CONTROL) != 0)
+            modifiers |= KeyModifiers.Control;
+        if (User32.GetKeyState(User32.VK_MENU) < 0)
+            modifiers |= KeyModifiers.Alt;
+        return modifiers;
     }
 
     // Coordinates are signed: they are negative when captured outside the client area.

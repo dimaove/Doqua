@@ -17,6 +17,14 @@ public class Window
     private int _pressedButtons; // Bit mask of MouseButton values pressed inside the client area.
     private readonly Control?[] _pressedControls = new Control?[3]; // Indexed by MouseButton.
     private Control? _hoveredControl;
+
+    // Last press, for counting double and triple clicks.
+    private long _lastPressTime;
+    private int _lastPressX;
+    private int _lastPressY;
+    private MouseButton _lastPressButton;
+    private Control? _lastPressControl;
+    private int _clickCount;
     private Control? _focusedControl;
 
     public Window()
@@ -222,11 +230,12 @@ public class Window
         _content?.Render(dc);
     }
 
-    private void HandleMouseDown(MouseButton button, int x, int y)
+    private void HandleMouseDown(MouseButton button, int x, int y, KeyModifiers modifiers)
     {
         _pressedButtons |= 1 << (int)button;
         var target = EnabledHitTest(x, y, out var localX, out var localY);
         _pressedControls[(int)button] = target;
+        var clickCount = CountClicks(button, x, y, target);
 
         // Focus the nearest focusable control under the pointer; clicks elsewhere keep the focus.
         for (var control = target; control != null; control = control.Parent)
@@ -238,10 +247,28 @@ public class Window
             }
         }
 
-        target?.RaiseMouseDown(new MouseEventArgs(button, localX, localY));
+        target?.RaiseMouseDown(new MouseEventArgs(button, localX, localY, modifiers, clickCount));
     }
 
-    private void HandleMouseUp(MouseButton button, int x, int y)
+    /// <summary>Returns 2, 3, ... when this press continues a multi-click on the same control, otherwise 1.</summary>
+    private int CountClicks(MouseButton button, int x, int y, Control? target)
+    {
+        var platform = Application.Platform;
+        var now = Environment.TickCount64;
+        var distance = platform.DoubleClickDistance;
+        var continues = _clickCount > 0
+            && button == _lastPressButton
+            && target == _lastPressControl
+            && now - _lastPressTime <= platform.DoubleClickTime
+            && Math.Abs(x - _lastPressX) <= distance
+            && Math.Abs(y - _lastPressY) <= distance;
+
+        _clickCount = continues ? _clickCount + 1 : 1;
+        (_lastPressTime, _lastPressX, _lastPressY, _lastPressButton, _lastPressControl) = (now, x, y, button, target);
+        return _clickCount;
+    }
+
+    private void HandleMouseUp(MouseButton button, int x, int y, KeyModifiers modifiers)
     {
         var mask = 1 << (int)button;
         var wasPressed = (_pressedButtons & mask) != 0;
@@ -253,7 +280,7 @@ public class Window
         if (pressedControl != null)
         {
             var (localX, localY) = pressedControl.PointFromWindow(x, y);
-            pressedControl.RaiseMouseUp(new MouseEventArgs(button, localX, localY));
+            pressedControl.RaiseMouseUp(new MouseEventArgs(button, localX, localY, modifiers));
         }
 
         if (!wasPressed || !IsInClientArea(x, y))
@@ -264,13 +291,25 @@ public class Window
         {
             var target = EnabledHitTest(x, y, out var localX, out var localY);
             if (target == pressedControl)
-                target.RaiseMouseClick(new MouseEventArgs(button, localX, localY));
+                target.RaiseMouseClick(new MouseEventArgs(button, localX, localY, modifiers));
         }
 
-        OnMouseClick(new MouseEventArgs(button, x, y));
+        OnMouseClick(new MouseEventArgs(button, x, y, modifiers));
     }
 
-    private void HandleMouseMove(int x, int y) => SetHoveredControl(EnabledHitTest(x, y, out _, out _));
+    private void HandleMouseMove(int x, int y, KeyModifiers modifiers)
+    {
+        var hovered = EnabledHitTest(x, y, out _, out _);
+        SetHoveredControl(hovered);
+
+        // While a button is held, the control it was pressed on gets the moves (dragging).
+        var target = Array.Find(_pressedControls, control => control != null) ?? hovered;
+        if (target != null)
+        {
+            var (localX, localY) = target.PointFromWindow(x, y);
+            target.RaiseMouseMove(new MouseMoveEventArgs(localX, localY, modifiers));
+        }
+    }
 
     private void SetHoveredControl(Control? control)
     {

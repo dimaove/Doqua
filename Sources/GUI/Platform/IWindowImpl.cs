@@ -10,16 +10,16 @@ internal interface IWindowImpl
     event Action<int, int>? Resized;
 
     /// <summary>Raised when a mouse button is pressed inside the client area.</summary>
-    event Action<MouseButton, int, int>? MouseDown;
+    event Action<MouseButton, int, int, KeyModifiers>? MouseDown;
 
     /// <summary>
     /// Raised when a mouse button is released. The window keeps receiving the release
     /// (pointer grab / capture) even if the pointer has left the client area.
     /// </summary>
-    event Action<MouseButton, int, int>? MouseUp;
+    event Action<MouseButton, int, int, KeyModifiers>? MouseUp;
 
     /// <summary>Raised when the pointer moves over the client area (or anywhere, while a button is held).</summary>
-    event Action<int, int>? MouseMove;
+    event Action<int, int, KeyModifiers>? MouseMove;
 
     /// <summary>Raised when the pointer leaves the client area.</summary>
     event Action? MouseLeave;

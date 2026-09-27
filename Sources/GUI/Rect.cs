@@ -6,6 +6,9 @@ public readonly record struct Rect(int X, int Y, int Width, int Height)
     public int Bottom => Y + Height;
     public bool IsEmpty => Width <= 0 || Height <= 0;
 
+    /// <summary>Creates a rect from its left, top, right and bottom edges (right and bottom exclusive).</summary>
+    public static Rect FromEdges(int left, int top, int right, int bottom) => new(left, top, right - left, bottom - top);
+
     public bool Contains(int x, int y) => x >= X && y >= Y && x < Right && y < Bottom;
 
     public Rect Offset(int dx, int dy) => this with { X = X + dx, Y = Y + dy };

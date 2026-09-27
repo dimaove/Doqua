@@ -15,9 +15,9 @@ internal sealed unsafe class X11WindowImpl : IWindowImpl
 
     public event Action? Closed;
     public event Action<int, int>? Resized;
-    public event Action<MouseButton, int, int>? MouseDown;
-    public event Action<MouseButton, int, int>? MouseUp;
-    public event Action<int, int>? MouseMove;
+    public event Action<MouseButton, int, int, KeyModifiers>? MouseDown;
+    public event Action<MouseButton, int, int, KeyModifiers>? MouseUp;
+    public event Action<int, int, KeyModifiers>? MouseMove;
     public event Action? MouseLeave;
     public event Action<Key, KeyModifiers>? KeyDown;
     public event Action<string>? TextInput;
@@ -120,16 +120,16 @@ internal sealed unsafe class X11WindowImpl : IWindowImpl
             // The X server grabs the pointer on press, so the release comes here even outside the window.
             case Xlib.ButtonPress:
                 if (ToMouseButton(ev.button) is { } pressed)
-                    MouseDown?.Invoke(pressed, ev.pointerX, ev.pointerY);
+                    MouseDown?.Invoke(pressed, ev.pointerX, ev.pointerY, ToModifiers(ev.state));
                 break;
 
             case Xlib.ButtonRelease:
                 if (ToMouseButton(ev.button) is { } released)
-                    MouseUp?.Invoke(released, ev.pointerX, ev.pointerY);
+                    MouseUp?.Invoke(released, ev.pointerX, ev.pointerY, ToModifiers(ev.state));
                 break;
 
             case Xlib.MotionNotify:
-                MouseMove?.Invoke(ev.pointerX, ev.pointerY);
+                MouseMove?.Invoke(ev.pointerX, ev.pointerY, ToModifiers(ev.state));
                 break;
 
             // Leaving because another client grabbed the pointer (e.g. a window manager
@@ -226,7 +226,7 @@ internal sealed unsafe class X11WindowImpl : IWindowImpl
         // Keys come from the first layout, so shortcuts like Ctrl+A work with any active layout.
         var key = ToKey(Xlib.XkbKeycodeToKeysym(_platform.Display, ev.keycode, 0, 0));
         if (key != Key.None)
-            KeyDown?.Invoke(key, ToModifiers(ev.keyState));
+            KeyDown?.Invoke(key, ToModifiers(ev.state));
 
         // Backspace, Tab, Enter, Esc and Ctrl+letter produce control characters: they are keys, not text.
         if (text.Length > 0 && !text.Any(ch => ch < 0x20 || ch == 0x7F))
