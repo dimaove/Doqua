@@ -69,15 +69,17 @@ ports.<span class="t">RowActivated</span> += (sender, e) =&gt; <span class="t">E
 <figure><img class="shot" src="../images/types/SplitContainer.png" alt="A TreeView and a Table in a SplitContainer"><figcaption>A <a href="../api/Doqua.Controls.TreeView.html"><code>TreeView</code></a> and a <a href="../api/Doqua.Controls.Table.html"><code>Table</code></a> in a <a href="../api/Doqua.Controls.SplitContainer.html"><code>SplitContainer</code></a> (the Dictionary example).</figcaption></figure>
 
 <h2>Messages</h2>
-<p><b><a href="../api/Doqua.Controls.MessageBox.html"><code>MessageBox</code></a></b> shows a modal message inside a window: a title, an icon, the text and OK, OK / Cancel, Yes / No or
-Yes / No / Cancel. While it is shown, the rest of the window gets no input. <a href="../api/Doqua.Controls.MessageBox.html#Show-1"><code>MessageBox.Show</code></a> returns at once; the chosen
-button arrives in a callback, so no <code>async</code> code is needed:</p>
+<p><b><a href="../api/Doqua.Controls.MessageBox.html"><code>MessageBox</code></a></b> shows a message in a small modal dialog window over its owner: an icon, the text and OK,
+OK / Cancel, Yes / No or Yes / No / Cancel. While it is open, the owner gets no input (see
+<a href="timers.html#dialogs">dialog windows</a>). <a href="../api/Doqua.Controls.MessageBox.html#Show-1"><code>MessageBox.Show</code></a> returns at once; the chosen button arrives in a
+callback, so no <code>async</code> code is needed:</p>
 <pre class="code"><code><a class="t" href="../api/Doqua.Controls.MessageBox.html">MessageBox</a>.<span class="t">Show</span>(window, <span class="s">$&quot;Remove \&quot;{name}\&quot;?&quot;</span>, <span class="s">&quot;Remove&quot;</span>, <a class="t" href="../api/Doqua.Controls.MessageBoxButtons.html">MessageBoxButtons</a>.<span class="t">YesNo</span>, <a class="t" href="../api/Doqua.Controls.MessageBoxIcon.html">MessageBoxIcon</a>.<span class="t">Question</span>, result =&gt;
 {
     <span class="k">if</span> (result == <a class="t" href="../api/Doqua.Controls.MessageBoxResult.html">MessageBoxResult</a>.<span class="t">Yes</span>)
         <span class="t">Remove</span>(name);
 });</code></pre>
-<figure><img class="shot" src="../images/types/MessageBox.png" alt="MessageBox with Yes and No"></figure>
+<figure><img class="shot" src="../images/types/MessageBox.png" alt="MessageBox with Yes and No"><figcaption>The content of
+the message window; its title bar comes from the window manager.</figcaption></figure>
 
 <h2>Menus and shapes</h2>
 <p><b><a href="../api/Doqua.Controls.PopupMenu.html"><code>PopupMenu</code></a></b> is a context or pop-up menu of <a href="../api/Doqua.Controls.MenuItem.html"><code>MenuItem</code></a>s. <b><a href="../api/Doqua.Controls.Rectangle.html"><code>Rectangle</code></a></b> is a filled rectangle,

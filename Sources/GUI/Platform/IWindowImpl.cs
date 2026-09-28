@@ -51,7 +51,21 @@ internal interface IWindowImpl
     void SetCursor(Cursor cursor);
 
     void Resize(int width, int height);
+
+    /// <summary>Whether the user can resize (and maximize) the window with its frame. Windows are resizable by default.</summary>
+    void SetResizable(bool resizable);
+
+    /// <summary>
+    /// Makes the window a modal dialog of <paramref name="owner"/> (call before <see cref="Show"/>): kept above the
+    /// owner, without its own taskbar entry, centred over the owner when shown. The owner gets no native input
+    /// while the dialog is open where the platform supports that (Win32); <see cref="Window"/> also blocks it.
+    /// </summary>
+    void SetModalOwner(IWindowImpl owner);
+
     void Show();
+
+    /// <summary>Brings the window to the front and asks for the keyboard focus (the window manager may refuse).</summary>
+    void Activate();
 
     /// <summary>Schedules a <see cref="Paint"/>. Multiple requests are merged into one.</summary>
     void Invalidate();

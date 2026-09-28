@@ -18,10 +18,15 @@ internal struct XEvent
     [FieldOffset(56)] public int configureWidth;
     [FieldOffset(60)] public int configureHeight;
 
-    // XClientMessageEvent
+    // XClientMessageEvent (data.l[0..4] are C longs)
+    [FieldOffset(8)] public nuint serial;
+    [FieldOffset(16)] public int sendEvent;
+    [FieldOffset(24)] public nint display;
     [FieldOffset(40)] public nuint clientMessageType;
     [FieldOffset(48)] public int clientFormat;
     [FieldOffset(56)] public nint clientData0;
+    [FieldOffset(64)] public nint clientData1;
+    [FieldOffset(72)] public nint clientData2;
 
     // XButtonEvent, XMotionEvent and XCrossingEvent share the pointer position.
     [FieldOffset(64)] public int pointerX;
@@ -86,6 +91,19 @@ internal struct PollFd
     public short revents;
 }
 
+/// <summary>XSizeHints for WM_NORMAL_HINTS (position, fixed size, gravity); LP64 layout.</summary>
+[StructLayout(LayoutKind.Sequential)]
+internal struct XSizeHints
+{
+    public nint flags;
+    public int x, y, width, height;
+    public int minWidth, minHeight, maxWidth, maxHeight;
+    public int widthInc, heightInc;
+    public int minAspectX, minAspectY, maxAspectX, maxAspectY;
+    public int baseWidth, baseHeight;
+    public int winGravity;
+}
+
 /// <summary>Xlib XImage describing client-side pixels; initialized with XInitImage.</summary>
 [StructLayout(LayoutKind.Sequential)]
 internal unsafe struct XImage
@@ -121,6 +139,7 @@ internal static unsafe partial class Xlib
     public const int FocusIn = 9;
     public const int FocusOut = 10;
     public const int Expose = 12;
+    public const int MapNotify = 19;
     public const int ConfigureNotify = 22;
     public const int SelectionClear = 29;
     public const int SelectionRequest = 30;
@@ -142,6 +161,15 @@ internal static unsafe partial class Xlib
     public const nint ExposureMask = 1 << 15;
     public const nint FocusChangeMask = 1 << 21;
     public const nint StructureNotifyMask = 1 << 17;
+    public const nint SubstructureNotifyMask = 1 << 19;
+    public const nint SubstructureRedirectMask = 1 << 20;
+
+    // XSizeHints flags and gravity.
+    public const nint PPosition = 1 << 2;
+    public const nint PMinSize = 1 << 4;
+    public const nint PMaxSize = 1 << 5;
+    public const nint PWinGravity = 1 << 9;
+    public const int StaticGravity = 10;
 
     public const int NotifyGrab = 1;
     public const int NotifyUngrab = 2;
@@ -195,6 +223,28 @@ internal static unsafe partial class Xlib
 
     [LibraryImport(Lib)]
     public static partial int XResizeWindow(nint display, nuint window, uint width, uint height);
+
+    [LibraryImport(Lib)]
+    public static partial int XMoveWindow(nint display, nuint window, int x, int y);
+
+    [LibraryImport(Lib)]
+    public static partial int XRaiseWindow(nint display, nuint window);
+
+    [LibraryImport(Lib)]
+    public static partial int XSetTransientForHint(nint display, nuint window, nuint owner);
+
+    [LibraryImport(Lib)]
+    public static partial void XSetWMNormalHints(nint display, nuint window, XSizeHints* hints);
+
+    [LibraryImport(Lib)]
+    public static partial int XTranslateCoordinates(
+        nint display, nuint source, nuint destination, int sourceX, int sourceY, int* destinationX, int* destinationY, nuint* child);
+
+    [LibraryImport(Lib)]
+    public static partial int XDisplayWidth(nint display, int screen);
+
+    [LibraryImport(Lib)]
+    public static partial int XDisplayHeight(nint display, int screen);
 
     [LibraryImport(Lib)]
     public static partial int XSelectInput(nint display, nuint window, nint eventMask);

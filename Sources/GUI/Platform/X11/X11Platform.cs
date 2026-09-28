@@ -23,6 +23,12 @@ internal sealed unsafe class X11Platform : IPlatform
     internal nuint NetWmName { get; }
     internal nuint Utf8String { get; }
     internal nuint NetWmIcon { get; }
+    internal nuint NetWmWindowType { get; }
+    internal nuint NetWmWindowTypeDialog { get; }
+    internal nuint NetWmState { get; }
+    internal nuint NetWmStateModal { get; }
+    internal nuint NetWmStateSkipTaskbar { get; }
+    internal nuint NetActiveWindow { get; }
 
     /// <summary>X input method for text input, or 0 if none is available (Latin-1 fallback).</summary>
     internal nint InputMethod { get; }
@@ -46,6 +52,12 @@ internal sealed unsafe class X11Platform : IPlatform
         NetWmName = Xlib.XInternAtom(Display, "_NET_WM_NAME", 0);
         Utf8String = Xlib.XInternAtom(Display, "UTF8_STRING", 0);
         NetWmIcon = Xlib.XInternAtom(Display, "_NET_WM_ICON", 0);
+        NetWmWindowType = Xlib.XInternAtom(Display, "_NET_WM_WINDOW_TYPE", 0);
+        NetWmWindowTypeDialog = Xlib.XInternAtom(Display, "_NET_WM_WINDOW_TYPE_DIALOG", 0);
+        NetWmState = Xlib.XInternAtom(Display, "_NET_WM_STATE", 0);
+        NetWmStateModal = Xlib.XInternAtom(Display, "_NET_WM_STATE_MODAL", 0);
+        NetWmStateSkipTaskbar = Xlib.XInternAtom(Display, "_NET_WM_STATE_SKIP_TASKBAR", 0);
+        NetActiveWindow = Xlib.XInternAtom(Display, "_NET_ACTIVE_WINDOW", 0);
         InputMethod = OpenInputMethod(Display);
     }
 

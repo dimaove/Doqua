@@ -12,6 +12,12 @@ internal sealed unsafe class X11WindowImpl : IWindowImpl
     private bool _dirty = true;
     private int _width;
     private int _height;
+    private int _requestedWidth;           // Last size asked for; _width / _height follow ConfigureNotify.
+    private int _requestedHeight;
+    private bool _resizable = true;
+    private X11WindowImpl? _owner;         // Set for a modal dialog.
+    private (int X, int Y)? _position;     // Requested position of a dialog (WM_NORMAL_HINTS).
+    private bool _activateOnMap;
 
     public event Action? Closed;
     public event Action<int, int>? Resized;
@@ -30,8 +36,8 @@ internal sealed unsafe class X11WindowImpl : IWindowImpl
     public X11WindowImpl(X11Platform platform, int width, int height)
     {
         _platform = platform;
-        _width = width;
-        _height = height;
+        _width = _requestedWidth = width;
+        _height = _requestedHeight = height;
 
         var display = platform.Display;
         var screen = platform.Screen;
@@ -112,13 +118,93 @@ internal sealed unsafe class X11WindowImpl : IWindowImpl
         Xlib.XFlush(_platform.Display);
     }
 
-    public void Resize(int width, int height) =>
+    public void Resize(int width, int height)
+    {
+        (_requestedWidth, _requestedHeight) = (width, height);
+        if (!_resizable)
+            SetSizeHints(width, height); // A fixed size is min = max: update it first, or the WM refuses the change.
         Xlib.XResizeWindow(_platform.Display, Handle, (uint)width, (uint)height);
+    }
+
+    public void SetResizable(bool resizable)
+    {
+        _resizable = resizable;
+        SetSizeHints(_requestedWidth, _requestedHeight);
+    }
+
+    public void SetModalOwner(IWindowImpl owner)
+    {
+        _owner = (X11WindowImpl)owner;
+        var display = _platform.Display;
+        Xlib.XSetTransientForHint(display, Handle, _owner.Handle);
+
+        var type = _platform.NetWmWindowTypeDialog;
+        Xlib.XChangeProperty(display, Handle, _platform.NetWmWindowType, Xlib.XA_ATOM, 32, Xlib.PropModeReplace, (byte*)&type, 1);
+        var states = stackalloc nuint[] { _platform.NetWmStateModal, _platform.NetWmStateSkipTaskbar };
+        Xlib.XChangeProperty(display, Handle, _platform.NetWmState, Xlib.XA_ATOM, 32, Xlib.PropModeReplace, (byte*)states, 2);
+    }
 
     public void Show()
     {
+        if (_owner is { Handle: not 0 } owner)
+        {
+            // Centre the client area over the owner's, inside the screen. StaticGravity asks the window manager to
+            // put the client area (not its frame) there; many window managers centre dialogs themselves anyway.
+            int ownerX, ownerY;
+            nuint child;
+            var display = _platform.Display;
+            Xlib.XTranslateCoordinates(display, owner.Handle, Xlib.XRootWindow(display, _platform.Screen), 0, 0, &ownerX, &ownerY, &child);
+            int width = _requestedWidth, height = _requestedHeight;
+            var x = Math.Clamp(ownerX + (owner._width - width) / 2, 0, Math.Max(0, Xlib.XDisplayWidth(display, _platform.Screen) - width));
+            var y = Math.Clamp(ownerY + (owner._height - height) / 2, 0, Math.Max(0, Xlib.XDisplayHeight(display, _platform.Screen) - height));
+            _position = (x, y);
+            Xlib.XMoveWindow(display, Handle, x, y);
+            SetSizeHints(width, height);
+            _activateOnMap = true;
+        }
         Xlib.XMapWindow(_platform.Display, Handle);
         Xlib.XFlush(_platform.Display);
+    }
+
+    /// <summary>Raises the window and asks the window manager to activate it (EWMH _NET_ACTIVE_WINDOW).</summary>
+    public void Activate()
+    {
+        if (Handle == 0)
+            return;
+        var display = _platform.Display;
+        Xlib.XRaiseWindow(display, Handle);
+        var ev = new XEvent
+        {
+            type = Xlib.ClientMessage,
+            window = Handle,
+            clientMessageType = _platform.NetActiveWindow,
+            clientFormat = 32,
+            clientData0 = 1, // Source: an application.
+            clientData1 = 0, // CurrentTime.
+            clientData2 = (nint)(_owner?.Handle ?? 0), // The application's currently active window.
+        };
+        Xlib.XSendEvent(display, Xlib.XRootWindow(display, _platform.Screen), 0,
+            Xlib.SubstructureRedirectMask | Xlib.SubstructureNotifyMask, &ev);
+        Xlib.XFlush(display);
+    }
+
+    /// <summary>WM_NORMAL_HINTS: min = max = the size when not resizable, and a dialog's requested position.</summary>
+    private void SetSizeHints(int width, int height)
+    {
+        var hints = new XSizeHints();
+        if (!_resizable)
+        {
+            hints.flags |= Xlib.PMinSize | Xlib.PMaxSize;
+            hints.minWidth = hints.maxWidth = width;
+            hints.minHeight = hints.maxHeight = height;
+        }
+        if (_position is var (x, y))
+        {
+            hints.flags |= Xlib.PPosition | Xlib.PWinGravity;
+            (hints.x, hints.y) = (x, y);
+            hints.winGravity = Xlib.StaticGravity;
+        }
+        Xlib.XSetWMNormalHints(_platform.Display, Handle, &hints);
     }
 
     public void Invalidate() => _dirty = true;
@@ -142,6 +228,14 @@ internal sealed unsafe class X11WindowImpl : IWindowImpl
         {
             case Xlib.Expose:
                 _dirty = true;
+                break;
+
+            case Xlib.MapNotify:
+                if (_activateOnMap)
+                {
+                    _activateOnMap = false;
+                    Activate(); // A new dialog takes the focus from its owner.
+                }
                 break;
 
             case Xlib.ConfigureNotify:

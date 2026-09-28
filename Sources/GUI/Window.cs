@@ -33,7 +33,8 @@ public class Window
     private (int X, int Y)? _pointer; // Last pointer position over the client area.
     private Cursor _currentCursor = Cursor.Arrow;
     private Action? _popupClosed;
-    private bool _popupModal; // A modal popup (a MessageBox) is kept centred and is not closed by outside presses.
+    private Window? _modalChild; // Open dialog shown with ShowModal; this window gets no input meanwhile.
+    private bool _resizable = true;
 
     /// <summary>Creates an 800 x 600 window; it appears with <see cref="Show"/> or <see cref="Application.Run"/>.</summary>
     public Window()
@@ -44,6 +45,12 @@ public class Window
         {
             IsClosed = true;
             s_openWindows.Remove(this);
+            _modalChild?.Close(); // A dialog closes with its owner (and reports first).
+            if (Owner is { } owner && owner._modalChild == this)
+            {
+                owner._modalChild = null;
+                owner.Activate();
+            }
             OnClosed();
         };
         s_openWindows.Add(this);
@@ -164,6 +171,27 @@ public class Window
         }
     }
 
+    /// <summary>
+    /// Whether the user can resize the window with its frame (and maximize it). True by default; dialogs usually set
+    /// it to false. <see cref="Width"/> and <see cref="Height"/> can still be changed from code.
+    /// </summary>
+    public bool Resizable
+    {
+        get => _resizable;
+        set
+        {
+            ThrowIfClosed();
+            _resizable = value;
+            _impl.SetResizable(value);
+        }
+    }
+
+    /// <summary>The window this one was shown for with <see cref="ShowModal"/>, or null.</summary>
+    public Window? Owner { get; private set; }
+
+    /// <summary>True while a window shown with <see cref="ShowModal"/> for this one is open: this window then gets no input.</summary>
+    public bool HasModalDialog => _modalChild != null;
+
     /// <summary>True while the window has the keyboard focus of the operating system.</summary>
     public bool IsActive { get; private set; }
 
@@ -187,6 +215,38 @@ public class Window
     {
         ThrowIfClosed();
         _impl.Show();
+    }
+
+    /// <summary>
+    /// Shows this window as a modal dialog of <paramref name="owner"/>, instead of <see cref="Show"/>. It returns at once;
+    /// until this window closes, the owner gets no mouse or keyboard input (a click on it brings the dialog to the
+    /// front). The dialog is kept above the owner, has no taskbar entry of its own, is centred over the owner and takes
+    /// the keyboard focus; it closes with the owner. Handle <see cref="Closed"/> for the result.
+    /// If the owner already has a modal dialog, this one becomes a dialog of that dialog.
+    /// </summary>
+    public void ShowModal(Window owner)
+    {
+        ArgumentNullException.ThrowIfNull(owner);
+        ThrowIfClosed();
+        owner.ThrowIfClosed();
+        while (owner._modalChild is { } dialog)
+            owner = dialog;
+        if (owner == this || Owner != null)
+            throw new InvalidOperationException(Localization.Get("Doqua.Error.ModalOwner"));
+
+        Owner = owner;
+        owner.ClosePopup();
+        owner.SetHoveredControl(null);
+        owner._modalChild = this;
+        _impl.SetModalOwner(owner._impl);
+        _impl.Show();
+    }
+
+    /// <summary>Brings the window to the front and gives it the keyboard focus, if the window manager allows it.</summary>
+    public void Activate()
+    {
+        if (!IsClosed)
+            _impl.Activate();
     }
 
     /// <summary>Closes the window; closing the main window ends <see cref="Application.Run"/>.</summary>
@@ -220,17 +280,12 @@ public class Window
     /// Shows <paramref name="popup"/> (positioned in client coordinates) above the content, closing any
     /// open popup first. While it is open it gets all mouse and keyboard input; a press outside it
     /// closes it. <paramref name="closed"/> runs whenever it closes, for any reason.
-    /// A <paramref name="modal"/> popup is centred in the window (also after a resize) and presses outside it are ignored:
-    /// only the popup itself closes it.
     /// </summary>
-    internal void OpenPopup(Control popup, Action closed, bool modal = false)
+    internal void OpenPopup(Control popup, Action closed)
     {
         ClosePopup();
         _popup = popup;
         _popupClosed = closed;
-        _popupModal = modal;
-        if (modal)
-            CenterPopup();
         popup.Host = this;
         SetHoveredControl(null);
         Invalidate();
@@ -243,7 +298,7 @@ public class Window
             return;
         var closed = _popupClosed;
         _popup.Host = null;
-        (_popup, _popupClosed, _popupModal) = (null, null, false);
+        (_popup, _popupClosed) = (null, null);
         Array.Clear(_pressedControls);
         SetHoveredControl(null);
         Invalidate();
@@ -335,6 +390,8 @@ public class Window
 
     private void HandleKeyDown(Key key, KeyModifiers modifiers)
     {
+        if (_modalChild != null)
+            return; // The window manager may still let the owner have the focus; the keys belong to the dialog.
         var e = new KeyEventArgs(key, modifiers);
         if (_popup != null)
         {
@@ -358,7 +415,7 @@ public class Window
 
     private void HandleTextInput(string text)
     {
-        if (_popup != null)
+        if (_popup != null || _modalChild != null)
             return;
         var e = new TextInputEventArgs(text);
         for (var control = _focusedControl; control != null && !e.Handled; control = control.Parent)
@@ -375,13 +432,17 @@ public class Window
 
     private void HandleMouseDown(MouseButton button, int x, int y, KeyModifiers modifiers)
     {
+        if (_modalChild != null)
+        {
+            _modalChild.Activate(); // Like native modal dialogs: a click on the owner brings the dialog to the front.
+            return;
+        }
         _pointer = (x, y);
         _pressedButtons |= 1 << (int)button;
         var target = EnabledHitTest(x, y, out var localX, out var localY);
         if (_popup != null && target == null)
         {
-            if (!_popupModal)
-                ClosePopup(); // A press outside an open popup closes it (a modal one stays); it is not passed on.
+            ClosePopup(); // A press outside an open popup closes it and is not passed on.
             return;
         }
         _pressedControls[(int)button] = target;
@@ -447,7 +508,8 @@ public class Window
             pressedControl.RaiseMouseUp(new MouseEventArgs(button, localX, localY, modifiers));
         }
 
-        if (!wasPressed || !IsInClientArea(x, y))
+        // A modal dialog opened while the button was held: the press is released, but nothing is clicked.
+        if (!wasPressed || !IsInClientArea(x, y) || _modalChild != null)
             return;
 
         // A control is clicked only if the button was pressed and released over it.
@@ -468,6 +530,8 @@ public class Window
     private void HandleMouseMove(int x, int y, KeyModifiers modifiers)
     {
         _pointer = (x, y);
+        if (_modalChild != null && !Array.Exists(_pressedControls, control => control != null))
+            return; // No hover effects behind a modal dialog (a drag started before it opened still gets its moves).
         var hovered = EnabledHitTest(x, y, out _, out _);
         SetHoveredControl(hovered);
 
@@ -484,6 +548,8 @@ public class Window
     /// <summary>The wheel goes to the control under the pointer, then up through its parents until handled.</summary>
     private void HandleMouseWheel(int delta, int x, int y, KeyModifiers modifiers)
     {
+        if (_modalChild != null)
+            return;
         // While a popup is open only the popup can scroll (e.g. a combo box list); nothing behind it does.
         for (var control = EnabledHitTest(x, y, out _, out _); control != null; control = control.Parent)
         {
@@ -538,24 +604,12 @@ public class Window
 
     private void UpdateSize(int width, int height)
     {
-        var resized = width != _width || height != _height;
-        if (resized && !_popupModal)
+        if (width != _width || height != _height)
             ClosePopup();
         _width = width;
         _height = height;
-        if (resized && _popupModal)
-            CenterPopup();
         if (_content != null)
             _content.Bounds = new Rect(0, 0, width, height);
-    }
-
-    private void CenterPopup()
-    {
-        if (_popup is not { } popup)
-            return;
-        popup.X = Math.Max(0, (_width - popup.Width) / 2);
-        popup.Y = Math.Max(0, (_height - popup.Height) / 2);
-        Invalidate();
     }
 
     private void ThrowIfClosed() => ObjectDisposedException.ThrowIf(IsClosed, this);

@@ -7,13 +7,14 @@ namespace Doqua.GUI.Platform.Win32;
 [SupportedOSPlatform("windows")]
 internal sealed unsafe class Win32WindowImpl : IWindowImpl
 {
-    private const uint Style = User32.WS_OVERLAPPEDWINDOW;
 
     // Messages sent during CreateWindowExW (before the handle is known) go to DefWindowProcW.
     private static readonly Dictionary<nint, Win32WindowImpl> s_windows = new();
 
     private readonly Framebuffer _framebuffer = new();
+    private uint _style = User32.WS_OVERLAPPEDWINDOW;
     private nint _hwnd;
+    private nint _owner; // Disabled while this modal dialog is open.
     private bool _trackingMouseLeave;
     private nint _smallIcon;
     private nint _bigIcon;
@@ -37,7 +38,7 @@ internal sealed unsafe class Win32WindowImpl : IWindowImpl
     {
         var (outerWidth, outerHeight) = ToOuterSize(width, height);
         _hwnd = User32.CreateWindowExW(
-            0, Win32Platform.WindowClassName, "", Style,
+            0, Win32Platform.WindowClassName, "", _style,
             User32.CW_USEDEFAULT, User32.CW_USEDEFAULT, outerWidth, outerHeight,
             0, 0, Win32Platform.Instance, 0);
         if (_hwnd == 0)
@@ -123,10 +124,64 @@ internal sealed unsafe class Win32WindowImpl : IWindowImpl
             User32.SWP_NOMOVE | User32.SWP_NOZORDER | User32.SWP_NOACTIVATE);
     }
 
+    public void SetResizable(bool resizable)
+    {
+        RECT client;
+        User32.GetClientRect(_hwnd, &client);
+        _style = resizable ? User32.WS_OVERLAPPEDWINDOW : User32.WS_OVERLAPPEDWINDOW & ~(User32.WS_THICKFRAME | User32.WS_MAXIMIZEBOX);
+        User32.SetWindowLongPtrW(_hwnd, User32.GWL_STYLE, (nint)_style);
+        var (outerWidth, outerHeight) = ToOuterSize(client.right, client.bottom); // Same client size, new frame.
+        User32.SetWindowPos(_hwnd, 0, 0, 0, outerWidth, outerHeight,
+            User32.SWP_NOMOVE | User32.SWP_NOZORDER | User32.SWP_NOACTIVATE | User32.SWP_FRAMECHANGED);
+    }
+
+    /// <summary>An owned window stays above its owner and has no taskbar button; the owner is disabled in Show.</summary>
+    public void SetModalOwner(IWindowImpl owner)
+    {
+        _owner = ((Win32WindowImpl)owner)._hwnd;
+        User32.SetWindowLongPtrW(_hwnd, User32.GWLP_HWNDPARENT, _owner);
+    }
+
     public void Show()
     {
+        if (_owner != 0)
+        {
+            // Centre over the owner, inside the work area of the owner's monitor, then disable the owner.
+            RECT ownerRect, rect;
+            User32.GetWindowRect(_owner, &ownerRect);
+            User32.GetWindowRect(_hwnd, &rect);
+            int width = rect.right - rect.left, height = rect.bottom - rect.top;
+            var x = ownerRect.left + (ownerRect.right - ownerRect.left - width) / 2;
+            var y = ownerRect.top + (ownerRect.bottom - ownerRect.top - height) / 2;
+            var monitor = new MONITORINFO { cbSize = (uint)sizeof(MONITORINFO) };
+            if (User32.GetMonitorInfoW(User32.MonitorFromWindow(_owner, User32.MONITOR_DEFAULTTONEAREST), &monitor) != 0)
+            {
+                x = Math.Clamp(x, monitor.rcWork.left, Math.Max(monitor.rcWork.left, monitor.rcWork.right - width));
+                y = Math.Clamp(y, monitor.rcWork.top, Math.Max(monitor.rcWork.top, monitor.rcWork.bottom - height));
+            }
+            User32.SetWindowPos(_hwnd, 0, x, y, 0, 0, User32.SWP_NOSIZE | User32.SWP_NOZORDER | User32.SWP_NOACTIVATE);
+            User32.EnableWindow(_owner, 0);
+        }
         User32.ShowWindow(_hwnd, User32.SW_SHOWNORMAL);
         User32.UpdateWindow(_hwnd);
+    }
+
+    public void Activate()
+    {
+        if (_hwnd != 0)
+            User32.SetForegroundWindow(_hwnd);
+    }
+
+    /// <summary>
+    /// Re-enables the owner of a modal dialog. Done before the dialog is destroyed, so that Windows activates the
+    /// owner rather than some other application.
+    /// </summary>
+    private void ReleaseOwner()
+    {
+        if (_owner == 0)
+            return;
+        User32.EnableWindow(_owner, 1);
+        _owner = 0;
     }
 
     public void Invalidate()
@@ -137,15 +192,17 @@ internal sealed unsafe class Win32WindowImpl : IWindowImpl
 
     public void Destroy()
     {
-        if (_hwnd != 0)
-            User32.DestroyWindow(_hwnd); // WM_DESTROY raises Closed.
+        if (_hwnd == 0)
+            return;
+        ReleaseOwner();
+        User32.DestroyWindow(_hwnd); // WM_DESTROY raises Closed.
     }
 
     /// <summary>Converts a client-area size into the full window size including frame and title bar.</summary>
-    private static (int Width, int Height) ToOuterSize(int width, int height)
+    private (int Width, int Height) ToOuterSize(int width, int height)
     {
         var rect = new RECT { right = width, bottom = height };
-        User32.AdjustWindowRectEx(&rect, Style, 0, 0);
+        User32.AdjustWindowRectEx(&rect, _style, 0, 0);
         return (rect.right - rect.left, rect.bottom - rect.top);
     }
 
@@ -222,14 +279,19 @@ internal sealed unsafe class Win32WindowImpl : IWindowImpl
                 OnButtonUp(MouseButton.Right, wParam, lParam);
                 return 0;
 
+            // The title bar X button: re-enable the owner first; DefWindowProcW then calls DestroyWindow.
+            case User32.WM_CLOSE:
+                ReleaseOwner();
+                break;
+
             case User32.WM_DESTROY:
+                ReleaseOwner();
                 DestroyIcons();
                 s_windows.Remove(_hwnd);
                 _hwnd = 0;
                 Closed?.Invoke();
                 return 0;
         }
-        // WM_CLOSE (title bar X button) is handled by DefWindowProcW, which calls DestroyWindow.
         return User32.DefWindowProcW(_hwnd, msg, wParam, lParam);
     }
 

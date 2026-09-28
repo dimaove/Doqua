@@ -36,6 +36,15 @@ internal struct RECT
 }
 
 [StructLayout(LayoutKind.Sequential)]
+internal struct MONITORINFO
+{
+    public uint cbSize;
+    public RECT rcMonitor;
+    public RECT rcWork;
+    public uint dwFlags;
+}
+
+[StructLayout(LayoutKind.Sequential)]
 internal struct MSG
 {
     public nint hwnd;
@@ -172,14 +181,22 @@ internal static unsafe partial class User32
     public const uint CS_HREDRAW = 0x0002;
 
     public const uint WS_OVERLAPPEDWINDOW = 0x00CF0000;
+    public const uint WS_THICKFRAME = 0x00040000;
+    public const uint WS_MAXIMIZEBOX = 0x00010000;
+    public const int GWL_STYLE = -16;
+    public const int GWLP_HWNDPARENT = -8;
+    public const uint MONITOR_DEFAULTTONEAREST = 2;
     public const int CW_USEDEFAULT = unchecked((int)0x80000000);
     public const int SW_SHOWNORMAL = 1;
 
+    public const uint SWP_NOSIZE = 0x0001;
     public const uint SWP_NOMOVE = 0x0002;
+    public const uint SWP_FRAMECHANGED = 0x0020;
     public const uint SWP_NOZORDER = 0x0004;
     public const uint SWP_NOACTIVATE = 0x0010;
 
     public const uint WM_DESTROY = 0x0002;
+    public const uint WM_CLOSE = 0x0010;
     public const uint WM_SIZE = 0x0005;
     public const uint WM_SETFOCUS = 0x0007;
     public const uint WM_KILLFOCUS = 0x0008;
@@ -244,6 +261,24 @@ internal static unsafe partial class User32
 
     [LibraryImport(Lib)]
     public static partial int AdjustWindowRectEx(RECT* rect, uint style, int menu, uint exStyle);
+
+    [LibraryImport(Lib)]
+    public static partial int GetWindowRect(nint hwnd, RECT* rect);
+
+    [LibraryImport(Lib)]
+    public static partial nint SetWindowLongPtrW(nint hwnd, int index, nint value);
+
+    [LibraryImport(Lib)]
+    public static partial int EnableWindow(nint hwnd, int enable);
+
+    [LibraryImport(Lib)]
+    public static partial int SetForegroundWindow(nint hwnd);
+
+    [LibraryImport(Lib)]
+    public static partial nint MonitorFromWindow(nint hwnd, uint flags);
+
+    [LibraryImport(Lib)]
+    public static partial int GetMonitorInfoW(nint monitor, MONITORINFO* info);
 
     [LibraryImport(Lib)]
     public static partial int GetMessageW(MSG* msg, nint hwnd, uint filterMin, uint filterMax);

@@ -54,12 +54,14 @@ public enum MessageBoxResult
 }
 
 /// <summary>
-/// A modal message inside a window: a title bar, an icon, the text (wrapped to fit) and buttons. While it is shown
-/// the rest of the window gets no input; <c>Show</c> returns at once and the result arrives in its callback.
+/// A modal message window: an icon, the text (wrapped to fit) and buttons, in a small dialog window centred over its
+/// owner (see <see cref="Window.ShowModal"/>). While it is open the owner gets no input; <c>Show</c> returns at once
+/// and the result arrives in its callback.
 /// <list type="bullet">
 /// <item>The first button is the default. Left / Right and Tab / Shift+Tab move between the buttons; Enter or
 /// Space presses the focused one.</item>
-/// <item>Escape answers Cancel (No with <see cref="MessageBoxButtons.YesNo"/>, OK with <see cref="MessageBoxButtons.Ok"/>).</item>
+/// <item>Escape and the title bar's close button answer Cancel (No with <see cref="MessageBoxButtons.YesNo"/>, OK with
+/// <see cref="MessageBoxButtons.Ok"/>).</item>
 /// </list>
 /// <example>
 /// <code>
@@ -71,17 +73,22 @@ public enum MessageBoxResult
 public static class MessageBox
 {
     /// <summary>
-    /// Shows <paramref name="text"/> in <paramref name="owner"/> (lines are broken at '\n' and wherever needed).
-    /// <paramref name="title"/> defaults to the window's title. <paramref name="closed"/> runs once, with the chosen button.
-    /// Opening another popup (such as a menu) in the window closes the message first, with the Escape result.
+    /// Shows <paramref name="text"/> in a dialog window over <paramref name="owner"/> (lines are broken at '\n' and
+    /// wherever needed). <paramref name="title"/> defaults to the owner's title, and the owner's icons are used.
+    /// <paramref name="closed"/> runs once, with the chosen button, after the message window has closed.
     /// </summary>
     public static void Show(Window owner, string text, string? title = null, MessageBoxButtons buttons = MessageBoxButtons.Ok,
         MessageBoxIcon icon = MessageBoxIcon.None, Action<MessageBoxResult>? closed = null)
     {
         ArgumentNullException.ThrowIfNull(owner);
         ArgumentNullException.ThrowIfNull(text);
-        var view = new MessageBoxView(owner, text, title ?? owner.Title, buttons, icon);
-        owner.OpenPopup(view, () => closed?.Invoke(view.Result), modal: true);
+        var window = new Window { Title = title ?? owner.Title, Icons = owner.Icons, Resizable = false, Background = ClassicStyle.Face };
+        var view = new MessageBoxView(window, text, buttons, icon);
+        (window.Width, window.Height) = (view.Width, view.Height);
+        window.Content = view;
+        window.FocusedControl = view;
+        window.Closed += (sender, e) => closed?.Invoke(view.Result);
+        window.ShowModal(owner);
     }
 
     /// <summary>
@@ -97,20 +104,17 @@ public static class MessageBox
     }
 }
 
-/// <summary>The shown message: drawn and driven by itself, hosted by the window as a modal popup.</summary>
+/// <summary>The content of a message window: icon, text and buttons, drawn and driven by itself.</summary>
 internal sealed class MessageBoxView : Control
 {
-    private const int Edge = 2;
-    private const int TitleHeight = 22;
-    private const int Padding = 14;
+    private const int Padding = 16;
     private const int IconSize = 32;
     private const int ButtonHeight = 24;
     private const int MinButtonWidth = 80;
     private const int ButtonGap = 8;
     private const int MaxTextWidth = 460;
 
-    private readonly Window _owner;
-    private readonly string _title;
+    private readonly Window _window;
     private readonly MessageBoxIcon _icon;
     private readonly (MessageBoxResult Result, string Text)[] _buttons;
     private readonly List<string> _lines;
@@ -118,10 +122,9 @@ internal sealed class MessageBoxView : Control
     private int _focused;
     private int _pressed = -1;
 
-    public MessageBoxView(Window owner, string text, string title, MessageBoxButtons buttons, MessageBoxIcon icon)
+    public MessageBoxView(Window window, string text, MessageBoxButtons buttons, MessageBoxIcon icon)
     {
-        _owner = owner;
-        _title = title;
+        _window = window;
         _icon = icon;
         _buttons = buttons switch
         {
@@ -140,21 +143,19 @@ internal sealed class MessageBoxView : Control
             _ => MessageBoxResult.Cancel,
         };
         Cursor = Cursor.Arrow;
+        Focusable = true; // Takes the window's keys.
 
-        // Size: the text wrapped to what fits the window, the buttons and the title, whichever is widest.
+        // Size (of the window): the wrapped text with the icon, or the buttons, whichever is wider.
         var font = Font;
         var iconSpace = icon == MessageBoxIcon.None ? 0 : IconSize + Padding;
-        var available = Math.Max(80, Math.Min(MaxTextWidth, owner.Width - 2 * Edge - 2 * Padding - iconSpace - 16));
-        _lines = Wrap(text, font, available);
+        _lines = Wrap(text, font, MaxTextWidth);
         var textWidth = _lines.Count == 0 ? 0 : _lines.Max(line => font.MeasureText(line).Width);
         _buttonWidth = Math.Max(MinButtonWidth, _buttons.Max(b => font.MeasureText(b.Text).Width + 24));
         var buttonsWidth = _buttons.Length * _buttonWidth + (_buttons.Length - 1) * ButtonGap;
-        var titleWidth = TitleFont.MeasureText(title).Width + 16;
-        var contentWidth = Math.Max(iconSpace + textWidth, Math.Max(buttonsWidth, titleWidth));
+        var contentWidth = Math.Max(iconSpace + textWidth, buttonsWidth);
         var textHeight = _lines.Count * font.LineHeight;
-        Width = Math.Min(owner.Width, Math.Max(220, contentWidth + 2 * Padding + 2 * Edge));
-        Height = Math.Min(owner.Height, 2 * Edge + TitleHeight + Padding + Math.Max(textHeight, iconSpace > 0 ? IconSize : 0)
-            + Padding + ButtonHeight + Padding);
+        Width = Math.Max(240, contentWidth + 2 * Padding);
+        Height = Padding + Math.Max(textHeight, iconSpace > 0 ? IconSize : 0) + Padding + ButtonHeight + Padding;
     }
 
     /// <summary>The chosen button; the Escape result until a button is chosen.</summary>
@@ -162,13 +163,11 @@ internal sealed class MessageBoxView : Control
 
     private static Font Font => Font.Default;
 
-    private static Font TitleFont => Font.Default with { Style = FontStyle.Bold };
-
     private Rect ButtonRect(int index)
     {
         var total = _buttons.Length * _buttonWidth + (_buttons.Length - 1) * ButtonGap;
         var x = (Width - total) / 2 + index * (_buttonWidth + ButtonGap);
-        return new Rect(x, Height - Edge - Padding - ButtonHeight, _buttonWidth, ButtonHeight);
+        return new Rect(x, Height - Padding - ButtonHeight, _buttonWidth, ButtonHeight);
     }
 
     private int ButtonAt(int x, int y)
@@ -210,7 +209,7 @@ internal sealed class MessageBoxView : Control
         switch (e.Key)
         {
             case Key.Escape:
-                _owner.ClosePopup(); // Result is still the Escape result.
+                _window.Close(); // Result is still the Escape result.
                 break;
             case Key.Enter or Key.Space:
                 Choose(_buttons[_focused].Result);
@@ -228,22 +227,12 @@ internal sealed class MessageBoxView : Control
 
     protected override void OnRender(DrawingContext dc)
     {
-        var bounds = new Rect(0, 0, Width, Height);
-        dc.FillRectangle(bounds, ClassicStyle.Face);
-        ClassicStyle.DrawRaisedEdge(dc, bounds, ClassicStyle.Face, ClassicStyle.Shadow, ClassicStyle.DarkShadow);
-        ClassicStyle.DrawRaisedEdge(dc, Rect.FromEdges(1, 1, Width - 1, Height - 1), ClassicStyle.Highlight, ClassicStyle.Face, ClassicStyle.Shadow);
-
-        // Title bar: the classic dark blue to light blue gradient, bold white text.
-        var bar = new Rect(Edge + 1, Edge + 1, Width - 2 * Edge - 2, TitleHeight - 2);
-        for (var x = 0; x < bar.Width; x++)
-            dc.FillRectangle(bar.X + x, bar.Y, 1, bar.Height, Color.Lerp(new Color(0, 0, 128), new Color(16, 132, 208), (float)x / Math.Max(1, bar.Width)));
-        using (dc.PushClip(bar))
-            dc.DrawText(_title, TitleFont, Color.White, bar.X + 5, bar.Y + (bar.Height - (TitleFont.Ascent + TitleFont.Descent)) / 2);
+        dc.FillRectangle(new Rect(0, 0, Width, Height), ClassicStyle.Face);
 
         // Icon and text; one line of text is centred on the icon.
         var font = Font;
-        var top = Edge + TitleHeight + Padding;
-        var textX = Edge + Padding;
+        var top = Padding;
+        var textX = Padding;
         var textHeight = _lines.Count * font.LineHeight;
         var textTop = top;
         if (_icon != MessageBoxIcon.None)
@@ -253,7 +242,7 @@ internal sealed class MessageBoxView : Control
             if (textHeight < IconSize)
                 textTop = top + (IconSize - textHeight) / 2;
         }
-        using (dc.PushClip(Rect.FromEdges(Edge, top, Width - Edge, ButtonRect(0).Y - 4)))
+        using (dc.PushClip(Rect.FromEdges(0, top, Width, ButtonRect(0).Y - 4)))
         {
             for (var i = 0; i < _lines.Count; i++)
                 dc.DrawText(_lines[i], font, Color.Black, textX, textTop + i * font.LineHeight);
@@ -272,7 +261,7 @@ internal sealed class MessageBoxView : Control
     private void Choose(MessageBoxResult result)
     {
         Result = result;
-        _owner.ClosePopup();
+        _window.Close();
     }
 
     /// <summary>Classic push button; the focused (default) one has a black frame and a dotted focus rectangle.</summary>

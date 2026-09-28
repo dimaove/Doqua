@@ -23,7 +23,8 @@ and GDI on Windows.
 - Combo boxes, number inputs, and date inputs with a calendar
 - File and folder inputs with a built-in file browser, file masks and validation
 - Tables with row selection and resizable columns, tree views and split panels
-- Modal message boxes (OK, OK/Cancel, Yes/No) with a result callback, and group boxes
+- Modal dialog windows (`Window.ShowModal`) and message boxes (OK, OK/Cancel, Yes/No) with a result callback
+- Group boxes
 - Scrolling panels, keyboard focus and Tab navigation, mouse cursors
 - Native font rendering, PNG loading and saving, and custom drawing (lines, ellipses, bitmaps, alpha blending)
 - Timers, window icons, and localization (English by default)

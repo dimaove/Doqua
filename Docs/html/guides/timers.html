@@ -35,6 +35,24 @@ window.<span class="t">Icons</span> = [<a class="t" href="../api/Doqua.GUI.Bitma
 window.<span class="t">Closed</span> += (sender, e) =&gt; <span class="t">SaveSettings</span>();
 window.<span class="t">Show</span>();</code></pre>
 
+<h2 id="dialogs">Dialog windows</h2>
+<p><a href="../api/Doqua.GUI.Window.html#ShowModal"><code>Window.ShowModal</code></a> shows a window as a modal dialog of another one. It returns at once; until the dialog closes, its
+<a href="../api/Doqua.GUI.Window.html#Owner"><code>Window.Owner</code></a> gets no mouse or keyboard input, and a click on the owner brings the dialog to the front. The dialog stays
+above its owner, has no taskbar entry, opens centred over the owner and closes with it. Set <a href="../api/Doqua.GUI.Window.html#Resizable"><code>Window.Resizable</code></a> to false
+for a fixed size. The result is whatever the dialog stores before it closes; read it in <a href="../api/Doqua.GUI.Window.html#Closed"><code>Window.Closed</code></a>.</p>
+<pre class="code"><code><span class="k">var</span> name = <span class="k">new</span> <a class="t" href="../api/Doqua.Controls.Input.html">Input</a> { <span class="t">X</span> = <span class="n">16</span>, <span class="t">Y</span> = <span class="n">16</span>, <span class="t">Width</span> = <span class="n">268</span> };
+<span class="k">var</span> ok = <span class="k">new</span> <a class="t" href="../api/Doqua.Controls.Button.html">Button</a> { <span class="t">X</span> = <span class="n">184</span>, <span class="t">Y</span> = <span class="n">60</span>, <span class="t">Text</span> = <span class="s">&quot;OK&quot;</span> };
+<span class="k">var</span> dialog = <span class="k">new</span> <a class="t" href="../api/Doqua.GUI.Window.html">Window</a> { <span class="t">Title</span> = <span class="s">&quot;Rename&quot;</span>, <span class="t">Width</span> = <span class="n">300</span>, <span class="t">Height</span> = <span class="n">108</span>, <span class="t">Resizable</span> = <span class="k">false</span>, <span class="t">Content</span> = <span class="k">new</span> <a class="t" href="../api/Doqua.Controls.Panel.html">Panel</a> { <span class="t">Children</span> = { name, ok } } };
+<span class="k">var</span> accepted = <span class="k">false</span>;
+ok.<span class="t">Click</span> += (sender, e) =&gt; { accepted = <span class="k">true</span>; dialog.<span class="t">Close</span>(); };
+dialog.<span class="t">Closed</span> += (sender, e) =&gt;
+{
+    <span class="k">if</span> (accepted)
+        <span class="t">Rename</span>(name.<span class="t">Text</span>);
+};
+dialog.<span class="t">ShowModal</span>(window);</code></pre>
+<p><a href="../api/Doqua.Controls.MessageBox.html"><code>MessageBox</code></a> is such a dialog, ready made.</p>
+
 <footer>Doqua documentation · generated from the source code and its XML comments</footer>
 </main>
 </div>

@@ -51,15 +51,17 @@ ports.RowActivated += (sender, e) => Edit(e.Row);</pre>
 <figure><img class="shot" src="{root}images/types/SplitContainer.png" alt="A TreeView and a Table in a SplitContainer"><figcaption>A [[TreeView]] and a [[Table]] in a [[SplitContainer]] (the Dictionary example).</figcaption></figure>
 
 <h2>Messages</h2>
-<p><b>[[MessageBox]]</b> shows a modal message inside a window: a title, an icon, the text and OK, OK / Cancel, Yes / No or
-Yes / No / Cancel. While it is shown, the rest of the window gets no input. [[MessageBox.Show]] returns at once; the chosen
-button arrives in a callback, so no <code>async</code> code is needed:</p>
+<p><b>[[MessageBox]]</b> shows a message in a small modal dialog window over its owner: an icon, the text and OK,
+OK / Cancel, Yes / No or Yes / No / Cancel. While it is open, the owner gets no input (see
+<a href="timers.html#dialogs">dialog windows</a>). [[MessageBox.Show]] returns at once; the chosen button arrives in a
+callback, so no <code>async</code> code is needed:</p>
 <pre class="cs">MessageBox.Show(window, $"Remove \"{name}\"?", "Remove", MessageBoxButtons.YesNo, MessageBoxIcon.Question, result =>
 {
     if (result == MessageBoxResult.Yes)
         Remove(name);
 });</pre>
-<figure><img class="shot" src="{root}images/types/MessageBox.png" alt="MessageBox with Yes and No"></figure>
+<figure><img class="shot" src="{root}images/types/MessageBox.png" alt="MessageBox with Yes and No"><figcaption>The content of
+the message window; its title bar comes from the window manager.</figcaption></figure>
 
 <h2>Menus and shapes</h2>
 <p><b>[[PopupMenu]]</b> is a context or pop-up menu of [[MenuItem]]s. <b>[[Rectangle]]</b> is a filled rectangle,
