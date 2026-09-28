@@ -21,6 +21,7 @@ public class Input : Control
     private const int CaretBlinkMilliseconds = 530;
 
     private string _text = "";
+    private int _maxLength;
     private int _caretIndex;
     private int _anchorIndex; // Other end of the selection; equals _caretIndex when nothing is selected.
     private bool _isMouseSelecting;
@@ -49,6 +50,20 @@ public class Input : Control
 
     /// <summary>Raised after <see cref="Text"/> changes, by typing or from code.</summary>
     public event EventHandler? TextChanged;
+
+    /// <summary>
+    /// Most characters (UTF-16 units) the user can type or paste; 0 (the default) means no limit. Pasted text is cut to
+    /// fit. Text set from code is not shortened.
+    /// </summary>
+    public int MaxLength
+    {
+        get => _maxLength;
+        set
+        {
+            ArgumentOutOfRangeException.ThrowIfNegative(value);
+            _maxLength = value;
+        }
+    }
 
     /// <summary>The text. Line breaks in assigned text become spaces.</summary>
     public string Text
@@ -430,6 +445,18 @@ public class Input : Control
     private void ReplaceSelection(string text)
     {
         var start = SelectionStart;
+        if (_maxLength > 0)
+        {
+            var room = Math.Max(0, _maxLength - (_text.Length - SelectionLength));
+            if (text.Length > room)
+            {
+                if (room > 0 && char.IsHighSurrogate(text[room - 1]))
+                    room--; // Do not split a surrogate pair.
+                text = text[..room];
+                if (text.Length == 0)
+                    return; // Nothing of the typed or pasted text fits: ignore the edit.
+            }
+        }
         var result = _text.Remove(start, SelectionLength).Insert(start, text);
         if (TextFilter != null && result != _text && !TextFilter(result))
             return;

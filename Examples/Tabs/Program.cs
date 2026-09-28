@@ -142,16 +142,28 @@ class MainWindow : Window
                 showStatus, lockedEnabled, disabledChecked, disabledUnchecked,
                 new Button { Anchor = new Anchor(Left: 16, Top: 136), Width = 140, Text = "Apply settings" },
 
-                new Label { Anchor = new Anchor(Left: 300, Top: 16), Text = "Preview size:" },
-                new RadioButton<PreviewSize>(previewSize, PreviewSize.Small, "Small") { Anchor = new Anchor(Left: 300, Top: 40) },
-                new RadioButton<PreviewSize>(previewSize, PreviewSize.Medium, "Medium") { Anchor = new Anchor(Left: 300, Top: 62) },
-                new RadioButton<PreviewSize>(previewSize, PreviewSize.Large, "Large") { Anchor = new Anchor(Left: 300, Top: 84) },
-                new RadioButton<PreviewSize>(previewSize, PreviewSize.Huge, "Huge (disabled)") { Anchor = new Anchor(Left: 300, Top: 106), Enabled = false },
-
-                new Label { Anchor = new Anchor(Left: 450, Top: 16), Text = "Preview color:" },
-                new RadioButton<Color>(previewColor, Color.Red, "Red") { Anchor = new Anchor(Left: 450, Top: 40) },
-                new RadioButton<Color>(previewColor, Color.Green, "Green") { Anchor = new Anchor(Left: 450, Top: 62) },
-                new RadioButton<Color>(previewColor, Color.Blue, "Blue") { Anchor = new Anchor(Left: 450, Top: 84) },
+                // Each radio group in a GroupBox; the buttons are placed relative to the group.
+                new GroupBox("Preview size")
+                {
+                    Anchor = new Anchor(Left: 290, Top: 10), Width = 146, Height = 130,
+                    Children =
+                    {
+                        new RadioButton<PreviewSize>(previewSize, PreviewSize.Small, "Small") { X = 12, Y = 26 },
+                        new RadioButton<PreviewSize>(previewSize, PreviewSize.Medium, "Medium") { X = 12, Y = 48 },
+                        new RadioButton<PreviewSize>(previewSize, PreviewSize.Large, "Large") { X = 12, Y = 70 },
+                        new RadioButton<PreviewSize>(previewSize, PreviewSize.Huge, "Huge (disabled)") { X = 12, Y = 92, Enabled = false },
+                    },
+                },
+                new GroupBox("Preview color")
+                {
+                    Anchor = new Anchor(Left: 446, Top: 10), Width = 130, Height = 130,
+                    Children =
+                    {
+                        new RadioButton<Color>(previewColor, Color.Red, "Red") { X = 12, Y = 26 },
+                        new RadioButton<Color>(previewColor, Color.Green, "Green") { X = 12, Y = 48 },
+                        new RadioButton<Color>(previewColor, Color.Blue, "Blue") { X = 12, Y = 70 },
+                    },
+                },
 
                 preview, summary,
             },

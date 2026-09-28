@@ -5,12 +5,14 @@ mouse, keyboard and focus events, [[Control.Cursor]] and [[Control.ContextMenu]]
 
 <h2>Containers</h2>
 <p><b>[[Panel]]</b> holds child controls and can scroll its content ([[Panel.ScrollBars]]).
-<b>[[TabControl]]</b> shows one [[TabPage]] at a time. <b>[[SplitContainer]]</b> puts two panels side by side with a draggable bar.</p>
+<b>[[TabControl]]</b> shows one [[TabPage]] at a time. <b>[[SplitContainer]]</b> puts two panels side by side with a draggable bar.
+<b>[[GroupBox]]</b> is a panel with an etched frame and a title, for related controls; disabling it disables its contents.</p>
+<figure><img class="shot" src="{root}images/types/GroupBox.png" alt="Two GroupBoxes with radio buttons"></figure>
 <figure><img class="shot" src="{root}images/types/TabControl.png" alt="TabControl"></figure>
 
 <h2>Text</h2>
 <p><b>[[Label]]</b> shows text in any [[Font]] and [[Color]]. <b>[[Input]]</b> is a single-line editor, <b>[[TextArea]]</b> a multi-line one;
-both support selection, the clipboard and a Cut / Copy / Paste context menu.</p>
+both support selection, the clipboard and a Cut / Copy / Paste context menu. [[Input.MaxLength]] limits what the user can type or paste.</p>
 <figure><img class="shot" src="{root}images/types/TextArea.png" alt="TextArea"></figure>
 
 <h2>Buttons and choices</h2>
@@ -41,7 +43,23 @@ key.TextChanged += (sender, e) => status.Text = key.Error ?? "";</pre>
 <h2>Data</h2>
 <p><b>[[Table]]</b> shows rows of text cells with resizable columns; each cell can have its own font and color.
 <b>[[TreeView]]</b> shows a hierarchy of [[TreeNode]]s.</p>
+<p>With [[Table.RowSelection]], a click or the arrow keys select a row ([[Table.SelectedIndex]], [[Table.SelectionChanged]]), and a
+double click or Enter raise [[Table.RowActivated]], e.g. to edit the row:</p>
+<pre class="cs">var ports = new Table { RowSelection = true, Columns = { new TableColumn("Port", 80), new TableColumn("Type", 160) } };
+ports.SelectionChanged += (sender, e) => remove.Enabled = ports.SelectedIndex >= 0;
+ports.RowActivated += (sender, e) => Edit(e.Row);</pre>
 <figure><img class="shot" src="{root}images/types/SplitContainer.png" alt="A TreeView and a Table in a SplitContainer"><figcaption>A [[TreeView]] and a [[Table]] in a [[SplitContainer]] (the Dictionary example).</figcaption></figure>
+
+<h2>Messages</h2>
+<p><b>[[MessageBox]]</b> shows a modal message inside a window: a title, an icon, the text and OK, OK / Cancel, Yes / No or
+Yes / No / Cancel. While it is shown, the rest of the window gets no input. [[MessageBox.Show]] returns at once; the chosen
+button arrives in a callback, so no <code>async</code> code is needed:</p>
+<pre class="cs">MessageBox.Show(window, $"Remove \"{name}\"?", "Remove", MessageBoxButtons.YesNo, MessageBoxIcon.Question, result =>
+{
+    if (result == MessageBoxResult.Yes)
+        Remove(name);
+});</pre>
+<figure><img class="shot" src="{root}images/types/MessageBox.png" alt="MessageBox with Yes and No"></figure>
 
 <h2>Menus and shapes</h2>
 <p><b>[[PopupMenu]]</b> is a context or pop-up menu of [[MenuItem]]s. <b>[[Rectangle]]</b> is a filled rectangle,

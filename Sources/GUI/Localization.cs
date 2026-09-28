@@ -28,6 +28,11 @@ public static class Localization
         ["Doqua.Menu.SelectAll"] = "Select all",
         // DateInput calendar; {0} is today's date (short format).
         ["Doqua.Calendar.Today"] = "Today: {0}",
+        // MessageBox buttons.
+        ["Doqua.MessageBox.Ok"] = "OK",
+        ["Doqua.MessageBox.Cancel"] = "Cancel",
+        ["Doqua.MessageBox.Yes"] = "Yes",
+        ["Doqua.MessageBox.No"] = "No",
         // FileInput: browser, filter, and the messages of FileInput.Error ({0}: the file masks).
         ["Doqua.FileInput.Select"] = "Select",
         ["Doqua.FileInput.Cancel"] = "Cancel",
@@ -60,6 +65,7 @@ public static class Localization
         ["Doqua.Error.ItemNotInList"] = "The item '{0}' is not in the list.",
         ["Doqua.Error.NodeNotInTree"] = "The node does not belong to this tree view.",
         ["Doqua.Error.NodeHasParent"] = "The node already belongs to a tree.",
+        ["Doqua.Error.RowSelectionOff"] = "Rows can be selected only while RowSelection is on.",
         ["Doqua.Error.FilterPatterns"] = "A file filter needs at least one non-empty pattern.",
         ["Doqua.Error.NodeInsideItself"] = "A node cannot be added to itself or its descendant.",
         ["Doqua.Error.FontSize"] = "Font size must be a positive number.",

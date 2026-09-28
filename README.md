@@ -22,7 +22,8 @@ and GDI on Windows.
 - Single-line and multi-line text editors with selection, clipboard and context menus
 - Combo boxes, number inputs, and date inputs with a calendar
 - File and folder inputs with a built-in file browser, file masks and validation
-- Tables with resizable columns, tree views and split panels
+- Tables with row selection and resizable columns, tree views and split panels
+- Modal message boxes (OK, OK/Cancel, Yes/No) with a result callback, and group boxes
 - Scrolling panels, keyboard focus and Tab navigation, mouse cursors
 - Native font rendering, PNG loading and saving, and custom drawing (lines, ellipses, bitmaps, alpha blending)
 - Timers, window icons, and localization (English by default)
@@ -66,7 +67,7 @@ Build them all with `dotnet build Examples/examples.sln`, and run one with `dotn
 |---|---|
 | [Simple](Examples/Simple) | Anchored panels, clickable rectangles, buttons, an input and a live clock |
 | [Tabs](Examples/Tabs) | TabControl, check boxes, radio groups, scrolling panels and context menus |
-| [Dictionary](Examples/Dictionary) | TreeView and Table in a SplitContainer, with per-cell colors |
+| [Dictionary](Examples/Dictionary) | TreeView and Table in a SplitContainer: row selection, editing, message boxes, per-cell colors |
 | [Editor](Examples/Editor) | Multi-line TextArea with scroll bars |
 | [DateTime](Examples/DateTime) | DateInput with a calendar, and date formats |
 | [Files](Examples/Files) | FileInput: file masks, new files, folders, relative paths and validation |

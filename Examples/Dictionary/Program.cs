@@ -15,8 +15,8 @@ enum Mark
 /// <summary>One key => value pair of a node, with the flags of its two cells.</summary>
 class Entry(string key, string value, Mark valueMark = Mark.None)
 {
-    public string Key { get; } = key;
-    public string Value { get; } = value;
+    public string Key { get; set; } = key;
+    public string Value { get; set; } = value;
     public Mark[] Marks { get; } = [Mark.None, valueMark]; // Indexed by table column: 0 = key, 1 = value.
 }
 
@@ -25,6 +25,11 @@ class MainWindow : Window
     private readonly TreeView _tree;
     private readonly Table _table;
     private readonly Label _status;
+    private readonly Input _key;
+    private readonly Input _value;
+    private readonly Button _add;
+    private readonly Button _remove;
+    private int _editing = -1; // Row being edited in the inputs (Save instead of Add), or -1.
 
     public MainWindow()
     {
@@ -41,11 +46,14 @@ class MainWindow : Window
         _tree.Nodes[0].ExpandAll();
         _tree.SelectionChanged += (sender, e) => ShowNode(_tree.SelectedNode);
 
+        // Rows can be selected (click, arrows); Enter or a double click edits the selected pair.
         _table = new Table
         {
             Anchor = Anchor.Fill(),
+            RowSelection = true,
             Columns = { new TableColumn("Key", 200), new TableColumn("Value", 330) },
         };
+        _table.RowActivated += (sender, e) => StartEditing(e.Row);
         _table.CellRightClick += (sender, e) => _status.Text = e.Row is { } row && e.Column is { } column
             ? $"Right click: row {row + 1}, column \"{_table.Columns[column].Header}\" ({_table[row, column].Text})"
             : "Right click outside the cells";
@@ -64,36 +72,26 @@ class MainWindow : Window
         split.SplitterDistance = 230;
         split.SplitterMoved += (sender, e) => _status.Text = $"Tree width: {split.SplitterDistance} px";
 
-        var key = new Input { Anchor = new Anchor(Left: 48, Bottom: 38), Width = 190, Height = 28 };
-        var value = new Input { Anchor = new Anchor(Left: 300, Bottom: 38, Right: 110), Height = 28 };
-        var add = new Button { Anchor = new Anchor(Right: 8, Bottom: 38), Width = 94, Height = 28, Text = "Add" };
-        void AddPair()
-        {
-            if (_tree.SelectedNode?.Tag is not List<Entry> entries)
-            {
-                _status.Text = "Select a node first";
-                return;
-            }
-            if (key.Text.Trim().Length == 0)
-            {
-                _status.Text = "Type a key first";
-                key.Focus();
-                return;
-            }
-            var entry = new Entry(key.Text.Trim(), value.Text);
-            entries.Add(entry); // Into the node's dictionary, then into the table.
-            AddRow(entry);
-            _table.ScrollToRow(_table.Rows.Count - 1);
-            _status.Text = $"Added to {PathOf(_tree.SelectedNode)}: {entry.Key} => {entry.Value}";
-            key.Text = value.Text = "";
-            key.Focus();
-        }
-        add.Click += (sender, e) => AddPair();
-        value.KeyDown += (sender, e) =>
+        _key = new Input { Anchor = new Anchor(Left: 48, Bottom: 38), Width = 190, Height = 28, MaxLength = 32 };
+        _value = new Input { Anchor = new Anchor(Left: 300, Bottom: 38, Right: 210), Height = 28 };
+        _add = new Button { Anchor = new Anchor(Right: 108, Bottom: 38), Width = 94, Height = 28, Text = "Add" };
+        _remove = new Button { Anchor = new Anchor(Right: 8, Bottom: 38), Width = 94, Height = 28, Text = "Remove", Enabled = false };
+        _table.SelectionChanged += (sender, e) => _remove.Enabled = _table.SelectedIndex >= 0;
+        _add.Click += (sender, e) => SavePair();
+        _remove.Click += (sender, e) => RemovePair();
+        _value.KeyDown += (sender, e) =>
         {
             if (e.Key == Key.Enter)
             {
-                AddPair();
+                SavePair();
+                e.Handled = true;
+            }
+        };
+        _table.KeyDown += (sender, e) =>
+        {
+            if (e.Key == Key.Delete && _table.SelectedIndex >= 0)
+            {
+                RemovePair();
                 e.Handled = true;
             }
         };
@@ -104,10 +102,11 @@ class MainWindow : Window
             {
                 split,
                 new Label { Anchor = new Anchor(Left: 10, Bottom: 44), Text = "Key:" },
-                key,
+                _key,
                 new Label { Anchor = new Anchor(Left: 252, Bottom: 44), Text = "Value:" },
-                value,
-                add,
+                _value,
+                _add,
+                _remove,
                 _status,
             },
         };
@@ -115,15 +114,103 @@ class MainWindow : Window
         _tree.Focus();
     }
 
+    /// <summary>Adds the typed pair, or saves the pair being edited; problems are shown in a message box.</summary>
+    private void SavePair()
+    {
+        if (_tree.SelectedNode?.Tag is not List<Entry> entries)
+        {
+            MessageBox.Show(this, "Select a node in the tree first.", icon: MessageBoxIcon.Information);
+            return;
+        }
+        var key = _key.Text.Trim();
+        if (key.Length == 0)
+        {
+            MessageBox.Show(this, "Type a key first.", icon: MessageBoxIcon.Warning, closed: result => _key.Focus());
+            return;
+        }
+        var existing = entries.FindIndex(entry => entry.Key == key);
+        if (existing >= 0 && existing != _editing)
+        {
+            MessageBox.Show(this, $"The key \"{key}\" already exists in {PathOf(_tree.SelectedNode)}.\nChoose another key.",
+                icon: MessageBoxIcon.Error, closed: result => _key.Focus());
+            return;
+        }
+
+        if (_editing >= 0)
+        {
+            var entry = entries[_editing];
+            (entry.Key, entry.Value) = (key, _value.Text);
+            (_table[_editing, 0].Text, _table[_editing, 1].Text) = (entry.Key, entry.Value);
+            _table.SelectedIndex = _editing;
+            _status.Text = $"Saved: {entry.Key} => {entry.Value}";
+        }
+        else
+        {
+            var entry = new Entry(key, _value.Text);
+            entries.Add(entry); // Into the node's dictionary, then into the table.
+            AddRow(entry);
+            _table.SelectedIndex = _table.Rows.Count - 1;
+            _status.Text = $"Added to {PathOf(_tree.SelectedNode)}: {entry.Key} => {entry.Value}";
+        }
+        StopEditing();
+        _key.Focus();
+    }
+
+    /// <summary>Asks, then removes the selected pair.</summary>
+    private void RemovePair()
+    {
+        if (_tree.SelectedNode?.Tag is not List<Entry> entries || _table.SelectedIndex is var index && index < 0)
+            return;
+        var entry = entries[index];
+        MessageBox.Show(this, $"Remove \"{entry.Key}\" from {PathOf(_tree.SelectedNode)}?", "Remove", MessageBoxButtons.YesNo,
+            MessageBoxIcon.Question, result =>
+            {
+                if (result != MessageBoxResult.Yes)
+                {
+                    _table.Focus();
+                    return;
+                }
+                entries.RemoveAt(index);
+                _table.Rows.RemoveAt(index);
+                if (_table.Rows.Count > 0)
+                    _table.SelectedIndex = Math.Min(index, _table.Rows.Count - 1);
+                StopEditing();
+                _status.Text = $"Removed: {entry.Key}";
+                _table.Focus();
+            });
+    }
+
+    /// <summary>Loads a pair into the inputs; Add becomes Save until it is saved or another node is shown.</summary>
+    private void StartEditing(int row)
+    {
+        if (_tree.SelectedNode?.Tag is not List<Entry> entries || row >= entries.Count)
+            return;
+        _editing = row;
+        (_key.Text, _value.Text) = (entries[row].Key, entries[row].Value);
+        _value.CaretIndex = _value.Text.Length;
+        _add.Text = "Save";
+        _status.Text = $"Editing \"{entries[row].Key}\": change it and press Enter or Save.";
+        _value.Focus();
+    }
+
+    private void StopEditing()
+    {
+        _editing = -1;
+        _add.Text = "Add";
+        _key.Text = _value.Text = "";
+    }
+
     /// <summary>Fills the table from the node's dictionary, with the stored cell colors.</summary>
     private void ShowNode(TreeNode? node)
     {
+        if (_editing >= 0)
+            StopEditing();
         _table.Rows.Clear();
         if (node?.Tag is not List<Entry> entries)
             return;
         foreach (var entry in entries)
             AddRow(entry);
-        _status.Text = $"{PathOf(node)}: {entries.Count} entries. Right-click a cell to mark it.";
+        _status.Text = $"{PathOf(node)}: {entries.Count} entries. Double-click a row to edit it, Delete removes it, right-click marks a cell.";
     }
 
     private void AddRow(Entry entry)

@@ -33,6 +33,7 @@ public class Window
     private (int X, int Y)? _pointer; // Last pointer position over the client area.
     private Cursor _currentCursor = Cursor.Arrow;
     private Action? _popupClosed;
+    private bool _popupModal; // A modal popup (a MessageBox) is kept centred and is not closed by outside presses.
 
     /// <summary>Creates an 800 x 600 window; it appears with <see cref="Show"/> or <see cref="Application.Run"/>.</summary>
     public Window()
@@ -219,12 +220,17 @@ public class Window
     /// Shows <paramref name="popup"/> (positioned in client coordinates) above the content, closing any
     /// open popup first. While it is open it gets all mouse and keyboard input; a press outside it
     /// closes it. <paramref name="closed"/> runs whenever it closes, for any reason.
+    /// A <paramref name="modal"/> popup is centred in the window (also after a resize) and presses outside it are ignored:
+    /// only the popup itself closes it.
     /// </summary>
-    internal void OpenPopup(Control popup, Action closed)
+    internal void OpenPopup(Control popup, Action closed, bool modal = false)
     {
         ClosePopup();
         _popup = popup;
         _popupClosed = closed;
+        _popupModal = modal;
+        if (modal)
+            CenterPopup();
         popup.Host = this;
         SetHoveredControl(null);
         Invalidate();
@@ -237,7 +243,7 @@ public class Window
             return;
         var closed = _popupClosed;
         _popup.Host = null;
-        (_popup, _popupClosed) = (null, null);
+        (_popup, _popupClosed, _popupModal) = (null, null, false);
         Array.Clear(_pressedControls);
         SetHoveredControl(null);
         Invalidate();
@@ -374,7 +380,8 @@ public class Window
         var target = EnabledHitTest(x, y, out var localX, out var localY);
         if (_popup != null && target == null)
         {
-            ClosePopup(); // A press outside an open popup closes it and is not passed on.
+            if (!_popupModal)
+                ClosePopup(); // A press outside an open popup closes it (a modal one stays); it is not passed on.
             return;
         }
         _pressedControls[(int)button] = target;
@@ -531,12 +538,24 @@ public class Window
 
     private void UpdateSize(int width, int height)
     {
-        if (width != _width || height != _height)
+        var resized = width != _width || height != _height;
+        if (resized && !_popupModal)
             ClosePopup();
         _width = width;
         _height = height;
+        if (resized && _popupModal)
+            CenterPopup();
         if (_content != null)
             _content.Bounds = new Rect(0, 0, width, height);
+    }
+
+    private void CenterPopup()
+    {
+        if (_popup is not { } popup)
+            return;
+        popup.X = Math.Max(0, (_width - popup.Width) / 2);
+        popup.Y = Math.Max(0, (_height - popup.Height) / 2);
+        Invalidate();
     }
 
     private void ThrowIfClosed() => ObjectDisposedException.ThrowIf(IsClosed, this);

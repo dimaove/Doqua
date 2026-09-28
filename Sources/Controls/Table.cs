@@ -9,6 +9,11 @@ namespace Doqua.Controls;
 /// Every cell uses the table's <see cref="Font"/> and <see cref="Color"/> unless its own are set.
 /// Drag a header border to resize a column, double-click it to fit the column to its contents.
 /// Scroll bars appear when the cells do not fit; the mouse wheel scrolls (Shift+wheel horizontally).
+/// <para>
+/// With <see cref="RowSelection"/>, a click selects a row (<see cref="SelectedIndex"/>) and the table takes the keyboard
+/// focus: Up / Down, PageUp / PageDown and Home / End move the selection, and Enter or a double click raise
+/// <see cref="RowActivated"/> (e.g. to edit the row).
+/// </para>
 /// </summary>
 public class Table : Control
 {
@@ -25,6 +30,11 @@ public class Table : Control
     private int _resizeStartX;
     private int _resizeStartWidth;
     private (int X, int Y)? _lastRightPress;
+    private bool _rowSelection;
+    private int _selectedIndex = -1;
+    private Color _selectionBackground = new(0, 0, 128);
+    private Color _selectionColor = Color.White;
+    private Color _inactiveSelectionBackground = new(204, 204, 204);
     private Font? _font;
     private Color _color = Color.Black;
     private Color _background = Color.White;
@@ -63,6 +73,80 @@ public class Table : Control
     /// to the menu to show (it starts as <see cref="Control.ContextMenu"/>), or to null for none.
     /// </summary>
     public event EventHandler<TableContextMenuEventArgs>? ContextMenuOpening;
+
+    /// <summary>
+    /// Raised after <see cref="SelectedIndex"/> changes: by a click, a key, code, or because the selected row was removed.
+    /// </summary>
+    public event EventHandler? SelectionChanged;
+
+    /// <summary>Raised when a row is double-clicked, or when Enter is pressed on the selected row (which needs <see cref="RowSelection"/>).</summary>
+    public event EventHandler<TableRowEventArgs>? RowActivated;
+
+    /// <summary>
+    /// When true, the table has a selected row (<see cref="SelectedIndex"/>), can take the keyboard focus and moves the
+    /// selection with the arrow keys. False by default. Turning it off clears the selection.
+    /// </summary>
+    public bool RowSelection
+    {
+        get => _rowSelection;
+        set
+        {
+            if (_rowSelection == value)
+                return;
+            _rowSelection = value;
+            Focusable = value;
+            if (!value)
+                SelectedIndex = -1;
+            Invalidate();
+        }
+    }
+
+    /// <summary>
+    /// Index of the selected row, or -1 for none. Setting it (needs <see cref="RowSelection"/> for anything but -1)
+    /// scrolls the row into view. The selection stays on the same row when rows are inserted or removed before it.
+    /// </summary>
+    public int SelectedIndex
+    {
+        get => _selectedIndex;
+        set
+        {
+            ArgumentOutOfRangeException.ThrowIfLessThan(value, -1);
+            ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(value, Rows.Count);
+            if (value >= 0 && !_rowSelection)
+                throw new InvalidOperationException(Localization.Get("Doqua.Error.RowSelectionOff"));
+            if (value >= 0)
+                ScrollToRow(value);
+            if (value == _selectedIndex)
+                return;
+            _selectedIndex = value;
+            Invalidate();
+            OnSelectionChanged(EventArgs.Empty);
+        }
+    }
+
+    /// <summary>The selected row, or null.</summary>
+    public TableRow? SelectedRow => _selectedIndex >= 0 ? Rows[_selectedIndex] : null;
+
+    /// <summary>Background of the selected row while the table has the focus.</summary>
+    public Color SelectionBackground
+    {
+        get => _selectionBackground;
+        set => SetColor(ref _selectionBackground, value);
+    }
+
+    /// <summary>Text color of the selected row while the table has the focus (cells' own colors are not used then).</summary>
+    public Color SelectionColor
+    {
+        get => _selectionColor;
+        set => SetColor(ref _selectionColor, value);
+    }
+
+    /// <summary>Background of the selected row while the table does not have the focus (cells keep their colors).</summary>
+    public Color InactiveSelectionBackground
+    {
+        get => _inactiveSelectionBackground;
+        set => SetColor(ref _inactiveSelectionBackground, value);
+    }
 
     /// <summary>Default font of the cells and the font of the headers.</summary>
     public Font Font
@@ -184,6 +268,10 @@ public class Table : Control
         Columns[column].Width = width + 2 * CellPadding + 2;
     }
 
+    protected virtual void OnSelectionChanged(EventArgs e) => SelectionChanged?.Invoke(this, e);
+
+    protected virtual void OnRowActivated(TableRowEventArgs e) => RowActivated?.Invoke(this, e);
+
     protected virtual void OnCellClick(TableCellEventArgs e) => CellClick?.Invoke(this, e);
 
     protected virtual void OnCellRightClick(TableCellEventArgs e) => CellRightClick?.Invoke(this, e);
@@ -210,6 +298,8 @@ public class Table : Control
         if (e.Button == MouseButton.Right)
         {
             _lastRightPress = (e.X, e.Y);
+            if (_rowSelection && CellAt(e.X, e.Y) is { } pressed)
+                SelectedIndex = pressed.Row; // The context menu is then for the selected row.
             return;
         }
         if (e.Button != MouseButton.Left)
@@ -232,6 +322,55 @@ public class Table : Control
             _verticalBar.Press(e.X, e.Y);
         else if (layout.Horizontal && _horizontalBar.Bounds.Contains(e.X, e.Y))
             _horizontalBar.Press(e.X, e.Y);
+        else if (CellAt(e.X, e.Y) is { } cell)
+        {
+            if (_rowSelection)
+                SelectedIndex = cell.Row;
+            if (e.ClickCount == 2)
+                OnRowActivated(new TableRowEventArgs(cell.Row));
+        }
+    }
+
+    /// <summary>With <see cref="RowSelection"/>: arrows, PageUp / PageDown and Home / End select; Enter activates.</summary>
+    protected override void OnKeyDown(KeyEventArgs e)
+    {
+        base.OnKeyDown(e);
+        if (e.Handled || !_rowSelection || e.Modifiers != KeyModifiers.None || Rows.Count == 0)
+            return;
+        var page = Math.Max(1, GetLayout().Body.Height / DefaultRowHeight - 1);
+        var current = _selectedIndex;
+        var target = e.Key switch
+        {
+            Key.Up => current < 0 ? 0 : current - 1,
+            Key.Down => current + 1,
+            Key.PageUp => current - page,
+            Key.PageDown => Math.Max(0, current) + page,
+            Key.Home => 0,
+            Key.End => Rows.Count - 1,
+            _ => (int?)null,
+        };
+        if (target is { } index)
+        {
+            SelectedIndex = Math.Clamp(index, 0, Rows.Count - 1);
+            e.Handled = true;
+        }
+        else if (e.Key == Key.Enter && current >= 0)
+        {
+            OnRowActivated(new TableRowEventArgs(current));
+            e.Handled = true;
+        }
+    }
+
+    protected override void OnGotFocus(EventArgs e)
+    {
+        base.OnGotFocus(e);
+        Invalidate();
+    }
+
+    protected override void OnLostFocus(EventArgs e)
+    {
+        base.OnLostFocus(e);
+        Invalidate();
     }
 
     protected override void OnMouseMove(MouseMoveEventArgs e)
@@ -311,17 +450,28 @@ public class Table : Control
             }
         }
 
-        // Body: only the visible rows are drawn.
+        // Body: only the visible rows are drawn. The selected row is highlighted across all columns; with the
+        // focus in the selection colors (and a focus rectangle), otherwise in grey keeping the cells' colors.
+        var focused = enabled && Focused && GetWindow()?.IsActive == true;
         using (dc.PushClip(body))
         {
             var y = body.Y - _scrollY;
-            foreach (var row in Rows)
+            for (var index = 0; index < Rows.Count; index++)
             {
+                var row = Rows[index];
                 var height = RowHeight(row);
                 if (y + height > body.Y)
                 {
                     if (y >= body.Bottom)
                         break;
+                    var selected = index == _selectedIndex;
+                    if (selected)
+                    {
+                        var highlight = new Rect(body.X - _scrollX, y, layout.ContentWidth, height - 1);
+                        dc.FillRectangle(highlight, focused ? _selectionBackground : enabled ? _inactiveSelectionBackground : ClassicStyle.Face);
+                        if (focused)
+                            ClassicStyle.DrawFocusRectangle(dc, highlight, _selectionColor);
+                    }
                     var x = body.X - _scrollX;
                     for (var column = 0; column < Columns.Count; column++)
                     {
@@ -329,7 +479,7 @@ public class Table : Control
                         if (column < row.CellCount)
                         {
                             var cell = row[column];
-                            var color = enabled ? cell.Color ?? _color : _disabledColor;
+                            var color = !enabled ? _disabledColor : selected && focused ? _selectionColor : cell.Color ?? _color;
                             DrawCellText(dc, cell.Text, cell.Font ?? Font, color, new Rect(x, y, width, height));
                         }
                         dc.FillRectangle(x + width - 1, y, 1, height, _gridColor);
@@ -352,6 +502,23 @@ public class Table : Control
     }
 
     internal void OnContentChanged() => Invalidate();
+
+    /// <summary>Keeps the selection on the same row when rows are inserted or removed.</summary>
+    internal void OnRowsChanged(int index, int removed, int inserted)
+    {
+        Invalidate();
+        if (_selectedIndex < 0 || _selectedIndex < index)
+            return;
+        if (_selectedIndex < index + removed)
+        {
+            _selectedIndex = -1; // The selected row itself was removed.
+            OnSelectionChanged(EventArgs.Empty);
+        }
+        else
+        {
+            _selectedIndex += inserted - removed;
+        }
+    }
 
     private Font HeaderFont => Font;
 
@@ -667,7 +834,7 @@ public sealed class TableRowCollection : Collection<TableRow>
         ArgumentNullException.ThrowIfNull(item);
         item.Table = _owner;
         base.InsertItem(index, item);
-        _owner.OnContentChanged();
+        _owner.OnRowsChanged(index, 0, 1);
     }
 
     protected override void SetItem(int index, TableRow item)
@@ -683,15 +850,16 @@ public sealed class TableRowCollection : Collection<TableRow>
     {
         this[index].Table = null;
         base.RemoveItem(index);
-        _owner.OnContentChanged();
+        _owner.OnRowsChanged(index, 1, 0);
     }
 
     protected override void ClearItems()
     {
+        var count = Count;
         foreach (var row in this)
             row.Table = null;
         base.ClearItems();
-        _owner.OnContentChanged();
+        _owner.OnRowsChanged(0, count, 0);
     }
 }
 
@@ -706,6 +874,13 @@ public class TableCellEventArgs(int? row, int? column, MouseButton button) : Eve
 
     /// <summary>The mouse button that was clicked.</summary>
     public MouseButton Button { get; } = button;
+}
+
+/// <summary>A row of a <see cref="Table"/> was activated (double click, or Enter on the selected row).</summary>
+public class TableRowEventArgs(int row) : EventArgs
+{
+    /// <summary>Index of the activated row.</summary>
+    public int Row { get; } = row;
 }
 
 /// <summary>The context menu of a <see cref="Table"/> is about to open for a cell (or outside the cells: null indexes).</summary>
