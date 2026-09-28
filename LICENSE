@@ -1,0 +1,80 @@
+Doqua License (Examples, Demos and Teaching Materials)
+
+Copyright (c) 2026 Dmitry Overchuk. All rights reserved.
+
+Definitions
+
+   "The Software" means the Doqua library: its source code, compiled binaries
+   and documentation.
+
+   "Your Product" means any product, library, framework, tool or service that
+   you develop, commercial or not, other than Examples, Demos and Teaching
+   Materials.
+
+   "Example or Demo" means an application, sample, tutorial or demonstration
+   whose purpose is to show, explain, test or promote Your Product, for example
+   a sample application that shows how to use your library, a demo program
+   shipped with your SDK, or a program used to present Your Product.
+
+   "Teaching Materials" means books, articles, courses, lessons, workshops,
+   videos, exercises and similar material for teaching or learning, together
+   with the sample programs that come with them.
+
+1. Permitted use
+
+   Free of charge, you may:
+
+   a. use, copy, modify and compile the Software to create Examples, Demos and
+      Teaching Materials, including Examples and Demos of a commercial product;
+   b. copy and distribute the Software, in source or compiled form, unmodified
+      or modified, as part of your Examples, Demos and Teaching Materials, for
+      example in their source repositories, archives, installers or packages;
+   c. use the Software for personal study and to evaluate it.
+
+   This is allowed provided that:
+
+   d. in Examples and Demos, the Software is used only for their own user
+      interface, and not by Your Product itself;
+   e. this license and the copyright notice are included with every copy of the
+      Software you distribute, and modified files are marked as changed;
+   f. you do not sell the Software itself. You may charge for Your Product or
+      for Teaching Materials (for example a book or a course), but not for the
+      copy of the Software included with them.
+
+2. Not permitted without a separate license
+
+   Any other use requires a separate written license from the copyright holder.
+   In particular, without such a license you may not:
+
+   a. use the Software, or any part or modified version of it, in Your Product
+      itself, or in any application used by end users or in production that is
+      not an Example, Demo or Teaching Material;
+   b. make Your Product depend on the Software, so that it cannot be used
+      without it;
+   c. sell, sublicense or redistribute the Software, or a modified version of
+      it, on its own or as part of a library, framework or toolkit, except
+      inside Examples, Demos and Teaching Materials as allowed in section 1;
+   d. remove or change the copyright notice or this license.
+
+3. Contributions
+
+   If you send changes to the copyright holder (for example as a pull request),
+   you agree that they may be included in the Software and distributed under
+   this license or any other license chosen by the copyright holder.
+
+4. Termination
+
+   This license ends automatically if you break its terms. After that you must
+   stop using and distributing the Software and delete your copies of it.
+
+5. No warranty
+
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+   AUTHOR OR COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+   SOFTWARE.
+
+For any other use, contact the copyright holder: dima@overch.uk
