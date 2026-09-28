@@ -1,8 +1,9 @@
 namespace Doqua.GUI;
 
 /// <summary>
-/// JavaScript-style timers. Callbacks run on the UI thread from the event loop, never while
-/// another callback or event handler is running. Call these methods from the UI thread.
+/// JavaScript-style timers. Callbacks run on the GUI thread from the event loop, never while
+/// another callback or event handler is running. Call these methods from the GUI thread; from another thread,
+/// <see cref="Application.Post"/> the call.
 /// </summary>
 /// <remarks>
 /// With implicit usings, System.Threading.Timer is also in scope; outside the Doqua.GUI
@@ -53,6 +54,7 @@ internal static class TimerQueue
 
     public static int Add(Action callback, int milliseconds, bool repeat)
     {
+        Application.VerifyAccess();
         var entry = new Entry(++s_lastId, callback, milliseconds, repeat);
         s_active[entry.Id] = entry;
         Schedule(entry, Environment.TickCount64 + milliseconds);
@@ -62,6 +64,7 @@ internal static class TimerQueue
 
     public static void Remove(int id)
     {
+        Application.VerifyAccess();
         // The queue entry is dropped lazily when it reaches the front.
         if (s_active.Remove(id))
             Changed?.Invoke();

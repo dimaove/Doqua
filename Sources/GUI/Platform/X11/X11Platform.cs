@@ -12,6 +12,7 @@ internal sealed unsafe class X11Platform : IPlatform
     private readonly Dictionary<Cursor, nuint> _cursors = new();
     private bool _running;
     private int _exitCode;
+    private readonly int _wakeFd; // eventfd written by Wake(), polled with the X connection.
 
     internal nint Display { get; }
     internal int Screen { get; }
@@ -59,6 +60,16 @@ internal sealed unsafe class X11Platform : IPlatform
         NetWmStateSkipTaskbar = Xlib.XInternAtom(Display, "_NET_WM_STATE_SKIP_TASKBAR", 0);
         NetActiveWindow = Xlib.XInternAtom(Display, "_NET_ACTIVE_WINDOW", 0);
         InputMethod = OpenInputMethod(Display);
+        _wakeFd = LibC.eventfd(0, LibC.EFD_NONBLOCK | LibC.EFD_CLOEXEC);
+        if (_wakeFd < 0)
+            throw new System.ComponentModel.Win32Exception(System.Runtime.InteropServices.Marshal.GetLastPInvokeError());
+    }
+
+    /// <summary>Adds 1 to the eventfd counter, which makes poll() in the event loop return. Safe from any thread.</summary>
+    public void Wake()
+    {
+        ulong one = 1;
+        LibC.write(_wakeFd, &one, sizeof(ulong));
     }
 
     /// <summary>
@@ -131,9 +142,11 @@ internal sealed unsafe class X11Platform : IPlatform
     {
         _running = true;
         XEvent ev;
+        var fds = stackalloc PollFd[2];
         while (_running)
         {
             TimerQueue.RunDue();
+            Application.RunPosted();
             if (!_running)
                 break;
 
@@ -150,8 +163,15 @@ internal sealed unsafe class X11Platform : IPlatform
                 if (Xlib.XPending(Display) != 0)
                     continue;
 
-                var fd = new PollFd { fd = Xlib.XConnectionNumber(Display), events = LibC.POLLIN };
-                LibC.poll(&fd, 1, TimerQueue.GetTimeout());
+                // Sleep until an X event, a Wake() from another thread or the next timer.
+                fds[0] = new PollFd { fd = Xlib.XConnectionNumber(Display), events = LibC.POLLIN };
+                fds[1] = new PollFd { fd = _wakeFd, events = LibC.POLLIN };
+                LibC.poll(fds, 2, TimerQueue.GetTimeout());
+                if ((fds[1].revents & LibC.POLLIN) != 0)
+                {
+                    ulong count;
+                    LibC.read(_wakeFd, &count, sizeof(ulong)); // Resets the counter; the posted actions run at the top.
+                }
                 continue;
             }
 

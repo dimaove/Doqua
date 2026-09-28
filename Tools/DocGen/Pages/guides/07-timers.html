@@ -1,7 +1,7 @@
 <h1>Timers and windows</h1>
 
 <h2>Timers</h2>
-<p>[[Timer]] works like JavaScript timers. Callbacks run on the UI thread from the event loop, so they can change controls directly.</p>
+<p>[[Timer]] works like JavaScript timers. Callbacks run on the GUI thread from the event loop, so they can change controls directly. Call the timer methods from the GUI thread too; from another thread, post the call (see <a href="threads.html">Threads</a>).</p>
 <pre class="cs">using Timer = Doqua.GUI.Timer;
 
 var clock = Timer.SetInterval(() => label.Text = DateTime.Now.ToString("HH:mm:ss"), 1000);

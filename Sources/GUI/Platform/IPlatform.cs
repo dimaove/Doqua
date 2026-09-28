@@ -15,8 +15,14 @@ internal interface IPlatform
 
     IWindowImpl CreateWindow(int width, int height);
 
-    /// <summary>Processes native events until <see cref="Quit"/> is called. Returns the exit code.</summary>
+    /// <summary>
+    /// Processes native events until <see cref="Quit"/> is called, running due timers and the actions posted with
+    /// <see cref="Application.Post"/>. Returns the exit code.
+    /// </summary>
     int RunLoop();
 
     void Quit(int exitCode);
+
+    /// <summary>Wakes the event loop so that it runs the posted actions. Thread-safe; may be called from any thread.</summary>
+    void Wake();
 }

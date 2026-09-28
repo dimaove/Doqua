@@ -28,6 +28,7 @@ and GDI on Windows.
 - Scrolling panels, keyboard focus and Tab navigation, mouse cursors
 - Native font rendering, PNG loading and saving, and custom drawing (lines, ellipses, bitmaps, alpha blending)
 - Timers, window icons, and localization (English by default)
+- Background threads: `Application.Post` / `InvokeAsync`, and `await` that returns to the GUI thread
 
 ## Quick start
 
@@ -74,6 +75,7 @@ Build them all with `dotnet build Examples/examples.sln`, and run one with `dotn
 | [Files](Examples/Files) | FileInput: file masks, new files, folders, relative paths and validation |
 | [Fonts](Examples/Fonts) | Installed font families, NumberInput and a live preview |
 | [Localization](Examples/Localization) | Switching the user interface between English and Russian |
+| [Threads](Examples/Threads) | Updating the GUI from a background thread, `await`, `Progress<T>` |
 | [Bitmap](Examples/Bitmap) | Loading, drawing, scaling and saving PNG images |
 | [Clock](Examples/Clock) | A custom control that draws an analog clock |
 

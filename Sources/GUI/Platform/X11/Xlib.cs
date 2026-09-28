@@ -363,6 +363,17 @@ internal static unsafe partial class LibC
 {
     public const int LC_CTYPE = 0;
     public const short POLLIN = 1;
+    public const int EFD_NONBLOCK = 0x800;
+    public const int EFD_CLOEXEC = 0x80000;
+
+    [LibraryImport("libc.so.6", SetLastError = true)]
+    public static partial int eventfd(uint initialValue, int flags);
+
+    [LibraryImport("libc.so.6")]
+    public static partial nint read(int fd, void* buffer, nuint count);
+
+    [LibraryImport("libc.so.6")]
+    public static partial nint write(int fd, void* buffer, nuint count);
 
     [LibraryImport("libc.so.6")]
     public static partial int poll(PollFd* fds, nuint count, int timeoutMilliseconds);

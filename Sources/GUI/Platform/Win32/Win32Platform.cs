@@ -8,9 +8,15 @@ namespace Doqua.GUI.Platform.Win32;
 internal sealed unsafe class Win32Platform : IPlatform
 {
     internal const string WindowClassName = "DoquaWindow";
+    private const string WakeClassName = "DoquaWake";
+    private const uint WakeMessage = User32.WM_APP + 1;
 
     // Id of the thread timer that wakes the message loop for the next Doqua.GUI.Timer, or 0.
     private static nuint s_timerId;
+
+    // Message-only window that runs Application.Post actions; one WakeMessage is queued at a time.
+    private static nint s_wakeWindow;
+    private static int s_wakePending;
 
     private GdiFontBackend? _fonts;
     private Win32Clipboard? _clipboard;
@@ -36,6 +42,22 @@ internal sealed unsafe class Win32Platform : IPlatform
                 throw new Win32Exception(Marshal.GetLastPInvokeError());
         }
 
+        fixed (char* className = WakeClassName)
+        {
+            var wc = new WNDCLASSEXW
+            {
+                cbSize = (uint)sizeof(WNDCLASSEXW),
+                lpfnWndProc = &WakeWndProc,
+                hInstance = Instance,
+                lpszClassName = className,
+            };
+            if (User32.RegisterClassExW(&wc) == 0)
+                throw new Win32Exception(Marshal.GetLastPInvokeError());
+        }
+        s_wakeWindow = User32.CreateWindowExW(0, WakeClassName, "", 0, 0, 0, 0, 0, User32.HWND_MESSAGE, 0, Instance, 0);
+        if (s_wakeWindow == 0)
+            throw new Win32Exception(Marshal.GetLastPInvokeError());
+
         TimerQueue.Changed += ArmTimer;
         ArmTimer();
     }
@@ -53,6 +75,7 @@ internal sealed unsafe class Win32Platform : IPlatform
 
     public int RunLoop()
     {
+        Wake(); // Runs what was posted before the loop started.
         MSG msg;
         // GetMessageW returns 0 on WM_QUIT and -1 on error.
         while (User32.GetMessageW(&msg, 0, 0, 0) > 0)
@@ -64,6 +87,31 @@ internal sealed unsafe class Win32Platform : IPlatform
     }
 
     public void Quit(int exitCode) => User32.PostQuitMessage(exitCode);
+
+    /// <summary>
+    /// Queues one WakeMessage for the message-only window (repeated calls before it is handled add nothing). Safe from
+    /// any thread: PostMessageW may be called by any thread for a window of another thread.
+    /// </summary>
+    public void Wake()
+    {
+        if (Interlocked.Exchange(ref s_wakePending, 1) == 0)
+            User32.PostMessageW(s_wakeWindow, WakeMessage, 0, 0);
+    }
+
+    /// <summary>
+    /// Runs the posted actions. Also dispatched by the modal loops Windows runs while a window is moved or resized,
+    /// so posted actions keep running then.
+    /// </summary>
+    // Note: an exception escaping an [UnmanagedCallersOnly] method terminates the process.
+    [UnmanagedCallersOnly]
+    private static nint WakeWndProc(nint hwnd, uint message, nint wParam, nint lParam)
+    {
+        if (message != WakeMessage)
+            return User32.DefWindowProcW(hwnd, message, wParam, lParam);
+        Volatile.Write(ref s_wakePending, 0); // Before running: an action posted meanwhile queues a new message.
+        Application.RunPosted();
+        return 0;
+    }
 
     /// <summary>
     /// Points the thread timer at the next due Doqua timer. WM_TIMER is also dispatched by the

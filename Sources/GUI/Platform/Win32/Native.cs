@@ -197,6 +197,7 @@ internal static unsafe partial class User32
 
     public const uint WM_DESTROY = 0x0002;
     public const uint WM_CLOSE = 0x0010;
+    public const uint WM_APP = 0x8000;
     public const uint WM_SIZE = 0x0005;
     public const uint WM_SETFOCUS = 0x0007;
     public const uint WM_KILLFOCUS = 0x0008;
@@ -270,6 +271,9 @@ internal static unsafe partial class User32
 
     [LibraryImport(Lib)]
     public static partial int EnableWindow(nint hwnd, int enable);
+
+    [LibraryImport(Lib)]
+    public static partial int PostMessageW(nint hwnd, uint message, nint wParam, nint lParam);
 
     [LibraryImport(Lib)]
     public static partial int SetForegroundWindow(nint hwnd);

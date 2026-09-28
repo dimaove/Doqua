@@ -1,0 +1,49 @@
+<h1>Threads and background work</h1>
+<p>Windows, controls and timers belong to the <b>GUI thread</b>: the thread that creates the first [[Window]] and calls
+[[Application.Run]]. Doqua is not thread-safe, so other threads must not change them. Instead they hand the work to the GUI
+thread, which runs it between events. [[Application.IsGuiThread]] tells where the code runs.</p>
+<figure><img class="shot" src="{root}images/examples/threads.png" alt="The Threads example"></figure>
+
+<h2>Posting from a background thread</h2>
+<p>[[Application.Post]] queues an action for the GUI thread and returns at once. It can be called from any thread; the actions
+run in the order they were posted.</p>
+<pre class="cs">new Thread(() =>
+{
+    while (true)
+    {
+        var value = socket.ReadValue();                      // Blocks on the network: not on the GUI thread.
+        Application.Post(() => valueLabel.Text = value.ToString());
+    }
+}) { IsBackground = true }.Start();</pre>
+<p>When the background code needs something from the GUI, such as a setting in a control, [[Application.InvokeAsync]] runs a
+function on the GUI thread and gives its result (or its exception) as a task:</p>
+<pre class="cs">var interval = await Application.InvokeAsync(() => intervalInput.Value);</pre>
+
+<h2>async and await</h2>
+<p>The GUI thread has a synchronization context that posts to it, so an <code>await</code> started on the GUI thread (for
+example in an event handler) comes back to it. The work in between can run anywhere:</p>
+<pre class="cs">refresh.Click += async (sender, e) =>
+{
+    status.Text = "Reading...";
+    var data = await client.GetStringAsync(url);          // No thread is blocked meanwhile.
+    var summary = await Task.Run(() => Summarize(data));  // CPU work on the thread pool.
+    status.Text = summary;                                 // Back on the GUI thread.
+};</pre>
+<p><code>Progress&lt;T&gt;</code> works the same way: create it on the GUI thread and its handler runs there, whatever thread
+reports.</p>
+<pre class="cs">var progress = new Progress&lt;int&gt;(percent => progressLabel.Text = $"{percent} %");
+await Task.Run(() => Copy(source, target, progress));</pre>
+
+<h2>Mistakes are reported</h2>
+<p>Changing a control shown in a window, or using a window, a [[Timer]] or the [[Clipboard]], from another thread throws an
+<code>InvalidOperationException</code> that says to use [[Application.Post]]. (Building controls that are not shown yet is
+allowed on any thread.) Without the check, such a change would work most of the time and corrupt the window now and
+then.</p>
+
+<h2>Notes</h2>
+<ul>
+  <li>Posted actions and <code>await</code> continuations run between events; keep them short, like event handlers.</li>
+  <li>Do not block the GUI thread waiting for a worker (<code>task.Wait()</code>, <code>.Result</code>) while the worker
+    waits for the GUI thread: that deadlocks. Use <code>await</code>.</li>
+  <li>Actions posted after [[Application.Run]] has returned never run.</li>
+</ul>

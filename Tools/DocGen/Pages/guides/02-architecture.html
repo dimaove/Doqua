@@ -3,8 +3,9 @@
 
 <h2>Windows and the event loop</h2>
 <p>[[Application.Run]] shows the main [[Window]] and processes events (mouse, keyboard, focus, resizing, timers) until that window
-is closed. All windows and controls belong to the thread that runs it; call them from there only.
-[[Timer]] callbacks and event handlers all run on that thread, one at a time.</p>
+is closed. All windows and controls belong to the thread that runs it, the GUI thread; other threads hand work to it with
+[[Application.Post]] (see <a href="threads.html">Threads and background work</a>).
+[[Timer]] callbacks, posted actions and event handlers all run on that thread, one at a time.</p>
 
 <h2>The control tree</h2>
 <p>A window shows one [[Window.Content]] control that always fills it. Containers such as [[Panel]], [[TabControl]] and

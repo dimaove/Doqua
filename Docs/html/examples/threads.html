@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Threads · Doqua</title>
+<link rel="icon" href="../../logo_32.png">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="../index.html"><img src="../../logo.png" alt=""><span>Doqua</span></a>
+  <span class="tagline">Cross-platform GUI for .NET</span>
+  <div class="search"><input id="search" type="search" placeholder="Search the documentation" autocomplete="off"><div id="search-results"></div></div>
+</header>
+<div class="layout">
+<nav class="side"><h4>Guide</h4><ul><li><a class="" href="../index.html">Overview</a></li><li><a class="" href="../guides/getting-started.html">Getting started</a></li><li><a class="" href="../guides/architecture.html">How Doqua works</a></li><li><a class="" href="../guides/controls.html">Controls</a></li><li><a class="" href="../guides/layout.html">Layout</a></li><li><a class="" href="../guides/input.html">Mouse, keyboard and focus</a></li><li><a class="" href="../guides/drawing.html">Custom drawing</a></li><li><a class="" href="../guides/timers.html">Timers and windows</a></li><li><a class="" href="../guides/threads.html">Threads and background work</a></li><li><a class="" href="../guides/localization.html">Localization</a></li><li><a class="" href="../guides/platforms.html">Platform notes</a></li></ul><h4>Examples</h4><ul><li><a class="" href="../examples/index.html">All examples</a></li><li><a class="" href="../examples/simple.html">Simple</a></li><li><a class="" href="../examples/tabs.html">Tabs</a></li><li><a class="" href="../examples/dictionary.html">Dictionary</a></li><li><a class="" href="../examples/editor.html">Editor</a></li><li><a class="" href="../examples/datetime.html">DateTime</a></li><li><a class="" href="../examples/files.html">Files</a></li><li><a class="" href="../examples/fonts.html">Fonts</a></li><li><a class="" href="../examples/localization.html">Localization</a></li><li><a class=" current" href="../examples/threads.html">Threads</a></li><li><a class="" href="../examples/bitmap.html">Bitmap</a></li><li><a class="" href="../examples/clock.html">Clock</a></li></ul><h4>API reference</h4><ul><li><a class="" href="../api/index.html">Namespaces</a></li></ul><h5><a href="../api/Doqua.Controls.html">Doqua.Controls</a></h5><ul class="types"><li><a class="kind-class" href="../api/Doqua.Controls.Button.html">Button</a></li><li><a class="kind-class" href="../api/Doqua.Controls.CheckBox.html">CheckBox</a></li><li><a class="kind-class" href="../api/Doqua.Controls.ComboBox-1.html">ComboBox&lt;T&gt;</a></li><li><a class="kind-class" href="../api/Doqua.Controls.ComboBoxItemCollection-1.html">ComboBoxItemCollection&lt;T&gt;</a></li><li><a class="kind-class" href="../api/Doqua.Controls.DateInput.html">DateInput</a></li><li><a class="kind-class" href="../api/Doqua.Controls.FileFilter.html">FileFilter</a></li><li><a class="kind-class" href="../api/Doqua.Controls.FileInput.html">FileInput</a></li><li><a class="kind-enum" href="../api/Doqua.Controls.FileInputMode.html">FileInputMode</a></li><li><a class="kind-class" href="../api/Doqua.Controls.GroupBox.html">GroupBox</a></li><li><a class="kind-class" href="../api/Doqua.Controls.Input.html">Input</a></li><li><a class="kind-class" href="../api/Doqua.Controls.Label.html">Label</a></li><li><a class="kind-class" href="../api/Doqua.Controls.MenuClosedEventArgs.html">MenuClosedEventArgs</a></li><li><a class="kind-class" href="../api/Doqua.Controls.MenuItem.html">MenuItem</a></li><li><a class="kind-static-class" href="../api/Doqua.Controls.MessageBox.html">MessageBox</a></li><li><a class="kind-enum" href="../api/Doqua.Controls.MessageBoxButtons.html">MessageBoxButtons</a></li><li><a class="kind-enum" href="../api/Doqua.Controls.MessageBoxIcon.html">MessageBoxIcon</a></li><li><a class="kind-enum" href="../api/Doqua.Controls.MessageBoxResult.html">MessageBoxResult</a></li><li><a class="kind-class" href="../api/Doqua.Controls.NumberInput.html">NumberInput</a></li><li><a class="kind-class" href="../api/Doqua.Controls.Panel.html">Panel</a></li><li><a class="kind-class" href="../api/Doqua.Controls.PopupMenu.html">PopupMenu</a></li><li><a class="kind-class" href="../api/Doqua.Controls.RadioButton.html">RadioButton</a></li><li><a class="kind-class" href="../api/Doqua.Controls.RadioButton-1.html">RadioButton&lt;T&gt;</a></li><li><a class="kind-class" href="../api/Doqua.Controls.RadioGroup.html">RadioGroup</a></li><li><a class="kind-class" href="../api/Doqua.Controls.RadioGroup-1.html">RadioGroup&lt;T&gt;</a></li><li><a class="kind-class" href="../api/Doqua.Controls.Rectangle.html">Rectangle</a></li><li><a class="kind-enum" href="../api/Doqua.Controls.ScrollBars.html">ScrollBars</a></li><li><a class="kind-class" href="../api/Doqua.Controls.SplitContainer.html">SplitContainer</a></li><li><a class="kind-enum" href="../api/Doqua.Controls.SplitOrientation.html">SplitOrientation</a></li><li><a class="kind-class" href="../api/Doqua.Controls.TabControl.html">TabControl</a></li><li><a class="kind-class" href="../api/Doqua.Controls.Table.html">Table</a></li><li><a class="kind-class" href="../api/Doqua.Controls.TableCell.html">TableCell</a></li><li><a class="kind-class" href="../api/Doqua.Controls.TableCellEventArgs.html">TableCellEventArgs</a></li><li><a class="kind-class" href="../api/Doqua.Controls.TableColumn.html">TableColumn</a></li><li><a class="kind-class" href="../api/Doqua.Controls.TableColumnCollection.html">TableColumnCollection</a></li><li><a class="kind-class" href="../api/Doqua.Controls.TableContextMenuEventArgs.html">TableContextMenuEventArgs</a></li><li><a class="kind-class" href="../api/Doqua.Controls.TableRow.html">TableRow</a></li><li><a class="kind-class" href="../api/Doqua.Controls.TableRowCollection.html">TableRowCollection</a></li><li><a class="kind-class" href="../api/Doqua.Controls.TableRowEventArgs.html">TableRowEventArgs</a></li><li><a class="kind-class" href="../api/Doqua.Controls.TabPage.html">TabPage</a></li><li><a class="kind-class" href="../api/Doqua.Controls.TabPageCollection.html">TabPageCollection</a></li><li><a class="kind-class" href="../api/Doqua.Controls.TextArea.html">TextArea</a></li><li><a class="kind-class" href="../api/Doqua.Controls.ToggleControl.html">ToggleControl</a></li><li><a class="kind-class" href="../api/Doqua.Controls.TreeNode.html">TreeNode</a></li><li><a class="kind-class" href="../api/Doqua.Controls.TreeNodeCollection.html">TreeNodeCollection</a></li><li><a class="kind-class" href="../api/Doqua.Controls.TreeView.html">TreeView</a></li></ul><h5><a href="../api/Doqua.Core.html">Doqua.Core</a></h5><ul class="types"><li><a class="kind-static-class" href="../api/Doqua.Core.DoquaInfo.html">DoquaInfo</a></li></ul><h5><a href="../api/Doqua.GUI.html">Doqua.GUI</a></h5><ul class="types"><li><a class="kind-record-struct" href="../api/Doqua.GUI.Anchor.html">Anchor</a></li><li><a class="kind-static-class" href="../api/Doqua.GUI.Application.html">Application</a></li><li><a class="kind-class" href="../api/Doqua.GUI.Bitmap.html">Bitmap</a></li><li><a class="kind-static-class" href="../api/Doqua.GUI.Clipboard.html">Clipboard</a></li><li><a class="kind-record-struct" href="../api/Doqua.GUI.Color.html">Color</a></li><li><a class="kind-class" href="../api/Doqua.GUI.Control.html">Control</a></li><li><a class="kind-class" href="../api/Doqua.GUI.ControlCollection.html">ControlCollection</a></li><li><a class="kind-enum" href="../api/Doqua.GUI.Cursor.html">Cursor</a></li><li><a class="kind-class" href="../api/Doqua.GUI.DrawingContext.html">DrawingContext</a></li><li><a class="kind-record" href="../api/Doqua.GUI.Font.html">Font</a></li><li><a class="kind-enum" href="../api/Doqua.GUI.FontStyle.html">FontStyle</a></li><li><a class="kind-enum" href="../api/Doqua.GUI.Key.html">Key</a></li><li><a class="kind-class" href="../api/Doqua.GUI.KeyEventArgs.html">KeyEventArgs</a></li><li><a class="kind-enum" href="../api/Doqua.GUI.KeyModifiers.html">KeyModifiers</a></li><li><a class="kind-static-class" href="../api/Doqua.GUI.Localization.html">Localization</a></li><li><a class="kind-enum" href="../api/Doqua.GUI.MouseButton.html">MouseButton</a></li><li><a class="kind-class" href="../api/Doqua.GUI.MouseEventArgs.html">MouseEventArgs</a></li><li><a class="kind-class" href="../api/Doqua.GUI.MouseMoveEventArgs.html">MouseMoveEventArgs</a></li><li><a class="kind-class" href="../api/Doqua.GUI.MouseWheelEventArgs.html">MouseWheelEventArgs</a></li><li><a class="kind-record-struct" href="../api/Doqua.GUI.Rect.html">Rect</a></li><li><a class="kind-record-struct" href="../api/Doqua.GUI.Size.html">Size</a></li><li><a class="kind-class" href="../api/Doqua.GUI.TextInputEventArgs.html">TextInputEventArgs</a></li><li><a class="kind-static-class" href="../api/Doqua.GUI.Timer.html">Timer</a></li><li><a class="kind-class" href="../api/Doqua.GUI.Window.html">Window</a></li></ul></nav>
+<main>
+<h1>Threads</h1><p class="lead">A background reader posting values to the GUI, an async button that awaits work on the thread pool, Progress&lt;T&gt;, and the error for a control touched from another thread.</p><p>Run it with <code>dotnet run --project Examples/Threads</code>.</p><figure><img class="shot" src="../images/examples/threads.png" alt="Threads"></figure><h2>Program.cs</h2><pre class="code"><code><span class="k">using</span> <span class="t">Doqua</span>.<span class="t">Controls</span>;
+<span class="k">using</span> <span class="t">Doqua</span>.<span class="t">GUI</span>;
+
+<span class="k">namespace</span> <span class="t">ThreadsExample</span>;
+
+<span class="c">/// &lt;summary&gt;</span>
+<span class="c">/// Doqua&#39;s windows and controls belong to the GUI thread. This example changes them from work that runs elsewhere:</span>
+<span class="c">/// a background loop that posts readings, an async button handler, progress reports, and what happens when a control</span>
+<span class="c">/// is touched from the wrong thread.</span>
+<span class="c">/// &lt;/summary&gt;</span>
+<span class="k">class</span> <span class="t">MainWindow</span> : <a class="t" href="../api/Doqua.GUI.Window.html">Window</a>
+{
+    <span class="k">private</span> <span class="k">readonly</span> <a class="t" href="../api/Doqua.Controls.Label.html">Label</a> _latest = <span class="k">new</span>() { <a class="t" href="../api/Doqua.GUI.Anchor.html">Anchor</a> = <span class="k">new</span> <a class="t" href="../api/Doqua.GUI.Anchor.html">Anchor</a>(<span class="t">Left</span>: <span class="n">16</span>, <span class="t">Top</span>: <span class="n">64</span>), <a class="t" href="../api/Doqua.GUI.Font.html">Font</a> = <a class="t" href="../api/Doqua.GUI.Font.html">Font</a>.<span class="t">Default</span> <span class="k">with</span> { <a class="t" href="../api/Doqua.GUI.Size.html">Size</a> = <span class="n">28</span>, <span class="t">Style</span> = <a class="t" href="../api/Doqua.GUI.FontStyle.html">FontStyle</a>.<span class="t">Bold</span> }, <span class="t">Text</span> = <span class="s">&quot;–&quot;</span> };
+    <span class="k">private</span> <span class="k">readonly</span> <a class="t" href="../api/Doqua.Controls.Label.html">Label</a> _count = <span class="k">new</span>() { <a class="t" href="../api/Doqua.GUI.Anchor.html">Anchor</a> = <span class="k">new</span> <a class="t" href="../api/Doqua.GUI.Anchor.html">Anchor</a>(<span class="t">Left</span>: <span class="n">180</span>, <span class="t">Top</span>: <span class="n">78</span>), <a class="t" href="../api/Doqua.GUI.Color.html">Color</a> = <span class="k">new</span> <a class="t" href="../api/Doqua.GUI.Color.html">Color</a>(<span class="n">96</span>, <span class="n">96</span>, <span class="n">96</span>) };
+    <span class="k">private</span> <span class="k">readonly</span> <a class="t" href="../api/Doqua.Controls.Table.html">Table</a> _readings = <span class="k">new</span>()
+    {
+        <a class="t" href="../api/Doqua.GUI.Anchor.html">Anchor</a> = <span class="k">new</span> <a class="t" href="../api/Doqua.GUI.Anchor.html">Anchor</a>(<span class="t">Left</span>: <span class="n">16</span>, <span class="t">Top</span>: <span class="n">116</span>, <span class="t">Bottom</span>: <span class="n">16</span>), <span class="t">Width</span> = <span class="n">280</span>,
+        <span class="t">Columns</span> = { <span class="k">new</span> <a class="t" href="../api/Doqua.Controls.TableColumn.html">TableColumn</a>(<span class="s">&quot;Time&quot;</span>, <span class="n">110</span>), <span class="k">new</span> <a class="t" href="../api/Doqua.Controls.TableColumn.html">TableColumn</a>(<span class="s">&quot;Value&quot;</span>, <span class="n">80</span>), <span class="k">new</span> <a class="t" href="../api/Doqua.Controls.TableColumn.html">TableColumn</a>(<span class="s">&quot;Thread&quot;</span>, <span class="n">70</span>) },
+    };
+    <span class="k">private</span> <span class="k">readonly</span> <a class="t" href="../api/Doqua.Controls.NumberInput.html">NumberInput</a> _interval = <span class="k">new</span>() { <a class="t" href="../api/Doqua.GUI.Anchor.html">Anchor</a> = <span class="k">new</span> <a class="t" href="../api/Doqua.GUI.Anchor.html">Anchor</a>(<span class="t">Left</span>: <span class="n">190</span>, <span class="t">Top</span>: <span class="n">16</span>), <span class="t">Min</span> = <span class="n">50</span>, <span class="t">Max</span> = <span class="n">2000</span>, <span class="t">Step</span> = <span class="n">50</span>, <span class="t">Value</span> = <span class="n">300</span> };
+    <span class="k">private</span> <span class="k">readonly</span> <a class="t" href="../api/Doqua.Controls.Label.html">Label</a> _status = <span class="k">new</span>() { <a class="t" href="../api/Doqua.GUI.Anchor.html">Anchor</a> = <span class="k">new</span> <a class="t" href="../api/Doqua.GUI.Anchor.html">Anchor</a>(<span class="t">Left</span>: <span class="n">320</span>, <span class="t">Top</span>: <span class="n">300</span>) };
+    <span class="k">private</span> <span class="k">readonly</span> <a class="t" href="../api/Doqua.Controls.Label.html">Label</a> _progress = <span class="k">new</span>() { <a class="t" href="../api/Doqua.GUI.Anchor.html">Anchor</a> = <span class="k">new</span> <a class="t" href="../api/Doqua.GUI.Anchor.html">Anchor</a>(<span class="t">Left</span>: <span class="n">320</span>, <span class="t">Top</span>: <span class="n">196</span>) };
+    <span class="k">private</span> <span class="t">CancellationTokenSource</span>? _worker;
+    <span class="k">private</span> <span class="k">int</span> _received;
+
+    <span class="k">public</span> <span class="t">MainWindow</span>()
+    {
+        <span class="t">Title</span> = <span class="s">&quot;Doqua Threads&quot;</span>;
+        <span class="t">Icons</span> = <span class="t">ExampleIcon</span>.<span class="t">Load</span>();
+        <span class="t">Width</span> = <span class="n">760</span>;
+        <span class="t">Height</span> = <span class="n">460</span>;
+        <span class="t">Background</span> = <span class="k">new</span> <a class="t" href="../api/Doqua.GUI.Color.html">Color</a>(<span class="n">212</span>, <span class="n">208</span>, <span class="n">200</span>);
+
+        <span class="k">var</span> start = <span class="k">new</span> <a class="t" href="../api/Doqua.Controls.Button.html">Button</a> { <a class="t" href="../api/Doqua.GUI.Anchor.html">Anchor</a> = <span class="k">new</span> <a class="t" href="../api/Doqua.GUI.Anchor.html">Anchor</a>(<span class="t">Left</span>: <span class="n">16</span>, <span class="t">Top</span>: <span class="n">12</span>), <span class="t">Width</span> = <span class="n">80</span>, <span class="t">Text</span> = <span class="s">&quot;Start&quot;</span> };
+        <span class="k">var</span> stop = <span class="k">new</span> <a class="t" href="../api/Doqua.Controls.Button.html">Button</a> { <a class="t" href="../api/Doqua.GUI.Anchor.html">Anchor</a> = <span class="k">new</span> <a class="t" href="../api/Doqua.GUI.Anchor.html">Anchor</a>(<span class="t">Left</span>: <span class="n">100</span>, <span class="t">Top</span>: <span class="n">12</span>), <span class="t">Width</span> = <span class="n">80</span>, <span class="t">Text</span> = <span class="s">&quot;Stop&quot;</span>, <span class="t">Enabled</span> = <span class="k">false</span> };
+        start.<span class="t">Click</span> += (sender, e) =&gt;
+        {
+            <span class="t">StartWorker</span>();
+            (start.<span class="t">Enabled</span>, stop.<span class="t">Enabled</span>) = (<span class="k">false</span>, <span class="k">true</span>);
+        };
+        stop.<span class="t">Click</span> += (sender, e) =&gt;
+        {
+            _worker?.<span class="t">Cancel</span>();
+            (start.<span class="t">Enabled</span>, stop.<span class="t">Enabled</span>) = (<span class="k">true</span>, <span class="k">false</span>);
+        };
+
+        <span class="k">var</span> compute = <span class="k">new</span> <a class="t" href="../api/Doqua.Controls.Button.html">Button</a> { <a class="t" href="../api/Doqua.GUI.Anchor.html">Anchor</a> = <span class="k">new</span> <a class="t" href="../api/Doqua.GUI.Anchor.html">Anchor</a>(<span class="t">Left</span>: <span class="n">320</span>, <span class="t">Top</span>: <span class="n">12</span>), <span class="t">Width</span> = <span class="n">200</span>, <span class="t">Text</span> = <span class="s">&quot;Compute with await&quot;</span> };
+        compute.<span class="t">Click</span> += <span class="k">async</span> (sender, e) =&gt;
+        {
+            <span class="c">// The handler starts on the GUI thread; the work runs on the thread pool; after the await the handler is</span>
+            <span class="c">// back on the GUI thread (Doqua&#39;s synchronization context), so it can change controls directly.</span>
+            compute.<span class="t">Enabled</span> = <span class="k">false</span>;
+            _status.<span class="t">Text</span> = <span class="s">$&quot;Computing on a pool thread (clicked on thread {Environment.CurrentManagedThreadId})...&quot;</span>;
+            <span class="k">var</span> (primes, worker) = <span class="k">await</span> <span class="t">Task</span>.<span class="t">Run</span>(() =&gt; (<span class="t">CountPrimes</span>(3_000_000), <span class="t">Environment</span>.<span class="t">CurrentManagedThreadId</span>));
+            _status.<span class="t">Text</span> = <span class="s">$&quot;{primes:N0} primes below 3,000,000.\nComputed on thread {worker}, shown on thread &quot;</span>
+                + <span class="s">$&quot;{Environment.CurrentManagedThreadId} (the GUI thread: {Application.IsGuiThread}).&quot;</span>;
+            compute.<span class="t">Enabled</span> = <span class="k">true</span>;
+        };
+
+        <span class="k">var</span> copy = <span class="k">new</span> <a class="t" href="../api/Doqua.Controls.Button.html">Button</a> { <a class="t" href="../api/Doqua.GUI.Anchor.html">Anchor</a> = <span class="k">new</span> <a class="t" href="../api/Doqua.GUI.Anchor.html">Anchor</a>(<span class="t">Left</span>: <span class="n">320</span>, <span class="t">Top</span>: <span class="n">152</span>), <span class="t">Width</span> = <span class="n">200</span>, <span class="t">Text</span> = <span class="s">&quot;Copy with progress&quot;</span> };
+        copy.<span class="t">Click</span> += <span class="k">async</span> (sender, e) =&gt;
+        {
+            <span class="c">// Progress&lt;T&gt; made on the GUI thread calls its handler there, whichever thread reports.</span>
+            copy.<span class="t">Enabled</span> = <span class="k">false</span>;
+            <span class="k">var</span> progress = <span class="k">new</span> <span class="t">Progress</span>&lt;<span class="k">int</span>&gt;(percent =&gt; _progress.<span class="t">Text</span> = <span class="s">$&quot;Copied {percent} %&quot;</span>);
+            <span class="k">await</span> <span class="t">Task</span>.<span class="t">Run</span>(() =&gt;
+            {
+                <span class="k">for</span> (<span class="k">var</span> percent = <span class="n">0</span>; percent &lt;= <span class="n">100</span>; percent += <span class="n">5</span>)
+                {
+                    <span class="t">Thread</span>.<span class="t">Sleep</span>(<span class="n">80</span>);
+                    ((<span class="t">IProgress</span>&lt;<span class="k">int</span>&gt;)progress).<span class="t">Report</span>(percent);
+                }
+            });
+            _progress.<span class="t">Text</span> += <span class="s">&quot; – done&quot;</span>;
+            copy.<span class="t">Enabled</span> = <span class="k">true</span>;
+        };
+
+        <span class="k">var</span> wrong = <span class="k">new</span> <a class="t" href="../api/Doqua.Controls.Button.html">Button</a> { <a class="t" href="../api/Doqua.GUI.Anchor.html">Anchor</a> = <span class="k">new</span> <a class="t" href="../api/Doqua.GUI.Anchor.html">Anchor</a>(<span class="t">Left</span>: <span class="n">320</span>, <span class="t">Top</span>: <span class="n">256</span>), <span class="t">Width</span> = <span class="n">200</span>, <span class="t">Text</span> = <span class="s">&quot;Touch a label wrongly&quot;</span> };
+        wrong.<span class="t">Click</span> += (sender, e) =&gt; <span class="t">Task</span>.<span class="t">Run</span>(() =&gt;
+        {
+            <span class="c">// Changing a shown control from another thread is detected and throws; the message is posted back.</span>
+            <span class="k">try</span>
+            {
+                _status.<span class="t">Text</span> = <span class="s">&quot;This never appears&quot;</span>;
+            }
+            <span class="k">catch</span> (<span class="t">InvalidOperationException</span> ex)
+            {
+                <span class="k">var</span> thread = <span class="t">Environment</span>.<span class="t">CurrentManagedThreadId</span>;
+                <a class="t" href="../api/Doqua.GUI.Application.html">Application</a>.<span class="t">Post</span>(() =&gt; _status.<span class="t">Text</span> = <span class="s">$&quot;Caught on thread {thread}:\n{ex.Message.Replace(&quot;</span>; <span class="s">&quot;, &quot;</span>;\n<span class="s">&quot;)}&quot;</span>);
+            }
+        });
+
+        <span class="t">Content</span> = <span class="k">new</span> <a class="t" href="../api/Doqua.Controls.Panel.html">Panel</a>
+        {
+            <span class="t">Children</span> =
+            {
+                start, stop, <span class="k">new</span> <a class="t" href="../api/Doqua.Controls.Label.html">Label</a> { <a class="t" href="../api/Doqua.GUI.Anchor.html">Anchor</a> = <span class="k">new</span> <a class="t" href="../api/Doqua.GUI.Anchor.html">Anchor</a>(<span class="t">Left</span>: <span class="n">276</span>, <span class="t">Top</span>: <span class="n">18</span>), <span class="t">Text</span> = <span class="s">&quot;ms&quot;</span> },
+                _interval, _latest, _count, _readings,
+                compute, <span class="k">new</span> <a class="t" href="../api/Doqua.Controls.Label.html">Label</a> { <a class="t" href="../api/Doqua.GUI.Anchor.html">Anchor</a> = <span class="k">new</span> <a class="t" href="../api/Doqua.GUI.Anchor.html">Anchor</a>(<span class="t">Left</span>: <span class="n">320</span>, <span class="t">Top</span>: <span class="n">52</span>), <a class="t" href="../api/Doqua.GUI.Color.html">Color</a> = <span class="k">new</span> <a class="t" href="../api/Doqua.GUI.Color.html">Color</a>(<span class="n">96</span>, <span class="n">96</span>, <span class="n">96</span>),
+                    <span class="t">Text</span> = <span class="s">&quot;Counts primes on the thread pool;\nthe result is shown after await.&quot;</span> },
+                copy, _progress, wrong, _status,
+            },
+        };
+        _status.<span class="t">Text</span> = <span class="s">$&quot;GUI thread: {Environment.CurrentManagedThreadId}. Start the reader, or try the buttons.&quot;</span>;
+    }
+
+    <span class="c">/// &lt;summary&gt;</span>
+    <span class="c">/// A background loop that &quot;reads from the network&quot;: it asks the GUI for the interval (InvokeAsync), waits, then</span>
+    <span class="c">/// posts each reading to the GUI thread (Post).</span>
+    <span class="c">/// &lt;/summary&gt;</span>
+    <span class="k">private</span> <span class="k">void</span> <span class="t">StartWorker</span>()
+    {
+        _worker = <span class="k">new</span> <span class="t">CancellationTokenSource</span>();
+        <span class="k">var</span> token = _worker.<span class="t">Token</span>;
+        <span class="t">Task</span>.<span class="t">Run</span>(<span class="k">async</span> () =&gt;
+        {
+            <span class="k">var</span> random = <span class="k">new</span> <span class="t">Random</span>();
+            <span class="k">var</span> <span class="k">value</span> = <span class="n">20.0</span>;
+            <span class="k">while</span> (!token.<span class="t">IsCancellationRequested</span>)
+            {
+                <span class="k">var</span> interval = <span class="k">await</span> <a class="t" href="../api/Doqua.GUI.Application.html">Application</a>.<span class="t">InvokeAsync</span>(() =&gt; _interval.<span class="t">Value</span>); <span class="c">// A value owned by the GUI.</span>
+                <span class="k">try</span>
+                {
+                    <span class="k">await</span> <span class="t">Task</span>.<span class="t">Delay</span>(interval, token);
+                }
+                <span class="k">catch</span> (<span class="t">OperationCanceledException</span>)
+                {
+                    <span class="k">return</span>;
+                }
+                <span class="k">value</span> += random.<span class="t">NextDouble</span>() - <span class="n">0.5</span>;
+                <span class="k">var</span> reading = <span class="k">value</span>;
+                <span class="k">var</span> thread = <span class="t">Environment</span>.<span class="t">CurrentManagedThreadId</span>;
+                <a class="t" href="../api/Doqua.GUI.Application.html">Application</a>.<span class="t">Post</span>(() =&gt; <span class="t">ShowReading</span>(reading, thread));
+            }
+        });
+    }
+
+    <span class="c">/// &lt;summary&gt;Runs on the GUI thread (posted by the worker).&lt;/summary&gt;</span>
+    <span class="k">private</span> <span class="k">void</span> <span class="t">ShowReading</span>(<span class="k">double</span> <span class="k">value</span>, <span class="k">int</span> thread)
+    {
+        _received++;
+        _latest.<span class="t">Text</span> = <span class="s">$&quot;{value:F2} &#176;C&quot;</span>;
+        _count.<span class="t">Text</span> = <span class="s">$&quot;{_received} readings&quot;</span>;
+        <span class="k">var</span> row = _readings.<span class="t">AddRow</span>(<span class="t">DateTime</span>.<span class="t">Now</span>.<span class="t">ToString</span>(<span class="s">&quot;HH:mm:ss.fff&quot;</span>), <span class="k">value</span>.<span class="t">ToString</span>(<span class="s">&quot;F2&quot;</span>), thread.<span class="t">ToString</span>());
+        <span class="k">if</span> (_readings.<span class="t">Rows</span>.<span class="t">Count</span> &gt; <span class="n">200</span>)
+            _readings.<span class="t">Rows</span>.<span class="t">RemoveAt</span>(<span class="n">0</span>);
+        _readings.<span class="t">ScrollToRow</span>(_readings.<span class="t">Rows</span>.<span class="t">Count</span> - <span class="n">1</span>);
+        row[<span class="n">1</span>].<a class="t" href="../api/Doqua.GUI.Color.html">Color</a> = <span class="k">value</span> &gt;= <span class="n">20</span> ? <span class="k">new</span> <a class="t" href="../api/Doqua.GUI.Color.html">Color</a>(<span class="n">192</span>, <span class="n">0</span>, <span class="n">0</span>) : <span class="k">new</span> <a class="t" href="../api/Doqua.GUI.Color.html">Color</a>(<span class="n">0</span>, <span class="n">0</span>, <span class="n">192</span>);
+    }
+
+    <span class="k">private</span> <span class="k">static</span> <span class="k">int</span> <span class="t">CountPrimes</span>(<span class="k">int</span> limit)
+    {
+        <span class="k">var</span> composite = <span class="k">new</span> <span class="k">bool</span>[limit];
+        <span class="k">var</span> count = <span class="n">0</span>;
+        <span class="k">for</span> (<span class="k">var</span> i = <span class="n">2</span>; i &lt; limit; i++)
+        {
+            <span class="k">if</span> (composite[i])
+                <span class="k">continue</span>;
+            count++;
+            <span class="k">for</span> (<span class="k">long</span> j = (<span class="k">long</span>)i * i; j &lt; limit; j += i)
+                composite[j] = <span class="k">true</span>;
+        }
+        <span class="k">return</span> count;
+    }
+}
+
+<span class="k">static</span> <span class="k">class</span> <span class="t">Program</span>
+{
+<span class="a">    [STAThread]</span>
+    <span class="k">static</span> <span class="k">int</span> <span class="t">Main</span>() =&gt; <a class="t" href="../api/Doqua.GUI.Application.html">Application</a>.<span class="t">Run</span>(<span class="k">new</span> <span class="t">MainWindow</span>());
+}
+</code></pre>
+<footer>Doqua documentation · generated from the source code and its XML comments</footer>
+</main>
+</div>
+<script>const DOQUA_ROOT = "../";</script>
+<script src="../assets/search-index.js"></script>
+<script src="../assets/search.js"></script>
+</body>
+</html>

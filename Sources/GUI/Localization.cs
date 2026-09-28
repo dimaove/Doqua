@@ -65,6 +65,7 @@ public static class Localization
         ["Doqua.Error.ItemNotInList"] = "The item '{0}' is not in the list.",
         ["Doqua.Error.NodeNotInTree"] = "The node does not belong to this tree view.",
         ["Doqua.Error.NodeHasParent"] = "The node already belongs to a tree.",
+        ["Doqua.Error.WrongThread"] = "Windows, shown controls and timers can be used only from the GUI thread; use Application.Post to run code there.",
         ["Doqua.Error.ModalOwner"] = "ShowModal needs another window as the owner and can be called only once per window.",
         ["Doqua.Error.RowSelectionOff"] = "Rows can be selected only while RowSelection is on.",
         ["Doqua.Error.FilterPatterns"] = "A file filter needs at least one non-empty pattern.",

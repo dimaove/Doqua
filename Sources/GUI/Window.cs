@@ -39,6 +39,7 @@ public class Window
     /// <summary>Creates an 800 x 600 window; it appears with <see cref="Show"/> or <see cref="Application.Run"/>.</summary>
     public Window()
     {
+        Application.EnsureGuiThread(); // The first window makes its thread the GUI thread.
         _impl = Application.Platform.CreateWindow(_width, _height);
         _impl.Resized += UpdateSize;
         _impl.Closed += () =>
@@ -137,6 +138,7 @@ public class Window
         get => _content;
         set
         {
+            Application.VerifyAccess();
             if (ReferenceEquals(value, _content))
                 return;
             if (value != null && (value.Parent != null || value.Host != null))
@@ -245,6 +247,7 @@ public class Window
     /// <summary>Brings the window to the front and gives it the keyboard focus, if the window manager allows it.</summary>
     public void Activate()
     {
+        Application.VerifyAccess();
         if (!IsClosed)
             _impl.Activate();
     }
@@ -252,6 +255,7 @@ public class Window
     /// <summary>Closes the window; closing the main window ends <see cref="Application.Run"/>.</summary>
     public void Close()
     {
+        Application.VerifyAccess();
         if (!IsClosed)
             _impl.Destroy();
     }
@@ -263,9 +267,13 @@ public class Window
             window.Invalidate();
     }
 
-    /// <summary>Schedules a redraw. Multiple requests are merged into one.</summary>
+    /// <summary>
+    /// Schedules a redraw. Multiple requests are merged into one. Controls call it whenever they change, so it also
+    /// detects controls changed from a thread other than the GUI thread (use <see cref="Application.Post"/>).
+    /// </summary>
     public void Invalidate()
     {
+        Application.VerifyAccess();
         if (!IsClosed)
             _impl.Invalidate();
     }
@@ -347,6 +355,7 @@ public class Window
 
     internal bool TrySetFocus(Control control)
     {
+        Application.VerifyAccess();
         if (!control.CanFocus || control.GetWindow() != this)
             return false;
         SetFocus(control);
@@ -612,5 +621,9 @@ public class Window
             _content.Bounds = new Rect(0, 0, width, height);
     }
 
-    private void ThrowIfClosed() => ObjectDisposedException.ThrowIf(IsClosed, this);
+    private void ThrowIfClosed()
+    {
+        Application.VerifyAccess();
+        ObjectDisposedException.ThrowIf(IsClosed, this);
+    }
 }
