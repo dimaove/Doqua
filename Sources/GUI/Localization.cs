@@ -99,12 +99,15 @@ public static class Localization
     // Culture or language name ("ru-RU", "ru") -> key -> text.
     private static readonly Dictionary<string, Dictionary<string, string>> s_translations = new(StringComparer.OrdinalIgnoreCase);
 
-    private static CultureInfo s_culture = CultureInfo.GetCultureInfo("en-US");
+    private static CultureInfo s_culture = DefaultCulture();
 
     /// <summary>Raised after <see cref="Culture"/> changes (all windows are already scheduled for redrawing).</summary>
     public static event EventHandler? CultureChanged;
 
-    /// <summary>Language of the texts and culture for dates and numbers shown by Doqua; English (en-US) by default.</summary>
+    /// <summary>
+    /// Language of the texts and culture for dates and numbers shown by Doqua; English (en-US) by default, or the
+    /// invariant culture (also English) when the application runs in globalization-invariant mode, which has no other cultures.
+    /// </summary>
     public static CultureInfo Culture
     {
         get => s_culture;
@@ -116,6 +119,22 @@ public static class Localization
             s_culture = value;
             Window.InvalidateAll();
             CultureChanged?.Invoke(null, EventArgs.Empty);
+        }
+    }
+
+    /// <summary>
+    /// en-US; in globalization-invariant mode (<c>InvariantGlobalization</c> in the project, common for small self-contained
+    /// tools) only the invariant culture exists, so that one.
+    /// </summary>
+    private static CultureInfo DefaultCulture()
+    {
+        try
+        {
+            return CultureInfo.GetCultureInfo("en-US");
+        }
+        catch (CultureNotFoundException)
+        {
+            return CultureInfo.InvariantCulture;
         }
     }
 
