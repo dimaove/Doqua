@@ -24,6 +24,7 @@ public class TabControl : Control
     private Color _shadowColor = ClassicStyle.Shadow;
     private Color _darkShadowColor = ClassicStyle.DarkShadow;
 
+    /// <summary>Creates an empty tab control, 300 x 200 pixels.</summary>
     public TabControl()
     {
         _children = new ControlCollection(this);
@@ -32,6 +33,7 @@ public class TabControl : Control
         Height = 200;
     }
 
+    /// <summary>The pages, in tab order.</summary>
     public TabPageCollection Pages { get; }
 
     /// <summary>
@@ -69,6 +71,7 @@ public class TabControl : Control
         set => SelectedPage = value == -1 ? null : Pages[value];
     }
 
+    /// <summary>Raised after <see cref="SelectedPage"/> changes.</summary>
     public event EventHandler? SelectedPageChanged;
 
     /// <summary>Font of the tab titles; <see cref="GUI.Font.Default"/> unless set.</summary>

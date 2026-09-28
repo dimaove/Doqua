@@ -1,0 +1,45 @@
+<h1>Custom drawing</h1>
+<p>A control draws itself in [[Control.OnRender]]. Override it in a subclass; (0, 0) is the control's top-left corner and drawing is
+clipped to its bounds. The framework draws the children afterwards, on top. Call [[Control.Invalidate]] when something that affects the
+picture changes.</p>
+
+<pre class="cs">class Gauge : Control
+{
+    private int _percent;
+
+    public int Percent
+    {
+        get => _percent;
+        set { _percent = Math.Clamp(value, 0, 100); Invalidate(); }
+    }
+
+    protected override void OnRender(DrawingContext dc)
+    {
+        dc.FillRectangle(0, 0, Width, Height, Color.White);
+        dc.FillRectangle(0, 0, Width * _percent / 100, Height, Color.Green);
+        dc.DrawRectangle(new Rect(0, 0, Width, Height), Color.Black);
+        dc.DrawText($"{_percent} %", Font.Default, Color.Black, 6, 3);
+    }
+}</pre>
+
+<h2>The drawing context</h2>
+<p>[[DrawingContext]] fills and outlines rectangles, draws antialiased lines and ellipses, text ([[DrawingContext.DrawText]] with a
+[[Font]]) and bitmaps; translucent colors are blended. [[DrawingContext.PushClip]] narrows the drawing area:</p>
+<pre class="cs">using (dc.PushClip(new Rect(4, 4, Width - 8, Height - 8)))
+    dc.DrawText(longText, Font.Default, Color.Black, 4, 4);</pre>
+<figure><img class="shot" src="{root}images/examples/clock.png" alt="Clock example"></figure>
+
+<h2>Fonts and text</h2>
+<p>A [[Font]] is a family, a size in pixels and a [[FontStyle]]; <code>Font.Default</code> is the system UI font at 14 pixels.
+Fonts are immutable: <code>font with { Size = 20 }</code> makes a changed copy. [[Font.MeasureText]] returns the size a text needs;
+[[Font.GetInstalledFamilies]] lists the installed families.</p>
+
+<h2>Bitmaps</h2>
+<p>[[Bitmap]] loads and saves PNG files and can be drawn whole, in part or scaled. [[Bitmap.CreateDrawingContext]] draws into a bitmap
+with the same API as a control:</p>
+<pre class="cs">var picture = new Bitmap(240, 160);
+var dc = picture.CreateDrawingContext();
+dc.FillRectangle(0, 0, 240, 160, Color.Orange);
+dc.DrawText("Drawn in code", Font.Default, Color.Black, 10, 10);
+picture.Save("picture.png");</pre>
+<figure><img class="shot" src="{root}images/examples/bitmap.png" alt="Bitmap example"></figure>

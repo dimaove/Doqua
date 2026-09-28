@@ -1,0 +1,25 @@
+<h1>Platform notes</h1>
+
+<h2>Linux (X11)</h2>
+<ul>
+  <li>Needs an X11 display (<code>DISPLAY</code>); on Wayland desktops it runs through XWayland.</li>
+  <li>Text input goes through XIM, so keyboard layouts, dead keys and IBus work; shortcuts use the first keyboard layout, so Ctrl+A works
+    in any layout.</li>
+  <li>Fonts come from fontconfig and are drawn with FreeType. The clipboard is the X11 CLIPBOARD selection: text copied from a Doqua
+    application disappears when it exits unless a clipboard manager keeps it.</li>
+  <li>Cursors come from the desktop's cursor theme; window icons use <code>_NET_WM_ICON</code>.</li>
+</ul>
+
+<h2>Windows (Win32)</h2>
+<ul>
+  <li>Windows 10 or later. Fonts are drawn with GDI; the clipboard, cursors, icons and timers use the standard Win32 functions.</li>
+  <li>The Windows implementation compiles and follows the same design, but has been tested much less than the Linux one.</li>
+</ul>
+
+<h2>Current limitations</h2>
+<ul>
+  <li>No high-DPI scaling: one pixel is one device pixel.</li>
+  <li>No font fallback: characters missing from a font (for example CJK in a Latin font) show as boxes.</li>
+  <li>Menus, drop-down lists and calendars are drawn inside their window and cannot extend past its edges.</li>
+  <li>No undo in text editors, no word wrap, no drag and drop between controls.</li>
+</ul>

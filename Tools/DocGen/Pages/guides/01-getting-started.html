@@ -1,0 +1,61 @@
+<h1>Getting started</h1>
+<p>Doqua is a .NET 10 class library (<code>doqua.dll</code>, project <code>Sources/Doqua.csproj</code>). An application references it,
+creates a [[Window]] with some controls and hands it to [[Application.Run]].</p>
+
+<h2>Requirements</h2>
+<ul>
+  <li>.NET 10 SDK.</li>
+  <li>Linux with an X11 display (also XWayland), and the usual desktop libraries: libX11, fontconfig and FreeType. Or Windows 10/11.</li>
+</ul>
+
+<h2>Create a project</h2>
+<pre class="cs">dotnet new console -n MyApp
+cd MyApp
+dotnet add reference ../Doqua/Sources/Doqua.csproj</pre>
+<p>Then replace <code>Program.cs</code>:</p>
+<pre class="cs">using Doqua.Controls;
+using Doqua.GUI;
+
+class MainWindow : Window
+{
+    public MainWindow()
+    {
+        Title = "My application";
+        Width = 480;
+        Height = 300;
+
+        var name = new Input { Anchor = new Anchor(Left: 90, Top: 20, Right: 20) };
+        var greeting = new Label { Anchor = new Anchor(Left: 20, Top: 70) };
+        var hello = new Button { Anchor = new Anchor(Right: 20, Bottom: 20), Text = "Say hello" };
+        hello.Click += (sender, e) => greeting.Text = $"Hello, {name.Text}!";
+
+        Content = new Panel
+        {
+            Children = { new Label { X = 20, Y = 26, Text = "Name:" }, name, greeting, hello },
+        };
+        name.Focus();
+    }
+}
+
+static class Program
+{
+    [STAThread]
+    static int Main() => Application.Run(new MainWindow());
+}</pre>
+<p><code>dotnet run</code> opens the window. The name field stretches with the window and the button stays in the bottom-right corner,
+because of their [[Control.Anchor]]s (see <a href="layout.html">Layout</a>).</p>
+<p class="note"><code>[STAThread]</code> is harmless on Linux and lets Windows use the clipboard and other COM based features.</p>
+
+<h2>The examples</h2>
+<p>The repository has one example per topic in <code>Examples/</code>. Build them all with
+<code>dotnet build Examples/examples.sln</code>, run one with <code>dotnet run --project Examples/Tabs</code>,
+and see the <a href="{root}examples/index.html">examples gallery</a> for screenshots and sources.</p>
+
+<h2>Namespaces</h2>
+<ul>
+  <li><a href="{root}api/Doqua.GUI.html">Doqua.GUI</a>: [[Window]], [[Application]], [[Control]], drawing ([[DrawingContext]], [[Bitmap]], [[Font]], [[Color]]),
+    input event arguments, [[Clipboard]], [[Timer]], [[Cursor]] and [[Localization]].</li>
+  <li><a href="{root}api/Doqua.Controls.html">Doqua.Controls</a>: the ready-made controls, from [[Panel]] and [[Button]] to [[Table]] and [[TreeView]].</li>
+</ul>
+<p class="note">With implicit usings, <code>System.Threading.Timer</code> is also in scope; outside <code>Doqua.GUI</code> write
+<code>using Timer = Doqua.GUI.Timer;</code> to use Doqua's [[Timer]].</p>

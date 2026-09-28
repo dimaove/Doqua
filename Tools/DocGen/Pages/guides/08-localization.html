@@ -1,0 +1,21 @@
+<h1>Localization</h1>
+<p>Doqua is in English by default, whatever the system language. [[Localization]] translates Doqua's own texts (menus, the calendar,
+exception messages) and your application's, and [[Localization.Culture]] also sets month and weekday names and date formats.</p>
+
+<h2>Translating</h2>
+<pre class="cs">Localization.LoadJson("ru", "ru.json");                   // or Localization.Add("ru", key, text)
+Localization.Culture = CultureInfo.GetCultureInfo("ru-RU");
+
+label.Text = Localization.Get("Name:");                   // your texts: the English text can be the key
+status.Text = Localization.Format("Hello, {0}!", name);
+Localization.CultureChanged += (s, e) => ApplyTexts();    // set your control texts again</pre>
+<p>A translation file is one JSON object; comments are allowed:</p>
+<pre class="cs">{
+  "Doqua.Menu.Copy": "Копировать",
+  "Name:": "Имя:",
+  "Hello, {0}!": "Привет, {0}!"
+}</pre>
+<p>A text is looked up for the culture ("ru-RU"), then its language ("ru"), then Doqua's English default, then the key itself, so a
+missing translation shows English instead of failing. [[Localization.DefaultTexts]] lists Doqua's keys with their English texts,
+a starting point for a new language.</p>
+<figure><img class="shot" src="{root}images/examples/localization-ru.png" alt="Localization example in Russian"></figure>

@@ -2,12 +2,14 @@ using Doqua.GUI.Platform;
 
 namespace Doqua.GUI;
 
+/// <summary>Runs the application: shows the main window and processes events until it is closed.</summary>
 public static class Application
 {
     private static IPlatform? s_platform;
 
     internal static IPlatform Platform => s_platform ??= PlatformFactory.Create();
 
+    /// <summary>The window passed to <see cref="Run"/>, or null before it is called.</summary>
     public static Window? MainWindow { get; private set; }
 
     /// <summary>

@@ -26,6 +26,7 @@ public class SplitContainer : Control
     private SplitOrientation _orientation;
     private int _dragOffset = -1; // Pointer position inside the bar while dragging, -1 otherwise.
 
+    /// <summary>Creates a 400 x 300 container with a vertical bar at 200 pixels.</summary>
     public SplitContainer()
     {
         Panel1 = new Panel();
@@ -46,6 +47,7 @@ public class SplitContainer : Control
     /// <summary>Raised after the user or the program moved the bar.</summary>
     public event EventHandler? SplitterMoved;
 
+    /// <summary>Direction of the bar; <see cref="SplitOrientation.Vertical"/> (left and right panels) by default.</summary>
     public SplitOrientation Orientation
     {
         get => _orientation;
@@ -86,6 +88,7 @@ public class SplitContainer : Control
         }
     }
 
+    /// <summary>Smallest size of <see cref="Panel1"/> (default 50 pixels).</summary>
     public int Panel1MinSize
     {
         get => _panel1MinSize;
@@ -97,6 +100,7 @@ public class SplitContainer : Control
         }
     }
 
+    /// <summary>Smallest size of <see cref="Panel2"/> (default 50 pixels).</summary>
     public int Panel2MinSize
     {
         get => _panel2MinSize;

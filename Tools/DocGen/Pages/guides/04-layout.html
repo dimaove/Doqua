@@ -1,0 +1,42 @@
+<h1>Layout</h1>
+
+<h2>Position and size</h2>
+<p>A control's [[Control.X]] and [[Control.Y]] are relative to its parent; [[Control.Width]] and [[Control.Height]] are its size
+(or all four at once: [[Control.Bounds]]). The window's [[Window.Content]] always fills the window.</p>
+
+<h2>Anchors</h2>
+<p>[[Control.Anchor]] keeps a control at fixed distances from its parent's edges when the parent is resized. For each direction:</p>
+<ul>
+  <li>Left and Right: the control stretches (<code>X = Left</code>, <code>Width = parent width − Left − Right</code>).</li>
+  <li>only Left: fixed width at <code>X = Left</code>; only Right: fixed width, stuck to the right edge.</li>
+  <li>neither: the control keeps its X and Width.</li>
+</ul>
+<pre class="cs">// Stretches horizontally, 20 pixels from both sides:
+var name = new Input { Anchor = new Anchor(Left: 20, Top: 20, Right: 20) };
+// Stays in the bottom-right corner:
+var ok = new Button { Anchor = new Anchor(Right: 10, Bottom: 10), Text = "OK" };
+// Fills the parent with a 10 pixel margin:
+var list = new Table { Anchor = Anchor.Fill(10) };</pre>
+<p>Anchors are applied again whenever the parent's size changes, when the control is added to a parent and when it resizes itself
+(an auto-sized [[Label]] anchored to the right keeps its right edge).</p>
+
+<h2>Scrolling panels</h2>
+<p>With [[Panel.ScrollBars]] a panel shows scroll bars when its children extend past its edges; the mouse wheel scrolls
+(Shift+wheel horizontally) and a child that receives the keyboard focus is scrolled into view. Anchors inside a scrolling panel refer
+to its visible area, so stretched children never cause scrolling.</p>
+<pre class="cs">var list = new Panel { Anchor = Anchor.Fill(), ScrollBars = ScrollBars.Vertical };
+for (var i = 1; i &lt;= 50; i++)
+    list.Children.Add(new CheckBox($"Option {i}") { X = 8, Y = 6 + (i - 1) * 24 });</pre>
+<figure><img class="shot" src="{root}images/examples/tabs-scrolling.png" alt="Scrolling panels"></figure>
+
+<h2>Split panels</h2>
+<p>[[SplitContainer]] shares its space between [[SplitContainer.Panel1]] and [[SplitContainer.Panel2]]; the user drags the bar between
+them. Panel1 keeps its size ([[SplitContainer.SplitterDistance]]) when the container is resized.</p>
+<pre class="cs">var split = new SplitContainer { Anchor = Anchor.Fill(8), Panel1MinSize = 120 };
+split.Panel1.Children.Add(new TreeView { Anchor = Anchor.Fill() });
+split.Panel2.Children.Add(new Table { Anchor = Anchor.Fill() });
+split.SplitterDistance = 230;</pre>
+<figure><img class="shot" src="{root}images/examples/dictionary.png" alt="SplitContainer in the Dictionary example"></figure>
+
+<h2>Tabs</h2>
+<p>A [[TabControl]] shows one [[TabPage]] at a time in the area below its tabs; each page is a [[Panel]] with a [[TabPage.Title]].</p>

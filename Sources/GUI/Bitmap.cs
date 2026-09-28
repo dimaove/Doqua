@@ -18,7 +18,9 @@ public sealed class Bitmap
     /// <summary>Upper limit for width * height (256 megapixels, 1 GB of pixels).</summary>
     internal const long MaxPixels = 1L << 28;
 
+    /// <summary>Width in pixels.</summary>
     public int Width { get; }
+    /// <summary>Height in pixels.</summary>
     public int Height { get; }
 
     /// <summary>Pixels as 0xAARRGGBB (not premultiplied), rows from top to bottom.</summary>
@@ -60,12 +62,14 @@ public sealed class Bitmap
     /// </summary>
     public DrawingContext CreateDrawingContext() => new(this);
 
+    /// <summary>Color of the pixel at (<paramref name="x"/>, <paramref name="y"/>).</summary>
     public Color GetPixel(int x, int y)
     {
         var pixel = Pixels[IndexOf(x, y)];
         return new Color((byte)(pixel >> 16), (byte)(pixel >> 8), (byte)pixel, (byte)(pixel >> 24));
     }
 
+    /// <summary>Sets the pixel at (<paramref name="x"/>, <paramref name="y"/>) to <paramref name="color"/>, without blending.</summary>
     public void SetPixel(int x, int y, Color color) =>
         Pixels[IndexOf(x, y)] = (uint)(color.A << 24 | color.R << 16 | color.G << 8 | color.B);
 

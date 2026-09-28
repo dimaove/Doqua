@@ -18,34 +18,41 @@ public abstract class Control
     private bool _applyingAnchor;
     private Cursor _cursor;
 
+    /// <summary>Optional name, for the application's own use.</summary>
     public string? Name { get; set; }
 
+    /// <summary>The container this control is in, or null.</summary>
     public Control? Parent { get; internal set; }
 
+    /// <summary>Left edge, relative to the parent.</summary>
     public int X
     {
         get => _x;
         set => SetField(ref _x, value);
     }
 
+    /// <summary>Top edge, relative to the parent.</summary>
     public int Y
     {
         get => _y;
         set => SetField(ref _y, value);
     }
 
+    /// <summary>Width in pixels.</summary>
     public int Width
     {
         get => _width;
         set => Bounds = Bounds with { Width = value };
     }
 
+    /// <summary>Height in pixels.</summary>
     public int Height
     {
         get => _height;
         set => Bounds = Bounds with { Height = value };
     }
 
+    /// <summary>Position (relative to the parent) and size, together.</summary>
     public Rect Bounds
     {
         get => new(_x, _y, _width, _height);
@@ -174,6 +181,7 @@ public abstract class Control
     /// <summary>Raised after Width or Height changed; anchored children have already been rearranged.</summary>
     public event EventHandler? SizeChanged;
 
+    /// <summary>Raised when a mouse button is pressed over this control.</summary>
     public event EventHandler<MouseEventArgs>? MouseDown;
 
     /// <summary>
@@ -194,10 +202,13 @@ public abstract class Control
     /// <summary>Raised when the mouse wheel turns over this control or one of its children (until handled).</summary>
     public event EventHandler<MouseWheelEventArgs>? MouseWheel;
 
+    /// <summary>Raised when the pointer moves onto this control.</summary>
     public event EventHandler? MouseEnter;
 
+    /// <summary>Raised when the control receives the keyboard focus.</summary>
     public event EventHandler? GotFocus;
 
+    /// <summary>Raised when the control loses the keyboard focus.</summary>
     public event EventHandler? LostFocus;
 
     /// <summary>

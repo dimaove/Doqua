@@ -1,0 +1,40 @@
+<h1>Mouse, keyboard and focus</h1>
+
+<h2>Mouse</h2>
+<p>Every control raises [[Control.MouseDown]], [[Control.MouseUp]], [[Control.MouseClick]] (press and release on the same control),
+[[Control.MouseMove]], [[Control.MouseEnter]], [[Control.MouseLeave]] and [[Control.MouseWheel]].
+Coordinates are relative to the control. [[MouseEventArgs.ClickCount]] is 2 for a double click, 3 for a triple click.</p>
+<p>The control that received a <code>MouseDown</code> also gets the matching <code>MouseUp</code> and all moves while the button is held,
+even outside it — that is how dragging works. Disabled controls get no mouse events but still cover the controls below them.</p>
+<pre class="cs">rectangle.MouseClick += (sender, e) =>
+    status.Text = $"{e.Button} click at ({e.X}, {e.Y})";</pre>
+
+<h2>Keyboard focus</h2>
+<p>One control per window has the keyboard focus: [[Window.FocusedControl]], or [[Control.Focused]] on the control itself.
+Controls that can take it have [[Control.Focusable]]; a click focuses them, Tab and Shift+Tab move through them in tree order, and
+[[Control.Focus]] moves the focus from code. A radio group is a single Tab stop ([[Control.IsTabStop]]).</p>
+
+<h2>Keys and text</h2>
+<p>[[Control.KeyDown]] reports keys ([[Key]] and [[KeyModifiers]]); [[Control.TextInput]] reports the typed text, as produced by the
+keyboard layout and input method. Both start at the focused control and go up through its parents until one sets <code>Handled</code>,
+then [[Window.KeyDown]] gets what is left.</p>
+<pre class="cs">nameInput.KeyDown += (sender, e) =>
+{
+    if (e.Key == Key.Enter)
+    {
+        Save();
+        e.Handled = true;
+    }
+};</pre>
+
+<h2>Context menus</h2>
+<p>Set [[Control.ContextMenu]] to a [[PopupMenu]]: it opens on a right click (or Shift+F10). [[PopupMenu.Closed]] reports the chosen
+[[MenuItem]], or null when the menu was dismissed; each item also has a [[MenuItem.Click]] event. [[Input]] and [[TextArea]] add
+Cut / Copy / Paste to your items; [[Table]] lets you build the menu for the clicked cell in [[Table.ContextMenuOpening]].</p>
+<pre class="cs">var menu = new PopupMenu { Items = { new MenuItem("Red"), new MenuItem("Blue"), MenuItem.Separator(), new MenuItem("Reset") } };
+menu.Closed += (sender, e) => status.Text = e.SelectedItem?.Text ?? "Closed without a choice";
+rectangle.ContextMenu = menu;</pre>
+
+<h2>Cursor and clipboard</h2>
+<p>[[Control.Cursor]] sets the mouse pointer shape over a control (text inputs use [[Cursor.IBeam]]). [[Clipboard.GetText]] and
+[[Clipboard.SetText]] read and write the system clipboard.</p>

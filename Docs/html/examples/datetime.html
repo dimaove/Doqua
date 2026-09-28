@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DateTime · Doqua</title>
+<link rel="icon" href="../../logo_32.png">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="../index.html"><img src="../../logo.png" alt=""><span>Doqua</span></a>
+  <span class="tagline">Cross-platform GUI for .NET</span>
+  <div class="search"><input id="search" type="search" placeholder="Search the documentation" autocomplete="off"><div id="search-results"></div></div>
+</header>
+<div class="layout">
+<nav class="side"><h4>Guide</h4><ul><li><a class="" href="../index.html">Overview</a></li><li><a class="" href="../guides/getting-started.html">Getting started</a></li><li><a class="" href="../guides/architecture.html">How Doqua works</a></li><li><a class="" href="../guides/controls.html">Controls</a></li><li><a class="" href="../guides/layout.html">Layout</a></li><li><a class="" href="../guides/input.html">Mouse, keyboard and focus</a></li><li><a class="" href="../guides/drawing.html">Custom drawing</a></li><li><a class="" href="../guides/timers.html">Timers and windows</a></li><li><a class="" href="../guides/localization.html">Localization</a></li><li><a class="" href="../guides/platforms.html">Platform notes</a></li></ul><h4>Examples</h4><ul><li><a class="" href="../examples/index.html">All examples</a></li><li><a class="" href="../examples/simple.html">Simple</a></li><li><a class="" href="../examples/tabs.html">Tabs</a></li><li><a class="" href="../examples/dictionary.html">Dictionary</a></li><li><a class="" href="../examples/editor.html">Editor</a></li><li><a class=" current" href="../examples/datetime.html">DateTime</a></li><li><a class="" href="../examples/fonts.html">Fonts</a></li><li><a class="" href="../examples/localization.html">Localization</a></li><li><a class="" href="../examples/bitmap.html">Bitmap</a></li><li><a class="" href="../examples/clock.html">Clock</a></li></ul><h4>API reference</h4><ul><li><a class="" href="../api/index.html">Namespaces</a></li></ul><h5><a href="../api/Doqua.Controls.html">Doqua.Controls</a></h5><ul class="types"><li><a class="kind-class" href="../api/Doqua.Controls.Button.html">Button</a></li><li><a class="kind-class" href="../api/Doqua.Controls.CheckBox.html">CheckBox</a></li><li><a class="kind-class" href="../api/Doqua.Controls.ComboBox-1.html">ComboBox&lt;T&gt;</a></li><li><a class="kind-class" href="../api/Doqua.Controls.ComboBoxItemCollection-1.html">ComboBoxItemCollection&lt;T&gt;</a></li><li><a class="kind-class" href="../api/Doqua.Controls.DateInput.html">DateInput</a></li><li><a class="kind-class" href="../api/Doqua.Controls.Input.html">Input</a></li><li><a class="kind-class" href="../api/Doqua.Controls.Label.html">Label</a></li><li><a class="kind-class" href="../api/Doqua.Controls.MenuClosedEventArgs.html">MenuClosedEventArgs</a></li><li><a class="kind-class" href="../api/Doqua.Controls.MenuItem.html">MenuItem</a></li><li><a class="kind-class" href="../api/Doqua.Controls.NumberInput.html">NumberInput</a></li><li><a class="kind-class" href="../api/Doqua.Controls.Panel.html">Panel</a></li><li><a class="kind-class" href="../api/Doqua.Controls.PopupMenu.html">PopupMenu</a></li><li><a class="kind-class" href="../api/Doqua.Controls.RadioButton.html">RadioButton</a></li><li><a class="kind-class" href="../api/Doqua.Controls.RadioButton-1.html">RadioButton&lt;T&gt;</a></li><li><a class="kind-class" href="../api/Doqua.Controls.RadioGroup.html">RadioGroup</a></li><li><a class="kind-class" href="../api/Doqua.Controls.RadioGroup-1.html">RadioGroup&lt;T&gt;</a></li><li><a class="kind-class" href="../api/Doqua.Controls.Rectangle.html">Rectangle</a></li><li><a class="kind-enum" href="../api/Doqua.Controls.ScrollBars.html">ScrollBars</a></li><li><a class="kind-class" href="../api/Doqua.Controls.SplitContainer.html">SplitContainer</a></li><li><a class="kind-enum" href="../api/Doqua.Controls.SplitOrientation.html">SplitOrientation</a></li><li><a class="kind-class" href="../api/Doqua.Controls.TabControl.html">TabControl</a></li><li><a class="kind-class" href="../api/Doqua.Controls.Table.html">Table</a></li><li><a class="kind-class" href="../api/Doqua.Controls.TableCell.html">TableCell</a></li><li><a class="kind-class" href="../api/Doqua.Controls.TableCellEventArgs.html">TableCellEventArgs</a></li><li><a class="kind-class" href="../api/Doqua.Controls.TableColumn.html">TableColumn</a></li><li><a class="kind-class" href="../api/Doqua.Controls.TableColumnCollection.html">TableColumnCollection</a></li><li><a class="kind-class" href="../api/Doqua.Controls.TableContextMenuEventArgs.html">TableContextMenuEventArgs</a></li><li><a class="kind-class" href="../api/Doqua.Controls.TableRow.html">TableRow</a></li><li><a class="kind-class" href="../api/Doqua.Controls.TableRowCollection.html">TableRowCollection</a></li><li><a class="kind-class" href="../api/Doqua.Controls.TabPage.html">TabPage</a></li><li><a class="kind-class" href="../api/Doqua.Controls.TabPageCollection.html">TabPageCollection</a></li><li><a class="kind-class" href="../api/Doqua.Controls.TextArea.html">TextArea</a></li><li><a class="kind-class" href="../api/Doqua.Controls.ToggleControl.html">ToggleControl</a></li><li><a class="kind-class" href="../api/Doqua.Controls.TreeNode.html">TreeNode</a></li><li><a class="kind-class" href="../api/Doqua.Controls.TreeNodeCollection.html">TreeNodeCollection</a></li><li><a class="kind-class" href="../api/Doqua.Controls.TreeView.html">TreeView</a></li></ul><h5><a href="../api/Doqua.Core.html">Doqua.Core</a></h5><ul class="types"><li><a class="kind-static-class" href="../api/Doqua.Core.DoquaInfo.html">DoquaInfo</a></li></ul><h5><a href="../api/Doqua.GUI.html">Doqua.GUI</a></h5><ul class="types"><li><a class="kind-record-struct" href="../api/Doqua.GUI.Anchor.html">Anchor</a></li><li><a class="kind-static-class" href="../api/Doqua.GUI.Application.html">Application</a></li><li><a class="kind-class" href="../api/Doqua.GUI.Bitmap.html">Bitmap</a></li><li><a class="kind-static-class" href="../api/Doqua.GUI.Clipboard.html">Clipboard</a></li><li><a class="kind-record-struct" href="../api/Doqua.GUI.Color.html">Color</a></li><li><a class="kind-class" href="../api/Doqua.GUI.Control.html">Control</a></li><li><a class="kind-class" href="../api/Doqua.GUI.ControlCollection.html">ControlCollection</a></li><li><a class="kind-enum" href="../api/Doqua.GUI.Cursor.html">Cursor</a></li><li><a class="kind-class" href="../api/Doqua.GUI.DrawingContext.html">DrawingContext</a></li><li><a class="kind-record" href="../api/Doqua.GUI.Font.html">Font</a></li><li><a class="kind-enum" href="../api/Doqua.GUI.FontStyle.html">FontStyle</a></li><li><a class="kind-enum" href="../api/Doqua.GUI.Key.html">Key</a></li><li><a class="kind-class" href="../api/Doqua.GUI.KeyEventArgs.html">KeyEventArgs</a></li><li><a class="kind-enum" href="../api/Doqua.GUI.KeyModifiers.html">KeyModifiers</a></li><li><a class="kind-static-class" href="../api/Doqua.GUI.Localization.html">Localization</a></li><li><a class="kind-enum" href="../api/Doqua.GUI.MouseButton.html">MouseButton</a></li><li><a class="kind-class" href="../api/Doqua.GUI.MouseEventArgs.html">MouseEventArgs</a></li><li><a class="kind-class" href="../api/Doqua.GUI.MouseMoveEventArgs.html">MouseMoveEventArgs</a></li><li><a class="kind-class" href="../api/Doqua.GUI.MouseWheelEventArgs.html">MouseWheelEventArgs</a></li><li><a class="kind-record-struct" href="../api/Doqua.GUI.Rect.html">Rect</a></li><li><a class="kind-record-struct" href="../api/Doqua.GUI.Size.html">Size</a></li><li><a class="kind-class" href="../api/Doqua.GUI.TextInputEventArgs.html">TextInputEventArgs</a></li><li><a class="kind-static-class" href="../api/Doqua.GUI.Timer.html">Timer</a></li><li><a class="kind-class" href="../api/Doqua.GUI.Window.html">Window</a></li></ul></nav>
+<main>
+<h1>DateTime</h1><p class="lead">Two DateInputs whose ranges limit each other, and a date format selector.</p><p>Run it with <code>dotnet run --project Examples/DateTime</code>.</p><figure><img class="shot" src="../images/examples/datetime.png" alt="DateTime"></figure><h2>Program.cs</h2><pre class="code"><code><span class="k">using</span> <span class="t">Doqua</span>.<span class="t">Controls</span>;
+<span class="k">using</span> <span class="t">Doqua</span>.<span class="t">GUI</span>;
+
+<span class="k">namespace</span> <span class="t">DateTimeExample</span>;
+
+<span class="k">class</span> <span class="t">MainWindow</span> : <a class="t" href="../api/Doqua.GUI.Window.html">Window</a>
+{
+    <span class="k">public</span> <span class="t">MainWindow</span>()
+    {
+        <span class="t">Title</span> = <span class="s">&quot;Doqua DateTime&quot;</span>;
+        <span class="t">Icons</span> = <span class="t">ExampleIcon</span>.<span class="t">Load</span>();
+        <span class="t">Width</span> = <span class="n">560</span>;
+        <span class="t">Height</span> = <span class="n">340</span>;
+        <span class="t">Background</span> = <span class="k">new</span> <a class="t" href="../api/Doqua.GUI.Color.html">Color</a>(<span class="n">212</span>, <span class="n">208</span>, <span class="n">200</span>);
+
+        <span class="k">var</span> today = <span class="t">DateTime</span>.<span class="t">Today</span>;
+
+        <span class="c">// The whole period may lie within a year back and a year ahead: other dates are greyed out.</span>
+        <span class="k">var</span> from = <span class="k">new</span> <a class="t" href="../api/Doqua.Controls.DateInput.html">DateInput</a> { <a class="t" href="../api/Doqua.GUI.Anchor.html">Anchor</a> = <span class="k">new</span> <a class="t" href="../api/Doqua.GUI.Anchor.html">Anchor</a>(<span class="t">Left</span>: <span class="n">70</span>, <span class="t">Top</span>: <span class="n">20</span>), <span class="t">Width</span> = <span class="n">190</span>, <span class="t">Min</span> = today.<span class="t">AddYears</span>(-<span class="n">1</span>), <span class="t">Value</span> = today };
+        <span class="k">var</span> to = <span class="k">new</span> <a class="t" href="../api/Doqua.Controls.DateInput.html">DateInput</a> { <a class="t" href="../api/Doqua.GUI.Anchor.html">Anchor</a> = <span class="k">new</span> <a class="t" href="../api/Doqua.GUI.Anchor.html">Anchor</a>(<span class="t">Left</span>: <span class="n">340</span>, <span class="t">Top</span>: <span class="n">20</span>), <span class="t">Width</span> = <span class="n">190</span>, <span class="t">Max</span> = today.<span class="t">AddYears</span>(<span class="n">1</span>), <span class="t">Value</span> = today.<span class="t">AddDays</span>(<span class="n">7</span>) };
+
+        <span class="c">// &quot;From&quot; stays before &quot;To&quot;: each one limits the other. Changing a limit never moves a value here,</span>
+        <span class="c">// because a value is always inside the range the other one allows.</span>
+        <span class="k">void</span> <span class="t">Link</span>()
+        {
+            to.<span class="t">Min</span> = from.<span class="t">Value</span>.<span class="t">AddDays</span>(<span class="n">1</span>);
+            from.<span class="t">Max</span> = to.<span class="t">Value</span>.<span class="t">AddDays</span>(-<span class="n">1</span>);
+        }
+        <span class="t">Link</span>();
+
+        <span class="k">var</span> status = <span class="k">new</span> <a class="t" href="../api/Doqua.Controls.Label.html">Label</a> { <a class="t" href="../api/Doqua.GUI.Anchor.html">Anchor</a> = <span class="k">new</span> <a class="t" href="../api/Doqua.GUI.Anchor.html">Anchor</a>(<span class="t">Left</span>: <span class="n">20</span>, <span class="t">Top</span>: <span class="n">110</span>) };
+        <span class="k">void</span> <span class="t">UpdateStatus</span>()
+        {
+            <span class="k">var</span> days = (to.<span class="t">Value</span> - from.<span class="t">Value</span>).<span class="t">Days</span>;
+            status.<span class="t">Text</span> = <span class="s">$&quot;{from.Text} – {to.Text}: {days} day{(days == 1 ? &quot;&quot; : &quot;</span>s<span class="s">&quot;)}\n&quot;</span>
+                + <span class="s">$&quot;\&quot;From\&quot; can go up to {from.Max:d}, \&quot;To\&quot; can start from {to.Min:d}.&quot;</span>;
+        }
+        from.<span class="t">ValueChanged</span> += (sender, e) =&gt; { <span class="t">Link</span>(); <span class="t">UpdateStatus</span>(); };
+        to.<span class="t">ValueChanged</span> += (sender, e) =&gt; { <span class="t">Link</span>(); <span class="t">UpdateStatus</span>(); };
+
+        <span class="k">var</span> format = <span class="k">new</span> <a class="t" href="../api/Doqua.Controls.ComboBox-1.html">ComboBox</a>&lt;<span class="k">string</span>&gt;
+        {
+            <a class="t" href="../api/Doqua.GUI.Anchor.html">Anchor</a> = <span class="k">new</span> <a class="t" href="../api/Doqua.GUI.Anchor.html">Anchor</a>(<span class="t">Left</span>: <span class="n">70</span>, <span class="t">Top</span>: <span class="n">64</span>), <span class="t">Width</span> = <span class="n">250</span>,
+            <span class="t">Items</span> = { <span class="s">&quot;d&quot;</span>, <span class="s">&quot;D&quot;</span>, <span class="s">&quot;yyyy-MM-dd&quot;</span>, <span class="s">&quot;dd MMM yyyy&quot;</span>, <span class="s">&quot;dddd, d MMMM yyyy&quot;</span> },
+            <span class="t">ItemText</span> = f =&gt; <span class="s">$&quot;{f}   ({today.ToString(f, from.Culture)})&quot;</span>,
+        };
+        format.<span class="t">SelectedItem</span> = <span class="s">&quot;d&quot;</span>;
+        format.<span class="t">SelectionChanged</span> += (sender, e) =&gt;
+        {
+            from.<span class="t">Format</span> = to.<span class="t">Format</span> = format.<span class="t">SelectedItem</span>!;
+            <span class="t">UpdateStatus</span>();
+        };
+
+        <span class="t">Content</span> = <span class="k">new</span> <a class="t" href="../api/Doqua.Controls.Panel.html">Panel</a>
+        {
+            <span class="t">Children</span> =
+            {
+                <span class="k">new</span> <a class="t" href="../api/Doqua.Controls.Label.html">Label</a> { <a class="t" href="../api/Doqua.GUI.Anchor.html">Anchor</a> = <span class="k">new</span> <a class="t" href="../api/Doqua.GUI.Anchor.html">Anchor</a>(<span class="t">Left</span>: <span class="n">20</span>, <span class="t">Top</span>: <span class="n">24</span>), <span class="t">Text</span> = <span class="s">&quot;From:&quot;</span> },
+                from,
+                <span class="k">new</span> <a class="t" href="../api/Doqua.Controls.Label.html">Label</a> { <a class="t" href="../api/Doqua.GUI.Anchor.html">Anchor</a> = <span class="k">new</span> <a class="t" href="../api/Doqua.GUI.Anchor.html">Anchor</a>(<span class="t">Left</span>: <span class="n">290</span>, <span class="t">Top</span>: <span class="n">24</span>), <span class="t">Text</span> = <span class="s">&quot;To:&quot;</span> },
+                to,
+                <span class="k">new</span> <a class="t" href="../api/Doqua.Controls.Label.html">Label</a> { <a class="t" href="../api/Doqua.GUI.Anchor.html">Anchor</a> = <span class="k">new</span> <a class="t" href="../api/Doqua.GUI.Anchor.html">Anchor</a>(<span class="t">Left</span>: <span class="n">20</span>, <span class="t">Top</span>: <span class="n">68</span>), <span class="t">Text</span> = <span class="s">&quot;Format:&quot;</span> },
+                format,
+                status,
+                <span class="k">new</span> <a class="t" href="../api/Doqua.Controls.Label.html">Label</a>
+                {
+                    <a class="t" href="../api/Doqua.GUI.Anchor.html">Anchor</a> = <span class="k">new</span> <a class="t" href="../api/Doqua.GUI.Anchor.html">Anchor</a>(<span class="t">Left</span>: <span class="n">20</span>, <span class="t">Bottom</span>: <span class="n">16</span>), <a class="t" href="../api/Doqua.GUI.Color.html">Color</a> = <a class="t" href="../api/Doqua.GUI.Color.html">Color</a>.<span class="t">Gray</span>,
+                    <span class="t">Text</span> = <span class="s">&quot;Click a field or its button (or press F4 / Space) to open the calendar;\n&quot;</span>
+                        + <span class="s">&quot;click the month title to pick a month, then again to pick a year.&quot;</span>,
+                },
+            },
+        };
+        <span class="t">UpdateStatus</span>();
+        from.<span class="t">Focus</span>();
+    }
+}
+
+<span class="k">static</span> <span class="k">class</span> <span class="t">Program</span>
+{
+<span class="a">    [STAThread]</span>
+    <span class="k">static</span> <span class="k">int</span> <span class="t">Main</span>() =&gt; <a class="t" href="../api/Doqua.GUI.Application.html">Application</a>.<span class="t">Run</span>(<span class="k">new</span> <span class="t">MainWindow</span>());
+}
+</code></pre>
+<footer>Doqua documentation · generated from the source code and its XML comments</footer>
+</main>
+</div>
+<script>const DOQUA_ROOT = "../";</script>
+<script src="../assets/search-index.js"></script>
+<script src="../assets/search.js"></script>
+</body>
+</html>

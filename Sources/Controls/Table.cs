@@ -32,6 +32,7 @@ public class Table : Control
     private Color _headerColor = Color.Black;
     private Color _disabledColor = ClassicStyle.Shadow;
 
+    /// <summary>Creates an empty table, 300 x 200 pixels.</summary>
     public Table()
     {
         Columns = new TableColumnCollection(this);
@@ -42,8 +43,10 @@ public class Table : Control
         Height = 200;
     }
 
+    /// <summary>The columns, left to right.</summary>
     public TableColumnCollection Columns { get; }
 
+    /// <summary>The rows, top to bottom.</summary>
     public TableRowCollection Rows { get; }
 
     /// <summary>The cell at (<paramref name="row"/>, <paramref name="column"/>); missing cells of a short row are created empty.</summary>
@@ -79,24 +82,28 @@ public class Table : Control
         set => SetColor(ref _color, value);
     }
 
+    /// <summary>Background of the cells.</summary>
     public Color Background
     {
         get => _background;
         set => SetColor(ref _background, value);
     }
 
+    /// <summary>Color of the grid lines.</summary>
     public Color GridColor
     {
         get => _gridColor;
         set => SetColor(ref _gridColor, value);
     }
 
+    /// <summary>Text color of the headers.</summary>
     public Color HeaderColor
     {
         get => _headerColor;
         set => SetColor(ref _headerColor, value);
     }
 
+    /// <summary>Text color while disabled.</summary>
     public Color DisabledColor
     {
         get => _disabledColor;
@@ -470,12 +477,14 @@ public class TableColumn
     private int _width;
     private int _minWidth = 20;
 
+    /// <summary>Creates a column with a header text and a width in pixels.</summary>
     public TableColumn(string header, int width = 100)
     {
         _header = header ?? throw new ArgumentNullException(nameof(header));
         _width = Math.Max(_minWidth, width);
     }
 
+    /// <summary>Header text.</summary>
     public string Header
     {
         get => _header;
@@ -517,6 +526,7 @@ public class TableRow
 {
     private readonly List<TableCell> _cells = [];
 
+    /// <summary>Creates a row with these cell texts.</summary>
     public TableRow(params string[] texts)
     {
         ArgumentNullException.ThrowIfNull(texts);
@@ -559,6 +569,7 @@ public class TableCell
         _text = text;
     }
 
+    /// <summary>Text of the cell.</summary>
     public string Text
     {
         get => _text;
@@ -687,15 +698,23 @@ public sealed class TableRowCollection : Collection<TableRow>
 /// <summary>A click on a <see cref="Table"/>: the cell's indexes, or null outside the cells.</summary>
 public class TableCellEventArgs(int? row, int? column, MouseButton button) : EventArgs
 {
+    /// <summary>Row index of the clicked cell, or null outside the cells.</summary>
     public int? Row { get; } = row;
+
+    /// <summary>Column index of the clicked cell, or null outside the cells.</summary>
     public int? Column { get; } = column;
+
+    /// <summary>The mouse button that was clicked.</summary>
     public MouseButton Button { get; } = button;
 }
 
 /// <summary>The context menu of a <see cref="Table"/> is about to open for a cell (or outside the cells: null indexes).</summary>
 public class TableContextMenuEventArgs(int? row, int? column, PopupMenu? menu) : EventArgs
 {
+    /// <summary>Row index of the right-clicked cell, or null outside the cells.</summary>
     public int? Row { get; } = row;
+
+    /// <summary>Column index of the right-clicked cell, or null outside the cells.</summary>
     public int? Column { get; } = column;
 
     /// <summary>The menu to show; starts as the table's ContextMenu. Set it to null to show none.</summary>

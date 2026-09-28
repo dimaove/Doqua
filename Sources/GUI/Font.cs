@@ -1,10 +1,14 @@
 namespace Doqua.GUI;
 
+/// <summary>Font style flags; they can be combined: <c>FontStyle.Bold | FontStyle.Italic</c>.</summary>
 [Flags]
 public enum FontStyle
 {
+    /// <summary>Neither bold nor italic.</summary>
     Regular = 0,
+    /// <summary>Bold.</summary>
     Bold = 1,
+    /// <summary>Italic.</summary>
     Italic = 2,
 }
 
@@ -19,6 +23,7 @@ public sealed record Font
     private readonly string _family = "";
     private readonly float _size;
 
+    /// <summary>Creates a font description; the font itself is loaded when it is first used.</summary>
     public Font(string family, float size, FontStyle style = FontStyle.Regular)
     {
         Family = family;
@@ -39,6 +44,7 @@ public sealed record Font
     /// <summary>System UI font at 14 pixels.</summary>
     public static Font Default => s_default ??= new Font(Application.Platform.Fonts.DefaultFamily, 14);
 
+    /// <summary>Family name, e.g. "Noto Sans", or a generic one such as "sans-serif".</summary>
     public string Family
     {
         get => _family;
@@ -49,6 +55,7 @@ public sealed record Font
         }
     }
 
+    /// <summary>Em size in pixels.</summary>
     public float Size
     {
         get => _size;
@@ -60,6 +67,7 @@ public sealed record Font
         }
     }
 
+    /// <summary>Bold and / or italic.</summary>
     public FontStyle Style { get; init; }
 
     /// <inheritdoc cref="Platform.IFontFace.Ascent"/>
@@ -103,6 +111,7 @@ public sealed record Font
         return new Size((int)MathF.Ceiling(maxWidth), lines * face.LineHeight);
     }
 
+    /// <summary>Family, size and style, e.g. "Noto Sans 14px Bold".</summary>
     public override string ToString() =>
         Style == FontStyle.Regular ? $"{Family} {Size}px" : $"{Family} {Size}px {Style}";
 }

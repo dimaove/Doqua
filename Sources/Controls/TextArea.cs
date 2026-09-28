@@ -54,6 +54,7 @@ public class TextArea : Control
         Line,
     }
 
+    /// <summary>Creates an empty text area, 300 x 150 pixels.</summary>
     public TextArea()
     {
         _scrollBar = new ClassicScrollBar(this, () => _scrollY, ScrollTo);
@@ -69,6 +70,7 @@ public class TextArea : Control
     /// <summary>Raised after the caret moves or the selection changes.</summary>
     public event EventHandler? SelectionChanged;
 
+    /// <summary>The text; lines are separated by '\n'.</summary>
     public string Text
     {
         get => _text;
@@ -79,6 +81,7 @@ public class TextArea : Control
         }
     }
 
+    /// <summary>Number of lines (at least 1).</summary>
     public int LineCount => _lineStarts.Length;
 
     /// <summary>Caret position as an index into <see cref="Text"/>. Setting it clears the selection.</summary>
@@ -94,14 +97,18 @@ public class TextArea : Control
     /// <summary>Zero-based column (UTF-16 characters from the start of the line) of the caret.</summary>
     public int CaretColumn => _caretIndex - _lineStarts[CaretLine];
 
+    /// <summary>Index of the first selected character.</summary>
     public int SelectionStart => Math.Min(_anchorIndex, _caretIndex);
 
+    /// <summary>Number of selected characters; 0 when nothing is selected.</summary>
     public int SelectionLength => Math.Abs(_caretIndex - _anchorIndex);
 
+    /// <summary>The selected part of the text.</summary>
     public string SelectedText => _text.Substring(SelectionStart, SelectionLength);
 
     private int SelectionEnd => Math.Max(_anchorIndex, _caretIndex);
 
+    /// <summary>Font of the text; <see cref="GUI.Font.Default"/> unless set.</summary>
     public Font Font
     {
         get => _font ??= Font.Default;
@@ -114,42 +121,49 @@ public class TextArea : Control
         }
     }
 
+    /// <summary>Text and caret color.</summary>
     public Color Color
     {
         get => _color;
         set => SetColor(ref _color, value);
     }
 
+    /// <summary>Background of the text.</summary>
     public Color Background
     {
         get => _background;
         set => SetColor(ref _background, value);
     }
 
+    /// <summary>Text color while disabled.</summary>
     public Color DisabledColor
     {
         get => _disabledColor;
         set => SetColor(ref _disabledColor, value);
     }
 
+    /// <summary>Background while disabled.</summary>
     public Color DisabledBackground
     {
         get => _disabledBackground;
         set => SetColor(ref _disabledBackground, value);
     }
 
+    /// <summary>Background of selected text while focused.</summary>
     public Color SelectionBackground
     {
         get => _selectionBackground;
         set => SetColor(ref _selectionBackground, value);
     }
 
+    /// <summary>Color of selected text while focused.</summary>
     public Color SelectionColor
     {
         get => _selectionColor;
         set => SetColor(ref _selectionColor, value);
     }
 
+    /// <summary>Background of selected text while not focused.</summary>
     public Color InactiveSelectionBackground
     {
         get => _inactiveSelectionBackground;
@@ -166,20 +180,24 @@ public class TextArea : Control
         MoveCaret(start + length, extendSelection: true);
     }
 
+    /// <summary>Selects the whole text.</summary>
     public void SelectAll() => Select(0, _text.Length);
 
+    /// <summary>Copies the selection to the clipboard.</summary>
     public void Copy()
     {
         if (SelectionLength > 0)
             Clipboard.SetText(SelectedText);
     }
 
+    /// <summary>Copies the selection to the clipboard and deletes it.</summary>
     public void Cut()
     {
         if (SelectionLength > 0 && Clipboard.SetText(SelectedText))
             ReplaceSelection("");
     }
 
+    /// <summary>Replaces the selection with the clipboard text.</summary>
     public void Paste()
     {
         if (Clipboard.GetText() is { Length: > 0 } text)

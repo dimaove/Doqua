@@ -20,6 +20,7 @@ public class Button : Control
     private Color _disabledColor = ClassicStyle.Shadow;
     private Color _disabledBackground = ClassicStyle.Face;
 
+    /// <summary>Creates a 100 x 32 button without text.</summary>
     public Button()
     {
         Focusable = true;
@@ -27,8 +28,10 @@ public class Button : Control
         Height = 32;
     }
 
+    /// <summary>Raised when the button is clicked with the left mouse button, or with Enter or Space while it has the focus.</summary>
     public event EventHandler? Click;
 
+    /// <summary>Caption, centered on the button.</summary>
     public string Text
     {
         get => _text;
@@ -129,6 +132,7 @@ public class Button : Control
         }
     }
 
+    /// <summary>Face color while the button is disabled.</summary>
     public Color DisabledBackground
     {
         get => _disabledBackground;

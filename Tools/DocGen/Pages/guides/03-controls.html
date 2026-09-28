@@ -1,0 +1,35 @@
+<h1>Controls</h1>
+<p>The ready-made controls in <a href="{root}api/Doqua.Controls.html">Doqua.Controls</a>, in the classic desktop style.
+All of them derive from [[Control]], so they share its position, size, [[Control.Anchor]], [[Control.Visible]], [[Control.Enabled]],
+mouse, keyboard and focus events, [[Control.Cursor]] and [[Control.ContextMenu]].</p>
+
+<h2>Containers</h2>
+<p><b>[[Panel]]</b> holds child controls and can scroll its content ([[Panel.ScrollBars]]).
+<b>[[TabControl]]</b> shows one [[TabPage]] at a time. <b>[[SplitContainer]]</b> puts two panels side by side with a draggable bar.</p>
+<figure><img class="shot" src="{root}images/types/TabControl.png" alt="TabControl"></figure>
+
+<h2>Text</h2>
+<p><b>[[Label]]</b> shows text in any [[Font]] and [[Color]]. <b>[[Input]]</b> is a single-line editor, <b>[[TextArea]]</b> a multi-line one;
+both support selection, the clipboard and a Cut / Copy / Paste context menu.</p>
+<figure><img class="shot" src="{root}images/types/TextArea.png" alt="TextArea"></figure>
+
+<h2>Buttons and choices</h2>
+<p><b>[[Button]]</b> raises [[Button.Click]]. <b>[[CheckBox]]</b> toggles [[CheckBox.Checked]]. <b>[[RadioButton]]</b>s belong to a
+[[RadioGroup]] that holds the selected value.</p>
+<figure><img class="shot" src="{root}images/types/RadioButton.png" alt="Buttons, check boxes and radio buttons"><figcaption>Check boxes, a button and two radio groups; disabled controls are drawn grey.</figcaption></figure>
+
+<h2>Values</h2>
+<p><b>[[ComboBox]]</b> picks one item from a drop-down list. <b>[[NumberInput]]</b> edits an integer within a range, with up / down buttons.
+<b>[[DateInput]]</b> picks a date from a calendar.</p>
+<figure><img class="shot" src="{root}images/types/ComboBox.png" alt="ComboBox"></figure>
+<figure><img class="shot" src="{root}images/types/DateInput.png" alt="DateInput"></figure>
+
+<h2>Data</h2>
+<p><b>[[Table]]</b> shows rows of text cells with resizable columns; each cell can have its own font and color.
+<b>[[TreeView]]</b> shows a hierarchy of [[TreeNode]]s.</p>
+<figure><img class="shot" src="{root}images/types/SplitContainer.png" alt="A TreeView and a Table in a SplitContainer"><figcaption>A [[TreeView]] and a [[Table]] in a [[SplitContainer]] (the Dictionary example).</figcaption></figure>
+
+<h2>Menus and shapes</h2>
+<p><b>[[PopupMenu]]</b> is a context or pop-up menu of [[MenuItem]]s. <b>[[Rectangle]]</b> is a filled rectangle,
+useful as a starting point for your own controls (see <a href="drawing.html">Custom drawing</a>).</p>
+<figure><img class="shot" src="{root}images/types/PopupMenu.png" alt="PopupMenu"></figure>

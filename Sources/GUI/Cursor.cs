@@ -5,6 +5,7 @@ public enum Cursor
 {
     /// <summary>The parent's cursor (the arrow at the top of the tree).</summary>
     Default,
+    /// <summary>The standard arrow.</summary>
     Arrow,
     /// <summary>Text cursor, for places where text can be selected or typed.</summary>
     IBeam,
@@ -12,6 +13,7 @@ public enum Cursor
     Hand,
     /// <summary>Busy.</summary>
     Wait,
+    /// <summary>Crosshair, for picking precise positions.</summary>
     Crosshair,
     /// <summary>Resize horizontally (west-east).</summary>
     SizeWE,

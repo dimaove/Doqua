@@ -31,6 +31,7 @@ public class TreeView : Control
     private Color _selectionColor = Color.White;
     private Color _inactiveSelectionBackground = new(204, 204, 204);
 
+    /// <summary>Creates an empty tree view, 200 x 240 pixels.</summary>
     public TreeView()
     {
         Nodes = new TreeNodeCollection(this, null);
@@ -70,6 +71,7 @@ public class TreeView : Control
         }
     }
 
+    /// <summary>Font of the node texts; <see cref="GUI.Font.Default"/> unless set.</summary>
     public Font Font
     {
         get => _font ??= Font.Default;
@@ -80,18 +82,21 @@ public class TreeView : Control
         }
     }
 
+    /// <summary>Text color.</summary>
     public Color Color
     {
         get => _color;
         set => SetColor(ref _color, value);
     }
 
+    /// <summary>Text color while disabled.</summary>
     public Color DisabledColor
     {
         get => _disabledColor;
         set => SetColor(ref _disabledColor, value);
     }
 
+    /// <summary>Background color.</summary>
     public Color Background
     {
         get => _background;
@@ -105,12 +110,14 @@ public class TreeView : Control
         set => SetColor(ref _lineColor, value);
     }
 
+    /// <summary>Background of the selected node while the tree view has the focus.</summary>
     public Color SelectionBackground
     {
         get => _selectionBackground;
         set => SetColor(ref _selectionBackground, value);
     }
 
+    /// <summary>Text color of the selected node while the tree view has the focus.</summary>
     public Color SelectionColor
     {
         get => _selectionColor;
@@ -490,6 +497,7 @@ public class TreeNode
     private string _text;
     private bool _isExpanded;
 
+    /// <summary>Creates a node with a text and child nodes.</summary>
     public TreeNode(string text, params TreeNode[] children)
     {
         _text = text ?? throw new ArgumentNullException(nameof(text));
@@ -498,6 +506,7 @@ public class TreeNode
             Nodes.Add(child);
     }
 
+    /// <summary>Text shown for the node.</summary>
     public string Text
     {
         get => _text;
@@ -511,6 +520,7 @@ public class TreeNode
     /// <summary>Child nodes.</summary>
     public TreeNodeCollection Nodes { get; }
 
+    /// <summary>The parent node, or null for a top-level node.</summary>
     public TreeNode? Parent { get; internal set; }
 
     /// <summary>The tree view the node is shown in, or null while it is not part of one.</summary>
@@ -529,10 +539,13 @@ public class TreeNode
         set => SetExpanded(value);
     }
 
+    /// <summary>Shows the children.</summary>
     public void Expand() => IsExpanded = true;
 
+    /// <summary>Hides the children.</summary>
     public void Collapse() => IsExpanded = false;
 
+    /// <summary>Expands a collapsed node, collapses an expanded one.</summary>
     public void Toggle() => IsExpanded = !IsExpanded;
 
     /// <summary>Expands this node and all nodes below it.</summary>
@@ -543,6 +556,7 @@ public class TreeNode
             child.ExpandAll();
     }
 
+    /// <summary>The node's text.</summary>
     public override string ToString() => _text;
 
     internal void SetExpanded(bool expanded)

@@ -5,9 +5,13 @@ namespace Doqua.Controls;
 /// <summary>Which scroll bars a <see cref="Panel"/> may show when its content does not fit.</summary>
 public enum ScrollBars
 {
+    /// <summary>Never scrolls.</summary>
     None,
+    /// <summary>Vertical bar only.</summary>
     Vertical,
+    /// <summary>Horizontal bar only.</summary>
     Horizontal,
+    /// <summary>Both bars.</summary>
     Both,
 }
 
@@ -31,6 +35,7 @@ public class Panel : Control
     private ScrollLayout _layout;
     private bool _updatingLayout;
 
+    /// <summary>Creates an empty, transparent panel.</summary>
     public Panel()
     {
         Children = new ControlCollection(this);
@@ -38,8 +43,10 @@ public class Panel : Control
         _horizontalBar = new ClassicScrollBar(this, () => _scrollX, value => ScrollX = value) { IsHorizontal = true };
     }
 
+    /// <summary>The controls in the panel, drawn in this order (the last one on top).</summary>
     public ControlCollection Children { get; }
 
+    /// <summary>Fill color; transparent by default.</summary>
     public Color Background
     {
         get => _background;

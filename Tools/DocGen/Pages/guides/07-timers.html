@@ -1,0 +1,18 @@
+<h1>Timers and windows</h1>
+
+<h2>Timers</h2>
+<p>[[Timer]] works like JavaScript timers. Callbacks run on the UI thread from the event loop, so they can change controls directly.</p>
+<pre class="cs">using Timer = Doqua.GUI.Timer;
+
+var clock = Timer.SetInterval(() => label.Text = DateTime.Now.ToString("HH:mm:ss"), 1000);
+Timer.SetTimeout(() => status.Text = "", 2000);   // once, after two seconds
+Timer.ClearInterval(clock);                       // stop</pre>
+
+<h2>Windows</h2>
+<p>[[Application.Run]] shows the main window and returns when it is closed. Other windows can be created and shown with
+[[Window.Show]]; closing them does not end the application. A window has a [[Window.Title]], a client size ([[Window.Width]],
+[[Window.Height]]), a [[Window.Background]] and [[Window.Icons]] (one bitmap per size for the title bar and the task bar).</p>
+<pre class="cs">var window = new Window { Title = "Settings", Width = 400, Height = 300 };
+window.Icons = [Bitmap.Load("icon16.png"), Bitmap.Load("icon32.png")];
+window.Closed += (sender, e) => SaveSettings();
+window.Show();</pre>

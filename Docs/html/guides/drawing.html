@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Custom drawing · Doqua</title>
+<link rel="icon" href="../../logo_32.png">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="../index.html"><img src="../../logo.png" alt=""><span>Doqua</span></a>
+  <span class="tagline">Cross-platform GUI for .NET</span>
+  <div class="search"><input id="search" type="search" placeholder="Search the documentation" autocomplete="off"><div id="search-results"></div></div>
+</header>
+<div class="layout">
+<nav class="side"><h4>Guide</h4><ul><li><a class="" href="../index.html">Overview</a></li><li><a class="" href="../guides/getting-started.html">Getting started</a></li><li><a class="" href="../guides/architecture.html">How Doqua works</a></li><li><a class="" href="../guides/controls.html">Controls</a></li><li><a class="" href="../guides/layout.html">Layout</a></li><li><a class="" href="../guides/input.html">Mouse, keyboard and focus</a></li><li><a class=" current" href="../guides/drawing.html">Custom drawing</a></li><li><a class="" href="../guides/timers.html">Timers and windows</a></li><li><a class="" href="../guides/localization.html">Localization</a></li><li><a class="" href="../guides/platforms.html">Platform notes</a></li></ul><h4>Examples</h4><ul><li><a class="" href="../examples/index.html">All examples</a></li><li><a class="" href="../examples/simple.html">Simple</a></li><li><a class="" href="../examples/tabs.html">Tabs</a></li><li><a class="" href="../examples/dictionary.html">Dictionary</a></li><li><a class="" href="../examples/editor.html">Editor</a></li><li><a class="" href="../examples/datetime.html">DateTime</a></li><li><a class="" href="../examples/fonts.html">Fonts</a></li><li><a class="" href="../examples/localization.html">Localization</a></li><li><a class="" href="../examples/bitmap.html">Bitmap</a></li><li><a class="" href="../examples/clock.html">Clock</a></li></ul><h4>API reference</h4><ul><li><a class="" href="../api/index.html">Namespaces</a></li></ul><h5><a href="../api/Doqua.Controls.html">Doqua.Controls</a></h5><ul class="types"><li><a class="kind-class" href="../api/Doqua.Controls.Button.html">Button</a></li><li><a class="kind-class" href="../api/Doqua.Controls.CheckBox.html">CheckBox</a></li><li><a class="kind-class" href="../api/Doqua.Controls.ComboBox-1.html">ComboBox&lt;T&gt;</a></li><li><a class="kind-class" href="../api/Doqua.Controls.ComboBoxItemCollection-1.html">ComboBoxItemCollection&lt;T&gt;</a></li><li><a class="kind-class" href="../api/Doqua.Controls.DateInput.html">DateInput</a></li><li><a class="kind-class" href="../api/Doqua.Controls.Input.html">Input</a></li><li><a class="kind-class" href="../api/Doqua.Controls.Label.html">Label</a></li><li><a class="kind-class" href="../api/Doqua.Controls.MenuClosedEventArgs.html">MenuClosedEventArgs</a></li><li><a class="kind-class" href="../api/Doqua.Controls.MenuItem.html">MenuItem</a></li><li><a class="kind-class" href="../api/Doqua.Controls.NumberInput.html">NumberInput</a></li><li><a class="kind-class" href="../api/Doqua.Controls.Panel.html">Panel</a></li><li><a class="kind-class" href="../api/Doqua.Controls.PopupMenu.html">PopupMenu</a></li><li><a class="kind-class" href="../api/Doqua.Controls.RadioButton.html">RadioButton</a></li><li><a class="kind-class" href="../api/Doqua.Controls.RadioButton-1.html">RadioButton&lt;T&gt;</a></li><li><a class="kind-class" href="../api/Doqua.Controls.RadioGroup.html">RadioGroup</a></li><li><a class="kind-class" href="../api/Doqua.Controls.RadioGroup-1.html">RadioGroup&lt;T&gt;</a></li><li><a class="kind-class" href="../api/Doqua.Controls.Rectangle.html">Rectangle</a></li><li><a class="kind-enum" href="../api/Doqua.Controls.ScrollBars.html">ScrollBars</a></li><li><a class="kind-class" href="../api/Doqua.Controls.SplitContainer.html">SplitContainer</a></li><li><a class="kind-enum" href="../api/Doqua.Controls.SplitOrientation.html">SplitOrientation</a></li><li><a class="kind-class" href="../api/Doqua.Controls.TabControl.html">TabControl</a></li><li><a class="kind-class" href="../api/Doqua.Controls.Table.html">Table</a></li><li><a class="kind-class" href="../api/Doqua.Controls.TableCell.html">TableCell</a></li><li><a class="kind-class" href="../api/Doqua.Controls.TableCellEventArgs.html">TableCellEventArgs</a></li><li><a class="kind-class" href="../api/Doqua.Controls.TableColumn.html">TableColumn</a></li><li><a class="kind-class" href="../api/Doqua.Controls.TableColumnCollection.html">TableColumnCollection</a></li><li><a class="kind-class" href="../api/Doqua.Controls.TableContextMenuEventArgs.html">TableContextMenuEventArgs</a></li><li><a class="kind-class" href="../api/Doqua.Controls.TableRow.html">TableRow</a></li><li><a class="kind-class" href="../api/Doqua.Controls.TableRowCollection.html">TableRowCollection</a></li><li><a class="kind-class" href="../api/Doqua.Controls.TabPage.html">TabPage</a></li><li><a class="kind-class" href="../api/Doqua.Controls.TabPageCollection.html">TabPageCollection</a></li><li><a class="kind-class" href="../api/Doqua.Controls.TextArea.html">TextArea</a></li><li><a class="kind-class" href="../api/Doqua.Controls.ToggleControl.html">ToggleControl</a></li><li><a class="kind-class" href="../api/Doqua.Controls.TreeNode.html">TreeNode</a></li><li><a class="kind-class" href="../api/Doqua.Controls.TreeNodeCollection.html">TreeNodeCollection</a></li><li><a class="kind-class" href="../api/Doqua.Controls.TreeView.html">TreeView</a></li></ul><h5><a href="../api/Doqua.Core.html">Doqua.Core</a></h5><ul class="types"><li><a class="kind-static-class" href="../api/Doqua.Core.DoquaInfo.html">DoquaInfo</a></li></ul><h5><a href="../api/Doqua.GUI.html">Doqua.GUI</a></h5><ul class="types"><li><a class="kind-record-struct" href="../api/Doqua.GUI.Anchor.html">Anchor</a></li><li><a class="kind-static-class" href="../api/Doqua.GUI.Application.html">Application</a></li><li><a class="kind-class" href="../api/Doqua.GUI.Bitmap.html">Bitmap</a></li><li><a class="kind-static-class" href="../api/Doqua.GUI.Clipboard.html">Clipboard</a></li><li><a class="kind-record-struct" href="../api/Doqua.GUI.Color.html">Color</a></li><li><a class="kind-class" href="../api/Doqua.GUI.Control.html">Control</a></li><li><a class="kind-class" href="../api/Doqua.GUI.ControlCollection.html">ControlCollection</a></li><li><a class="kind-enum" href="../api/Doqua.GUI.Cursor.html">Cursor</a></li><li><a class="kind-class" href="../api/Doqua.GUI.DrawingContext.html">DrawingContext</a></li><li><a class="kind-record" href="../api/Doqua.GUI.Font.html">Font</a></li><li><a class="kind-enum" href="../api/Doqua.GUI.FontStyle.html">FontStyle</a></li><li><a class="kind-enum" href="../api/Doqua.GUI.Key.html">Key</a></li><li><a class="kind-class" href="../api/Doqua.GUI.KeyEventArgs.html">KeyEventArgs</a></li><li><a class="kind-enum" href="../api/Doqua.GUI.KeyModifiers.html">KeyModifiers</a></li><li><a class="kind-static-class" href="../api/Doqua.GUI.Localization.html">Localization</a></li><li><a class="kind-enum" href="../api/Doqua.GUI.MouseButton.html">MouseButton</a></li><li><a class="kind-class" href="../api/Doqua.GUI.MouseEventArgs.html">MouseEventArgs</a></li><li><a class="kind-class" href="../api/Doqua.GUI.MouseMoveEventArgs.html">MouseMoveEventArgs</a></li><li><a class="kind-class" href="../api/Doqua.GUI.MouseWheelEventArgs.html">MouseWheelEventArgs</a></li><li><a class="kind-record-struct" href="../api/Doqua.GUI.Rect.html">Rect</a></li><li><a class="kind-record-struct" href="../api/Doqua.GUI.Size.html">Size</a></li><li><a class="kind-class" href="../api/Doqua.GUI.TextInputEventArgs.html">TextInputEventArgs</a></li><li><a class="kind-static-class" href="../api/Doqua.GUI.Timer.html">Timer</a></li><li><a class="kind-class" href="../api/Doqua.GUI.Window.html">Window</a></li></ul></nav>
+<main>
+<h1>Custom drawing</h1>
+<p>A control draws itself in <a href="../api/Doqua.GUI.Control.html#OnRender"><code>Control.OnRender</code></a>. Override it in a subclass; (0, 0) is the control's top-left corner and drawing is
+clipped to its bounds. The framework draws the children afterwards, on top. Call <a href="../api/Doqua.GUI.Control.html#Invalidate"><code>Control.Invalidate</code></a> when something that affects the
+picture changes.</p>
+
+<pre class="code"><code><span class="k">class</span> <span class="t">Gauge</span> : <a class="t" href="../api/Doqua.GUI.Control.html">Control</a>
+{
+    <span class="k">private</span> <span class="k">int</span> _percent;
+
+    <span class="k">public</span> <span class="k">int</span> <span class="t">Percent</span>
+    {
+        <span class="k">get</span> =&gt; _percent;
+        <span class="k">set</span> { _percent = <span class="t">Math</span>.<span class="t">Clamp</span>(<span class="k">value</span>, <span class="n">0</span>, <span class="n">100</span>); <span class="t">Invalidate</span>(); }
+    }
+
+    <span class="k">protected</span> <span class="k">override</span> <span class="k">void</span> <span class="t">OnRender</span>(<a class="t" href="../api/Doqua.GUI.DrawingContext.html">DrawingContext</a> dc)
+    {
+        dc.<span class="t">FillRectangle</span>(<span class="n">0</span>, <span class="n">0</span>, <span class="t">Width</span>, <span class="t">Height</span>, <a class="t" href="../api/Doqua.GUI.Color.html">Color</a>.<span class="t">White</span>);
+        dc.<span class="t">FillRectangle</span>(<span class="n">0</span>, <span class="n">0</span>, <span class="t">Width</span> * _percent / <span class="n">100</span>, <span class="t">Height</span>, <a class="t" href="../api/Doqua.GUI.Color.html">Color</a>.<span class="t">Green</span>);
+        dc.<span class="t">DrawRectangle</span>(<span class="k">new</span> <a class="t" href="../api/Doqua.GUI.Rect.html">Rect</a>(<span class="n">0</span>, <span class="n">0</span>, <span class="t">Width</span>, <span class="t">Height</span>), <a class="t" href="../api/Doqua.GUI.Color.html">Color</a>.<span class="t">Black</span>);
+        dc.<span class="t">DrawText</span>(<span class="s">$&quot;{_percent} %&quot;</span>, <a class="t" href="../api/Doqua.GUI.Font.html">Font</a>.<span class="t">Default</span>, <a class="t" href="../api/Doqua.GUI.Color.html">Color</a>.<span class="t">Black</span>, <span class="n">6</span>, <span class="n">3</span>);
+    }
+}</code></pre>
+
+<h2>The drawing context</h2>
+<p><a href="../api/Doqua.GUI.DrawingContext.html"><code>DrawingContext</code></a> fills and outlines rectangles, draws antialiased lines and ellipses, text (<a href="../api/Doqua.GUI.DrawingContext.html#DrawText"><code>DrawingContext.DrawText</code></a> with a
+<a href="../api/Doqua.GUI.Font.html"><code>Font</code></a>) and bitmaps; translucent colors are blended. <a href="../api/Doqua.GUI.DrawingContext.html#PushClip"><code>DrawingContext.PushClip</code></a> narrows the drawing area:</p>
+<pre class="code"><code><span class="k">using</span> (dc.<span class="t">PushClip</span>(<span class="k">new</span> <a class="t" href="../api/Doqua.GUI.Rect.html">Rect</a>(<span class="n">4</span>, <span class="n">4</span>, <span class="t">Width</span> - <span class="n">8</span>, <span class="t">Height</span> - <span class="n">8</span>)))
+    dc.<span class="t">DrawText</span>(longText, <a class="t" href="../api/Doqua.GUI.Font.html">Font</a>.<span class="t">Default</span>, <a class="t" href="../api/Doqua.GUI.Color.html">Color</a>.<span class="t">Black</span>, <span class="n">4</span>, <span class="n">4</span>);</code></pre>
+<figure><img class="shot" src="../images/examples/clock.png" alt="Clock example"></figure>
+
+<h2>Fonts and text</h2>
+<p>A <a href="../api/Doqua.GUI.Font.html"><code>Font</code></a> is a family, a size in pixels and a <a href="../api/Doqua.GUI.FontStyle.html"><code>FontStyle</code></a>; <code>Font.Default</code> is the system UI font at 14 pixels.
+Fonts are immutable: <code>font with { Size = 20 }</code> makes a changed copy. <a href="../api/Doqua.GUI.Font.html#MeasureText"><code>Font.MeasureText</code></a> returns the size a text needs;
+<a href="../api/Doqua.GUI.Font.html#GetInstalledFamilies"><code>Font.GetInstalledFamilies</code></a> lists the installed families.</p>
+
+<h2>Bitmaps</h2>
+<p><a href="../api/Doqua.GUI.Bitmap.html"><code>Bitmap</code></a> loads and saves PNG files and can be drawn whole, in part or scaled. <a href="../api/Doqua.GUI.Bitmap.html#CreateDrawingContext"><code>Bitmap.CreateDrawingContext</code></a> draws into a bitmap
+with the same API as a control:</p>
+<pre class="code"><code><span class="k">var</span> picture = <span class="k">new</span> <a class="t" href="../api/Doqua.GUI.Bitmap.html">Bitmap</a>(<span class="n">240</span>, <span class="n">160</span>);
+<span class="k">var</span> dc = picture.<span class="t">CreateDrawingContext</span>();
+dc.<span class="t">FillRectangle</span>(<span class="n">0</span>, <span class="n">0</span>, <span class="n">240</span>, <span class="n">160</span>, <a class="t" href="../api/Doqua.GUI.Color.html">Color</a>.<span class="t">Orange</span>);
+dc.<span class="t">DrawText</span>(<span class="s">&quot;Drawn in code&quot;</span>, <a class="t" href="../api/Doqua.GUI.Font.html">Font</a>.<span class="t">Default</span>, <a class="t" href="../api/Doqua.GUI.Color.html">Color</a>.<span class="t">Black</span>, <span class="n">10</span>, <span class="n">10</span>);
+picture.<span class="t">Save</span>(<span class="s">&quot;picture.png&quot;</span>);</code></pre>
+<figure><img class="shot" src="../images/examples/bitmap.png" alt="Bitmap example"></figure>
+
+<footer>Doqua documentation · generated from the source code and its XML comments</footer>
+</main>
+</div>
+<script>const DOQUA_ROOT = "../";</script>
+<script src="../assets/search-index.js"></script>
+<script src="../assets/search.js"></script>
+</body>
+</html>

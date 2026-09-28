@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Clock · Doqua</title>
+<link rel="icon" href="../../logo_32.png">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="../index.html"><img src="../../logo.png" alt=""><span>Doqua</span></a>
+  <span class="tagline">Cross-platform GUI for .NET</span>
+  <div class="search"><input id="search" type="search" placeholder="Search the documentation" autocomplete="off"><div id="search-results"></div></div>
+</header>
+<div class="layout">
+<nav class="side"><h4>Guide</h4><ul><li><a class="" href="../index.html">Overview</a></li><li><a class="" href="../guides/getting-started.html">Getting started</a></li><li><a class="" href="../guides/architecture.html">How Doqua works</a></li><li><a class="" href="../guides/controls.html">Controls</a></li><li><a class="" href="../guides/layout.html">Layout</a></li><li><a class="" href="../guides/input.html">Mouse, keyboard and focus</a></li><li><a class="" href="../guides/drawing.html">Custom drawing</a></li><li><a class="" href="../guides/timers.html">Timers and windows</a></li><li><a class="" href="../guides/localization.html">Localization</a></li><li><a class="" href="../guides/platforms.html">Platform notes</a></li></ul><h4>Examples</h4><ul><li><a class="" href="../examples/index.html">All examples</a></li><li><a class="" href="../examples/simple.html">Simple</a></li><li><a class="" href="../examples/tabs.html">Tabs</a></li><li><a class="" href="../examples/dictionary.html">Dictionary</a></li><li><a class="" href="../examples/editor.html">Editor</a></li><li><a class="" href="../examples/datetime.html">DateTime</a></li><li><a class="" href="../examples/fonts.html">Fonts</a></li><li><a class="" href="../examples/localization.html">Localization</a></li><li><a class="" href="../examples/bitmap.html">Bitmap</a></li><li><a class=" current" href="../examples/clock.html">Clock</a></li></ul><h4>API reference</h4><ul><li><a class="" href="../api/index.html">Namespaces</a></li></ul><h5><a href="../api/Doqua.Controls.html">Doqua.Controls</a></h5><ul class="types"><li><a class="kind-class" href="../api/Doqua.Controls.Button.html">Button</a></li><li><a class="kind-class" href="../api/Doqua.Controls.CheckBox.html">CheckBox</a></li><li><a class="kind-class" href="../api/Doqua.Controls.ComboBox-1.html">ComboBox&lt;T&gt;</a></li><li><a class="kind-class" href="../api/Doqua.Controls.ComboBoxItemCollection-1.html">ComboBoxItemCollection&lt;T&gt;</a></li><li><a class="kind-class" href="../api/Doqua.Controls.DateInput.html">DateInput</a></li><li><a class="kind-class" href="../api/Doqua.Controls.Input.html">Input</a></li><li><a class="kind-class" href="../api/Doqua.Controls.Label.html">Label</a></li><li><a class="kind-class" href="../api/Doqua.Controls.MenuClosedEventArgs.html">MenuClosedEventArgs</a></li><li><a class="kind-class" href="../api/Doqua.Controls.MenuItem.html">MenuItem</a></li><li><a class="kind-class" href="../api/Doqua.Controls.NumberInput.html">NumberInput</a></li><li><a class="kind-class" href="../api/Doqua.Controls.Panel.html">Panel</a></li><li><a class="kind-class" href="../api/Doqua.Controls.PopupMenu.html">PopupMenu</a></li><li><a class="kind-class" href="../api/Doqua.Controls.RadioButton.html">RadioButton</a></li><li><a class="kind-class" href="../api/Doqua.Controls.RadioButton-1.html">RadioButton&lt;T&gt;</a></li><li><a class="kind-class" href="../api/Doqua.Controls.RadioGroup.html">RadioGroup</a></li><li><a class="kind-class" href="../api/Doqua.Controls.RadioGroup-1.html">RadioGroup&lt;T&gt;</a></li><li><a class="kind-class" href="../api/Doqua.Controls.Rectangle.html">Rectangle</a></li><li><a class="kind-enum" href="../api/Doqua.Controls.ScrollBars.html">ScrollBars</a></li><li><a class="kind-class" href="../api/Doqua.Controls.SplitContainer.html">SplitContainer</a></li><li><a class="kind-enum" href="../api/Doqua.Controls.SplitOrientation.html">SplitOrientation</a></li><li><a class="kind-class" href="../api/Doqua.Controls.TabControl.html">TabControl</a></li><li><a class="kind-class" href="../api/Doqua.Controls.Table.html">Table</a></li><li><a class="kind-class" href="../api/Doqua.Controls.TableCell.html">TableCell</a></li><li><a class="kind-class" href="../api/Doqua.Controls.TableCellEventArgs.html">TableCellEventArgs</a></li><li><a class="kind-class" href="../api/Doqua.Controls.TableColumn.html">TableColumn</a></li><li><a class="kind-class" href="../api/Doqua.Controls.TableColumnCollection.html">TableColumnCollection</a></li><li><a class="kind-class" href="../api/Doqua.Controls.TableContextMenuEventArgs.html">TableContextMenuEventArgs</a></li><li><a class="kind-class" href="../api/Doqua.Controls.TableRow.html">TableRow</a></li><li><a class="kind-class" href="../api/Doqua.Controls.TableRowCollection.html">TableRowCollection</a></li><li><a class="kind-class" href="../api/Doqua.Controls.TabPage.html">TabPage</a></li><li><a class="kind-class" href="../api/Doqua.Controls.TabPageCollection.html">TabPageCollection</a></li><li><a class="kind-class" href="../api/Doqua.Controls.TextArea.html">TextArea</a></li><li><a class="kind-class" href="../api/Doqua.Controls.ToggleControl.html">ToggleControl</a></li><li><a class="kind-class" href="../api/Doqua.Controls.TreeNode.html">TreeNode</a></li><li><a class="kind-class" href="../api/Doqua.Controls.TreeNodeCollection.html">TreeNodeCollection</a></li><li><a class="kind-class" href="../api/Doqua.Controls.TreeView.html">TreeView</a></li></ul><h5><a href="../api/Doqua.Core.html">Doqua.Core</a></h5><ul class="types"><li><a class="kind-static-class" href="../api/Doqua.Core.DoquaInfo.html">DoquaInfo</a></li></ul><h5><a href="../api/Doqua.GUI.html">Doqua.GUI</a></h5><ul class="types"><li><a class="kind-record-struct" href="../api/Doqua.GUI.Anchor.html">Anchor</a></li><li><a class="kind-static-class" href="../api/Doqua.GUI.Application.html">Application</a></li><li><a class="kind-class" href="../api/Doqua.GUI.Bitmap.html">Bitmap</a></li><li><a class="kind-static-class" href="../api/Doqua.GUI.Clipboard.html">Clipboard</a></li><li><a class="kind-record-struct" href="../api/Doqua.GUI.Color.html">Color</a></li><li><a class="kind-class" href="../api/Doqua.GUI.Control.html">Control</a></li><li><a class="kind-class" href="../api/Doqua.GUI.ControlCollection.html">ControlCollection</a></li><li><a class="kind-enum" href="../api/Doqua.GUI.Cursor.html">Cursor</a></li><li><a class="kind-class" href="../api/Doqua.GUI.DrawingContext.html">DrawingContext</a></li><li><a class="kind-record" href="../api/Doqua.GUI.Font.html">Font</a></li><li><a class="kind-enum" href="../api/Doqua.GUI.FontStyle.html">FontStyle</a></li><li><a class="kind-enum" href="../api/Doqua.GUI.Key.html">Key</a></li><li><a class="kind-class" href="../api/Doqua.GUI.KeyEventArgs.html">KeyEventArgs</a></li><li><a class="kind-enum" href="../api/Doqua.GUI.KeyModifiers.html">KeyModifiers</a></li><li><a class="kind-static-class" href="../api/Doqua.GUI.Localization.html">Localization</a></li><li><a class="kind-enum" href="../api/Doqua.GUI.MouseButton.html">MouseButton</a></li><li><a class="kind-class" href="../api/Doqua.GUI.MouseEventArgs.html">MouseEventArgs</a></li><li><a class="kind-class" href="../api/Doqua.GUI.MouseMoveEventArgs.html">MouseMoveEventArgs</a></li><li><a class="kind-class" href="../api/Doqua.GUI.MouseWheelEventArgs.html">MouseWheelEventArgs</a></li><li><a class="kind-record-struct" href="../api/Doqua.GUI.Rect.html">Rect</a></li><li><a class="kind-record-struct" href="../api/Doqua.GUI.Size.html">Size</a></li><li><a class="kind-class" href="../api/Doqua.GUI.TextInputEventArgs.html">TextInputEventArgs</a></li><li><a class="kind-static-class" href="../api/Doqua.GUI.Timer.html">Timer</a></li><li><a class="kind-class" href="../api/Doqua.GUI.Window.html">Window</a></li></ul></nav>
+<main>
+<h1>Clock</h1><p class="lead">A custom control drawing an analog clock with lines and ellipses, redrawn every second.</p><p>Run it with <code>dotnet run --project Examples/Clock</code>.</p><figure><img class="shot" src="../images/examples/clock.png" alt="Clock"></figure><h2>Program.cs</h2><pre class="code"><code><span class="k">using</span> <span class="t">Doqua</span>.<span class="t">GUI</span>;
+<span class="k">using</span> <a class="t" href="../api/Doqua.GUI.Timer.html">Timer</a> = <span class="t">Doqua</span>.<span class="t">GUI</span>.<a class="t" href="../api/Doqua.GUI.Timer.html">Timer</a>;
+
+<span class="k">namespace</span> <span class="t">ClockExample</span>;
+
+<span class="c">/// &lt;summary&gt;Analog clock drawn entirely in OnRender; it scales to the control&#39;s size.&lt;/summary&gt;</span>
+<span class="k">class</span> <span class="t">AnalogClock</span> : <a class="t" href="../api/Doqua.GUI.Control.html">Control</a>
+{
+    <span class="k">private</span> <span class="k">static</span> <span class="k">readonly</span> <a class="t" href="../api/Doqua.GUI.Color.html">Color</a> <span class="t">Face</span> = <span class="k">new</span>(<span class="n">250</span>, <span class="n">248</span>, <span class="n">240</span>);
+    <span class="k">private</span> <span class="k">static</span> <span class="k">readonly</span> <a class="t" href="../api/Doqua.GUI.Color.html">Color</a> <span class="t">Ink</span> = <span class="k">new</span>(<span class="n">40</span>, <span class="n">40</span>, <span class="n">50</span>);
+    <span class="k">private</span> <span class="k">static</span> <span class="k">readonly</span> <a class="t" href="../api/Doqua.GUI.Color.html">Color</a> <span class="t">SecondHand</span> = <span class="k">new</span>(<span class="n">210</span>, <span class="n">40</span>, <span class="n">40</span>);
+
+    <span class="k">public</span> <span class="t">AnalogClock</span>()
+    {
+        <span class="c">// Redraw every second. The interval starts on the next whole second, so the second hand</span>
+        <span class="c">// moves when the system clock&#39;s second changes instead of up to a second late.</span>
+        <span class="k">var</span> untilNextSecond = <span class="n">1000</span> - <span class="t">DateTime</span>.<span class="t">Now</span>.<span class="t">Millisecond</span>;
+        <a class="t" href="../api/Doqua.GUI.Timer.html">Timer</a>.<span class="t">SetTimeout</span>(() =&gt;
+        {
+            <span class="t">Invalidate</span>();
+            <a class="t" href="../api/Doqua.GUI.Timer.html">Timer</a>.<span class="t">SetInterval</span>(<span class="t">Invalidate</span>, <span class="n">1000</span>);
+        }, untilNextSecond);
+    }
+
+    <span class="k">protected</span> <span class="k">override</span> <span class="k">void</span> <span class="t">OnRender</span>(<a class="t" href="../api/Doqua.GUI.DrawingContext.html">DrawingContext</a> dc)
+    {
+        <span class="k">float</span> centerX = <span class="t">Width</span> / <span class="n">2f</span>, centerY = <span class="t">Height</span> / <span class="n">2f</span>;
+        <span class="k">var</span> radius = <span class="t">MathF</span>.<span class="t">Min</span>(<span class="t">Width</span>, <span class="t">Height</span>) / <span class="n">2f</span> - <span class="n">8</span>;
+        <span class="k">if</span> (radius &lt; <span class="n">20</span>)
+            <span class="k">return</span>;
+
+        <span class="c">// Face and rim.</span>
+        dc.<span class="t">FillEllipse</span>(centerX, centerY, radius, radius, <span class="t">Face</span>);
+        dc.<span class="t">DrawEllipse</span>(centerX, centerY, radius, radius, <span class="t">Ink</span>, radius / <span class="n">30</span>);
+
+        <span class="c">// Twelve hour marks; the ones at 12, 3, 6 and 9 are longer and thicker.</span>
+        <span class="k">for</span> (<span class="k">var</span> hour = <span class="n">0</span>; hour &lt; <span class="n">12</span>; hour++)
+        {
+            <span class="k">var</span> major = hour % <span class="n">3</span> == <span class="n">0</span>;
+            <span class="k">var</span> angle = hour * <span class="t">MathF</span>.<span class="t">Tau</span> / <span class="n">12</span>;
+            <span class="k">var</span> outer = radius * <span class="n">0.92f</span>;
+            <span class="k">var</span> inner = radius * (major ? <span class="n">0.78f</span> : <span class="n">0.84f</span>);
+            <span class="t">DrawRadial</span>(dc, centerX, centerY, angle, inner, outer, <span class="t">Ink</span>, radius * (major ? <span class="n">0.035f</span> : <span class="n">0.018f</span>));
+        }
+
+        <span class="c">// Caption under the center.</span>
+        <span class="k">var</span> font = <a class="t" href="../api/Doqua.GUI.Font.html">Font</a>.<span class="t">Default</span> <span class="k">with</span> { <a class="t" href="../api/Doqua.GUI.Size.html">Size</a> = <span class="t">MathF</span>.<span class="t">Max</span>(<span class="n">8</span>, radius * <span class="n">0.11f</span>), <span class="t">Style</span> = <a class="t" href="../api/Doqua.GUI.FontStyle.html">FontStyle</a>.<span class="t">Bold</span> };
+        <span class="k">const</span> <span class="k">string</span> caption = <span class="s">&quot;Doqua Clock&quot;</span>;
+        <span class="k">var</span> captionSize = font.<span class="t">MeasureText</span>(caption);
+        dc.<span class="t">DrawText</span>(caption, font, <span class="t">Ink</span>, (<span class="k">int</span>)(centerX - captionSize.<span class="t">Width</span> / <span class="n">2f</span>), (<span class="k">int</span>)(centerY + radius * <span class="n">0.3f</span>));
+
+        <span class="c">// Hands, from the current time. Hours and minutes move smoothly between marks.</span>
+        <span class="k">var</span> now = <span class="t">DateTime</span>.<span class="t">Now</span>;
+        <span class="k">var</span> seconds = now.<span class="t">Second</span>;
+        <span class="k">var</span> minutes = now.<span class="t">Minute</span> + seconds / <span class="n">60f</span>;
+        <span class="k">var</span> hours = now.<span class="t">Hour</span> % <span class="n">12</span> + minutes / <span class="n">60f</span>;
+        <span class="t">DrawRadial</span>(dc, centerX, centerY, hours * <span class="t">MathF</span>.<span class="t">Tau</span> / <span class="n">12</span>, -radius * <span class="n">0.08f</span>, radius * <span class="n">0.5f</span>, <span class="t">Ink</span>, radius * <span class="n">0.06f</span>);
+        <span class="t">DrawRadial</span>(dc, centerX, centerY, minutes * <span class="t">MathF</span>.<span class="t">Tau</span> / <span class="n">60</span>, -radius * <span class="n">0.1f</span>, radius * <span class="n">0.75f</span>, <span class="t">Ink</span>, radius * <span class="n">0.04f</span>);
+        <span class="t">DrawRadial</span>(dc, centerX, centerY, seconds * <span class="t">MathF</span>.<span class="t">Tau</span> / <span class="n">60</span>, -radius * <span class="n">0.18f</span>, radius * <span class="n">0.86f</span>, <span class="t">SecondHand</span>, radius * <span class="n">0.015f</span>);
+
+        <span class="c">// Hub over the hands.</span>
+        dc.<span class="t">FillEllipse</span>(centerX, centerY, radius * <span class="n">0.05f</span>, radius * <span class="n">0.05f</span>, <span class="t">Ink</span>);
+        dc.<span class="t">FillEllipse</span>(centerX, centerY, radius * <span class="n">0.025f</span>, radius * <span class="n">0.025f</span>, <span class="t">SecondHand</span>);
+    }
+
+    <span class="c">/// &lt;summary&gt;</span>
+    <span class="c">/// Line along the direction &lt;paramref name=&quot;angle&quot;/&gt; (radians clockwise from 12 o&#39;clock), from</span>
+    <span class="c">/// distance &lt;paramref name=&quot;from&quot;/&gt; to &lt;paramref name=&quot;to&quot;/&gt;; a negative start makes a tail.</span>
+    <span class="c">/// &lt;/summary&gt;</span>
+    <span class="k">private</span> <span class="k">static</span> <span class="k">void</span> <span class="t">DrawRadial</span>(<a class="t" href="../api/Doqua.GUI.DrawingContext.html">DrawingContext</a> dc, <span class="k">float</span> centerX, <span class="k">float</span> centerY, <span class="k">float</span> angle,
+        <span class="k">float</span> from, <span class="k">float</span> to, <a class="t" href="../api/Doqua.GUI.Color.html">Color</a> color, <span class="k">float</span> thickness)
+    {
+        <span class="k">float</span> dx = <span class="t">MathF</span>.<span class="t">Sin</span>(angle), dy = -<span class="t">MathF</span>.<span class="t">Cos</span>(angle);
+        dc.<span class="t">DrawLine</span>(centerX + dx * from, centerY + dy * from, centerX + dx * to, centerY + dy * to, color, thickness);
+    }
+}
+
+<span class="k">static</span> <span class="k">class</span> <span class="t">Program</span>
+{
+<span class="a">    [STAThread]</span>
+    <span class="k">static</span> <span class="k">int</span> <span class="t">Main</span>() =&gt; <a class="t" href="../api/Doqua.GUI.Application.html">Application</a>.<span class="t">Run</span>(<span class="k">new</span> <a class="t" href="../api/Doqua.GUI.Window.html">Window</a>
+    {
+        <span class="t">Title</span> = <span class="s">&quot;Doqua Clock&quot;</span>,
+        <span class="t">Icons</span> = <span class="t">ExampleIcon</span>.<span class="t">Load</span>(),
+        <span class="t">Width</span> = <span class="n">420</span>,
+        <span class="t">Height</span> = <span class="n">420</span>,
+        <span class="t">Background</span> = <span class="k">new</span> <a class="t" href="../api/Doqua.GUI.Color.html">Color</a>(<span class="n">60</span>, <span class="n">70</span>, <span class="n">90</span>),
+        <span class="t">Content</span> = <span class="k">new</span> <span class="t">AnalogClock</span>(),
+    });
+}
+</code></pre>
+<footer>Doqua documentation · generated from the source code and its XML comments</footer>
+</main>
+</div>
+<script>const DOQUA_ROOT = "../";</script>
+<script src="../assets/search-index.js"></script>
+<script src="../assets/search.js"></script>
+</body>
+</html>

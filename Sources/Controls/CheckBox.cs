@@ -22,15 +22,18 @@ public class CheckBox : ToggleControl
 
     private bool _checked;
 
+    /// <summary>Creates a check box without text.</summary>
     public CheckBox()
     {
     }
 
+    /// <summary>Creates a check box with the given text.</summary>
     public CheckBox(string text) => Text = text;
 
     /// <summary>Raised after <see cref="Checked"/> changes, by the user or from code.</summary>
     public event EventHandler? CheckedChanged;
 
+    /// <summary>Whether the box is checked; a click or Space toggles it.</summary>
     public bool Checked
     {
         get => _checked;

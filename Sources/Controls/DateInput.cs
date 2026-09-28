@@ -34,6 +34,7 @@ public class DateInput : Control
     private Color _selectionBackground = new(0, 0, 128);
     private Color _selectionColor = Color.White;
 
+    /// <summary>Creates a date input showing today, 140 pixels wide.</summary>
     public DateInput()
     {
         Focusable = true;
@@ -119,8 +120,10 @@ public class DateInput : Control
     /// <summary><see cref="Value"/> as shown in the field.</summary>
     public string Text => _value.ToString(_format, Culture);
 
+    /// <summary>True while the calendar is open.</summary>
     public bool IsDroppedDown => _calendar != null;
 
+    /// <summary>Font of the field and of the calendar; <see cref="GUI.Font.Default"/> unless set.</summary>
     public Font Font
     {
         get => _font ??= Font.Default;
@@ -131,24 +134,28 @@ public class DateInput : Control
         }
     }
 
+    /// <summary>Text color.</summary>
     public Color Color
     {
         get => _color;
         set => SetColor(ref _color, value);
     }
 
+    /// <summary>Text color while disabled.</summary>
     public Color DisabledColor
     {
         get => _disabledColor;
         set => SetColor(ref _disabledColor, value);
     }
 
+    /// <summary>Background of the field and of the calendar.</summary>
     public Color Background
     {
         get => _background;
         set => SetColor(ref _background, value);
     }
 
+    /// <summary>Background of the field while disabled.</summary>
     public Color DisabledBackground
     {
         get => _disabledBackground;
@@ -162,6 +169,7 @@ public class DateInput : Control
         set => SetColor(ref _selectionBackground, value);
     }
 
+    /// <summary>Text color of the selected day, and of the field text while focused.</summary>
     public Color SelectionColor
     {
         get => _selectionColor;
@@ -187,6 +195,7 @@ public class DateInput : Control
         Invalidate();
     }
 
+    /// <summary>Closes the calendar without changing the value.</summary>
     public void CloseCalendar() => GetWindow()?.ClosePopup();
 
     protected virtual void OnValueChanged(EventArgs e) => ValueChanged?.Invoke(this, e);

@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bitmap · Doqua</title>
+<link rel="icon" href="../../logo_32.png">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="../index.html"><img src="../../logo.png" alt=""><span>Doqua</span></a>
+  <span class="tagline">Cross-platform GUI for .NET</span>
+  <div class="search"><input id="search" type="search" placeholder="Search the documentation" autocomplete="off"><div id="search-results"></div></div>
+</header>
+<div class="layout">
+<nav class="side"><h4>Guide</h4><ul><li><a class="" href="../index.html">Overview</a></li><li><a class="" href="../guides/getting-started.html">Getting started</a></li><li><a class="" href="../guides/architecture.html">How Doqua works</a></li><li><a class="" href="../guides/controls.html">Controls</a></li><li><a class="" href="../guides/layout.html">Layout</a></li><li><a class="" href="../guides/input.html">Mouse, keyboard and focus</a></li><li><a class="" href="../guides/drawing.html">Custom drawing</a></li><li><a class="" href="../guides/timers.html">Timers and windows</a></li><li><a class="" href="../guides/localization.html">Localization</a></li><li><a class="" href="../guides/platforms.html">Platform notes</a></li></ul><h4>Examples</h4><ul><li><a class="" href="../examples/index.html">All examples</a></li><li><a class="" href="../examples/simple.html">Simple</a></li><li><a class="" href="../examples/tabs.html">Tabs</a></li><li><a class="" href="../examples/dictionary.html">Dictionary</a></li><li><a class="" href="../examples/editor.html">Editor</a></li><li><a class="" href="../examples/datetime.html">DateTime</a></li><li><a class="" href="../examples/fonts.html">Fonts</a></li><li><a class="" href="../examples/localization.html">Localization</a></li><li><a class=" current" href="../examples/bitmap.html">Bitmap</a></li><li><a class="" href="../examples/clock.html">Clock</a></li></ul><h4>API reference</h4><ul><li><a class="" href="../api/index.html">Namespaces</a></li></ul><h5><a href="../api/Doqua.Controls.html">Doqua.Controls</a></h5><ul class="types"><li><a class="kind-class" href="../api/Doqua.Controls.Button.html">Button</a></li><li><a class="kind-class" href="../api/Doqua.Controls.CheckBox.html">CheckBox</a></li><li><a class="kind-class" href="../api/Doqua.Controls.ComboBox-1.html">ComboBox&lt;T&gt;</a></li><li><a class="kind-class" href="../api/Doqua.Controls.ComboBoxItemCollection-1.html">ComboBoxItemCollection&lt;T&gt;</a></li><li><a class="kind-class" href="../api/Doqua.Controls.DateInput.html">DateInput</a></li><li><a class="kind-class" href="../api/Doqua.Controls.Input.html">Input</a></li><li><a class="kind-class" href="../api/Doqua.Controls.Label.html">Label</a></li><li><a class="kind-class" href="../api/Doqua.Controls.MenuClosedEventArgs.html">MenuClosedEventArgs</a></li><li><a class="kind-class" href="../api/Doqua.Controls.MenuItem.html">MenuItem</a></li><li><a class="kind-class" href="../api/Doqua.Controls.NumberInput.html">NumberInput</a></li><li><a class="kind-class" href="../api/Doqua.Controls.Panel.html">Panel</a></li><li><a class="kind-class" href="../api/Doqua.Controls.PopupMenu.html">PopupMenu</a></li><li><a class="kind-class" href="../api/Doqua.Controls.RadioButton.html">RadioButton</a></li><li><a class="kind-class" href="../api/Doqua.Controls.RadioButton-1.html">RadioButton&lt;T&gt;</a></li><li><a class="kind-class" href="../api/Doqua.Controls.RadioGroup.html">RadioGroup</a></li><li><a class="kind-class" href="../api/Doqua.Controls.RadioGroup-1.html">RadioGroup&lt;T&gt;</a></li><li><a class="kind-class" href="../api/Doqua.Controls.Rectangle.html">Rectangle</a></li><li><a class="kind-enum" href="../api/Doqua.Controls.ScrollBars.html">ScrollBars</a></li><li><a class="kind-class" href="../api/Doqua.Controls.SplitContainer.html">SplitContainer</a></li><li><a class="kind-enum" href="../api/Doqua.Controls.SplitOrientation.html">SplitOrientation</a></li><li><a class="kind-class" href="../api/Doqua.Controls.TabControl.html">TabControl</a></li><li><a class="kind-class" href="../api/Doqua.Controls.Table.html">Table</a></li><li><a class="kind-class" href="../api/Doqua.Controls.TableCell.html">TableCell</a></li><li><a class="kind-class" href="../api/Doqua.Controls.TableCellEventArgs.html">TableCellEventArgs</a></li><li><a class="kind-class" href="../api/Doqua.Controls.TableColumn.html">TableColumn</a></li><li><a class="kind-class" href="../api/Doqua.Controls.TableColumnCollection.html">TableColumnCollection</a></li><li><a class="kind-class" href="../api/Doqua.Controls.TableContextMenuEventArgs.html">TableContextMenuEventArgs</a></li><li><a class="kind-class" href="../api/Doqua.Controls.TableRow.html">TableRow</a></li><li><a class="kind-class" href="../api/Doqua.Controls.TableRowCollection.html">TableRowCollection</a></li><li><a class="kind-class" href="../api/Doqua.Controls.TabPage.html">TabPage</a></li><li><a class="kind-class" href="../api/Doqua.Controls.TabPageCollection.html">TabPageCollection</a></li><li><a class="kind-class" href="../api/Doqua.Controls.TextArea.html">TextArea</a></li><li><a class="kind-class" href="../api/Doqua.Controls.ToggleControl.html">ToggleControl</a></li><li><a class="kind-class" href="../api/Doqua.Controls.TreeNode.html">TreeNode</a></li><li><a class="kind-class" href="../api/Doqua.Controls.TreeNodeCollection.html">TreeNodeCollection</a></li><li><a class="kind-class" href="../api/Doqua.Controls.TreeView.html">TreeView</a></li></ul><h5><a href="../api/Doqua.Core.html">Doqua.Core</a></h5><ul class="types"><li><a class="kind-static-class" href="../api/Doqua.Core.DoquaInfo.html">DoquaInfo</a></li></ul><h5><a href="../api/Doqua.GUI.html">Doqua.GUI</a></h5><ul class="types"><li><a class="kind-record-struct" href="../api/Doqua.GUI.Anchor.html">Anchor</a></li><li><a class="kind-static-class" href="../api/Doqua.GUI.Application.html">Application</a></li><li><a class="kind-class" href="../api/Doqua.GUI.Bitmap.html">Bitmap</a></li><li><a class="kind-static-class" href="../api/Doqua.GUI.Clipboard.html">Clipboard</a></li><li><a class="kind-record-struct" href="../api/Doqua.GUI.Color.html">Color</a></li><li><a class="kind-class" href="../api/Doqua.GUI.Control.html">Control</a></li><li><a class="kind-class" href="../api/Doqua.GUI.ControlCollection.html">ControlCollection</a></li><li><a class="kind-enum" href="../api/Doqua.GUI.Cursor.html">Cursor</a></li><li><a class="kind-class" href="../api/Doqua.GUI.DrawingContext.html">DrawingContext</a></li><li><a class="kind-record" href="../api/Doqua.GUI.Font.html">Font</a></li><li><a class="kind-enum" href="../api/Doqua.GUI.FontStyle.html">FontStyle</a></li><li><a class="kind-enum" href="../api/Doqua.GUI.Key.html">Key</a></li><li><a class="kind-class" href="../api/Doqua.GUI.KeyEventArgs.html">KeyEventArgs</a></li><li><a class="kind-enum" href="../api/Doqua.GUI.KeyModifiers.html">KeyModifiers</a></li><li><a class="kind-static-class" href="../api/Doqua.GUI.Localization.html">Localization</a></li><li><a class="kind-enum" href="../api/Doqua.GUI.MouseButton.html">MouseButton</a></li><li><a class="kind-class" href="../api/Doqua.GUI.MouseEventArgs.html">MouseEventArgs</a></li><li><a class="kind-class" href="../api/Doqua.GUI.MouseMoveEventArgs.html">MouseMoveEventArgs</a></li><li><a class="kind-class" href="../api/Doqua.GUI.MouseWheelEventArgs.html">MouseWheelEventArgs</a></li><li><a class="kind-record-struct" href="../api/Doqua.GUI.Rect.html">Rect</a></li><li><a class="kind-record-struct" href="../api/Doqua.GUI.Size.html">Size</a></li><li><a class="kind-class" href="../api/Doqua.GUI.TextInputEventArgs.html">TextInputEventArgs</a></li><li><a class="kind-static-class" href="../api/Doqua.GUI.Timer.html">Timer</a></li><li><a class="kind-class" href="../api/Doqua.GUI.Window.html">Window</a></li></ul></nav>
+<main>
+<h1>Bitmap</h1><p class="lead">Loading, drawing, scaling and saving PNG images, and drawing into a bitmap.</p><p>Run it with <code>dotnet run --project Examples/Bitmap</code>.</p><figure><img class="shot" src="../images/examples/bitmap.png" alt="Bitmap"></figure><h2>Program.cs</h2><pre class="code"><code><span class="k">using</span> <span class="t">Doqua</span>.<span class="t">Controls</span>;
+<span class="k">using</span> <span class="t">Doqua</span>.<span class="t">GUI</span>;
+
+<span class="k">namespace</span> <span class="t">BitmapExample</span>;
+
+<span class="c">/// &lt;summary&gt;</span>
+<span class="c">/// A Rectangle that also shows a bitmap: the rectangle&#39;s Color is the background behind the</span>
+<span class="c">/// image, which shows through its transparent parts.</span>
+<span class="c">/// &lt;/summary&gt;</span>
+<span class="k">class</span> <span class="t">BitmapRectangle</span> : <a class="t" href="../api/Doqua.Controls.Rectangle.html">Rectangle</a>
+{
+    <span class="k">private</span> <a class="t" href="../api/Doqua.GUI.Bitmap.html">Bitmap</a>? _bitmap;
+    <span class="k">private</span> <a class="t" href="../api/Doqua.GUI.Rect.html">Rect</a>? _source;
+    <span class="k">private</span> <span class="k">bool</span> _stretch;
+
+    <span class="k">public</span> <a class="t" href="../api/Doqua.GUI.Bitmap.html">Bitmap</a>? <a class="t" href="../api/Doqua.GUI.Bitmap.html">Bitmap</a>
+    {
+        <span class="k">get</span> =&gt; _bitmap;
+        <span class="k">set</span>
+        {
+            _bitmap = <span class="k">value</span>;
+            <span class="t">Invalidate</span>();
+        }
+    }
+
+    <span class="c">/// &lt;summary&gt;Part of the bitmap to show; the whole bitmap if null.&lt;/summary&gt;</span>
+    <span class="k">public</span> <a class="t" href="../api/Doqua.GUI.Rect.html">Rect</a>? <span class="t">Source</span>
+    {
+        <span class="k">get</span> =&gt; _source;
+        <span class="k">set</span>
+        {
+            _source = <span class="k">value</span>;
+            <span class="t">Invalidate</span>();
+        }
+    }
+
+    <span class="c">/// &lt;summary&gt;When true, the image is scaled to fill the rectangle; otherwise it is centered at its natural size.&lt;/summary&gt;</span>
+    <span class="k">public</span> <span class="k">bool</span> <span class="t">Stretch</span>
+    {
+        <span class="k">get</span> =&gt; _stretch;
+        <span class="k">set</span>
+        {
+            _stretch = <span class="k">value</span>;
+            <span class="t">Invalidate</span>();
+        }
+    }
+
+    <span class="k">protected</span> <span class="k">override</span> <span class="k">void</span> <span class="t">OnRender</span>(<a class="t" href="../api/Doqua.GUI.DrawingContext.html">DrawingContext</a> dc)
+    {
+        <span class="k">base</span>.<span class="t">OnRender</span>(dc); <span class="c">// Fills the rectangle with Color.</span>
+        <span class="k">if</span> (_bitmap == <span class="k">null</span>)
+            <span class="k">return</span>;
+
+        <span class="k">if</span> (_stretch)
+        {
+            _bitmap.<span class="t">Draw</span>(dc, <span class="k">new</span> <a class="t" href="../api/Doqua.GUI.Rect.html">Rect</a>(<span class="n">0</span>, <span class="n">0</span>, <span class="t">Width</span>, <span class="t">Height</span>), _source);
+        }
+        <span class="k">else</span>
+        {
+            <span class="k">var</span> size = _source ?? <span class="k">new</span> <a class="t" href="../api/Doqua.GUI.Rect.html">Rect</a>(<span class="n">0</span>, <span class="n">0</span>, _bitmap.<span class="t">Width</span>, _bitmap.<span class="t">Height</span>);
+            _bitmap.<span class="t">Draw</span>(dc, (<span class="t">Width</span> - size.<span class="t">Width</span>) / <span class="n">2</span>, (<span class="t">Height</span> - size.<span class="t">Height</span>) / <span class="n">2</span>, _source);
+        }
+    }
+}
+
+<span class="k">class</span> <span class="t">MainWindow</span> : <a class="t" href="../api/Doqua.GUI.Window.html">Window</a>
+{
+    <span class="k">public</span> <span class="t">MainWindow</span>()
+    {
+        <span class="t">Title</span> = <span class="s">&quot;Doqua Bitmap&quot;</span>;
+        <span class="t">Icons</span> = <span class="t">ExampleIcon</span>.<span class="t">Load</span>();
+        <span class="t">Width</span> = <span class="n">800</span>;
+        <span class="t">Height</span> = <span class="n">620</span>;
+
+        <span class="k">var</span> bitmap = <a class="t" href="../api/Doqua.GUI.Bitmap.html">Bitmap</a>.<span class="t">Load</span>(<span class="t">Path</span>.<span class="t">Combine</span>(<span class="t">AppContext</span>.<span class="t">BaseDirectory</span>, <span class="s">&quot;doqua.png&quot;</span>));
+        <span class="k">var</span> captionFont = <a class="t" href="../api/Doqua.GUI.Font.html">Font</a>.<span class="t">Default</span> <span class="k">with</span> { <a class="t" href="../api/Doqua.GUI.Size.html">Size</a> = <span class="n">16</span>, <span class="t">Style</span> = <a class="t" href="../api/Doqua.GUI.FontStyle.html">FontStyle</a>.<span class="t">Bold</span> };
+
+        <span class="c">// Draw a new bitmap in code, save it as PNG and load it back.</span>
+        <span class="k">var</span> drawn = <span class="t">CreateDrawnBitmap</span>(bitmap);
+        <span class="k">var</span> savedPath = <span class="t">Path</span>.<span class="t">Combine</span>(<span class="t">Path</span>.<span class="t">GetTempPath</span>(), <span class="s">&quot;doqua-drawn.png&quot;</span>);
+        drawn.<span class="t">Save</span>(savedPath);
+        <span class="k">var</span> reloaded = <a class="t" href="../api/Doqua.GUI.Bitmap.html">Bitmap</a>.<span class="t">Load</span>(savedPath);
+
+        <span class="t">Content</span> = <span class="k">new</span> <a class="t" href="../api/Doqua.Controls.Panel.html">Panel</a>
+        {
+            <span class="t">Children</span> =
+            {
+                <span class="k">new</span> <a class="t" href="../api/Doqua.Controls.Label.html">Label</a> { <span class="t">X</span> = <span class="n">20</span>, <span class="t">Y</span> = <span class="n">16</span>, <span class="t">Text</span> = <span class="s">$&quot;Whole image ({bitmap.Width} x {bitmap.Height})&quot;</span>, <a class="t" href="../api/Doqua.GUI.Font.html">Font</a> = captionFont },
+                <span class="k">new</span> <span class="t">BitmapRectangle</span> { <span class="t">X</span> = <span class="n">20</span>, <span class="t">Y</span> = <span class="n">44</span>, <span class="t">Width</span> = <span class="n">360</span>, <span class="t">Height</span> = <span class="n">220</span>, <a class="t" href="../api/Doqua.GUI.Color.html">Color</a> = <a class="t" href="../api/Doqua.GUI.Color.html">Color</a>.<span class="t">LightGray</span>, <a class="t" href="../api/Doqua.GUI.Bitmap.html">Bitmap</a> = bitmap },
+
+                <span class="k">new</span> <a class="t" href="../api/Doqua.Controls.Label.html">Label</a> { <span class="t">X</span> = <span class="n">420</span>, <span class="t">Y</span> = <span class="n">16</span>, <span class="t">Text</span> = <span class="s">&quot;Part: Source = (40, 20, 120, 80)&quot;</span>, <a class="t" href="../api/Doqua.GUI.Font.html">Font</a> = captionFont },
+                <span class="k">new</span> <span class="t">BitmapRectangle</span>
+                {
+                    <span class="t">X</span> = <span class="n">420</span>, <span class="t">Y</span> = <span class="n">44</span>, <span class="t">Width</span> = <span class="n">360</span>, <span class="t">Height</span> = <span class="n">220</span>, <a class="t" href="../api/Doqua.GUI.Color.html">Color</a> = <span class="k">new</span> <a class="t" href="../api/Doqua.GUI.Color.html">Color</a>(<span class="n">40</span>, <span class="n">40</span>, <span class="n">40</span>),
+                    <a class="t" href="../api/Doqua.GUI.Bitmap.html">Bitmap</a> = bitmap, <span class="t">Source</span> = <span class="k">new</span> <a class="t" href="../api/Doqua.GUI.Rect.html">Rect</a>(<span class="n">40</span>, <span class="n">20</span>, <span class="n">120</span>, <span class="n">80</span>),
+                },
+
+                <span class="k">new</span> <a class="t" href="../api/Doqua.Controls.Label.html">Label</a> { <span class="t">X</span> = <span class="n">20</span>, <span class="t">Y</span> = <span class="n">290</span>, <span class="t">Text</span> = <span class="s">&quot;Stretched to 360 x 262&quot;</span>, <a class="t" href="../api/Doqua.GUI.Font.html">Font</a> = captionFont },
+                <span class="k">new</span> <span class="t">BitmapRectangle</span>
+                {
+                    <span class="t">X</span> = <span class="n">20</span>, <span class="t">Y</span> = <span class="n">318</span>, <span class="t">Width</span> = <span class="n">360</span>, <span class="t">Height</span> = <span class="n">262</span>, <a class="t" href="../api/Doqua.GUI.Color.html">Color</a> = <a class="t" href="../api/Doqua.GUI.Color.html">Color</a>.<span class="t">White</span>,
+                    <a class="t" href="../api/Doqua.GUI.Bitmap.html">Bitmap</a> = bitmap, <span class="t">Stretch</span> = <span class="k">true</span>,
+                },
+
+                <span class="k">new</span> <a class="t" href="../api/Doqua.Controls.Label.html">Label</a> { <span class="t">X</span> = <span class="n">420</span>, <span class="t">Y</span> = <span class="n">290</span>, <span class="t">Text</span> = <span class="s">&quot;Drawn in code, saved, loaded back&quot;</span>, <a class="t" href="../api/Doqua.GUI.Font.html">Font</a> = captionFont },
+                <span class="k">new</span> <span class="t">BitmapRectangle</span>
+                {
+                    <span class="t">X</span> = <span class="n">420</span>, <span class="t">Y</span> = <span class="n">318</span>, <span class="t">Width</span> = <span class="n">360</span>, <span class="t">Height</span> = <span class="n">262</span>, <a class="t" href="../api/Doqua.GUI.Color.html">Color</a> = <span class="k">new</span> <a class="t" href="../api/Doqua.GUI.Color.html">Color</a>(<span class="n">40</span>, <span class="n">40</span>, <span class="n">40</span>),
+                    <a class="t" href="../api/Doqua.GUI.Bitmap.html">Bitmap</a> = reloaded,
+                },
+                <span class="k">new</span> <a class="t" href="../api/Doqua.Controls.Label.html">Label</a>
+                {
+                    <span class="t">X</span> = <span class="n">420</span>, <span class="t">Y</span> = <span class="n">586</span>, <a class="t" href="../api/Doqua.GUI.Color.html">Color</a> = <a class="t" href="../api/Doqua.GUI.Color.html">Color</a>.<span class="t">Gray</span>,
+                    <span class="t">Text</span> = <span class="s">$&quot;{savedPath} — identical after reload: {AreEqual(drawn, reloaded)}&quot;</span>,
+                },
+            },
+        };
+    }
+
+    <span class="c">/// &lt;summary&gt;Draws a 240 x 160 picture with a DrawingContext created on a new bitmap.&lt;/summary&gt;</span>
+    <span class="k">private</span> <span class="k">static</span> <a class="t" href="../api/Doqua.GUI.Bitmap.html">Bitmap</a> <span class="t">CreateDrawnBitmap</span>(<a class="t" href="../api/Doqua.GUI.Bitmap.html">Bitmap</a> logo)
+    {
+        <span class="k">var</span> bitmap = <span class="k">new</span> <a class="t" href="../api/Doqua.GUI.Bitmap.html">Bitmap</a>(<span class="n">240</span>, <span class="n">160</span>); <span class="c">// Starts fully transparent.</span>
+        <span class="k">var</span> dc = bitmap.<span class="t">CreateDrawingContext</span>();
+
+        <span class="c">// Vertical gradient, one line at a time.</span>
+        <span class="k">for</span> (<span class="k">var</span> y = <span class="n">0</span>; y &lt; bitmap.<span class="t">Height</span>; y++)
+            dc.<span class="t">FillRectangle</span>(<span class="n">0</span>, y, bitmap.<span class="t">Width</span>, <span class="n">1</span>, <a class="t" href="../api/Doqua.GUI.Color.html">Color</a>.<span class="t">Lerp</span>(<span class="k">new</span> <a class="t" href="../api/Doqua.GUI.Color.html">Color</a>(<span class="n">255</span>, <span class="n">210</span>, <span class="n">90</span>), <span class="k">new</span> <a class="t" href="../api/Doqua.GUI.Color.html">Color</a>(<span class="n">240</span>, <span class="n">80</span>, <span class="n">40</span>), y / (bitmap.<span class="t">Height</span> - <span class="n">1f</span>)));
+        dc.<span class="t">DrawRectangle</span>(<span class="k">new</span> <a class="t" href="../api/Doqua.GUI.Rect.html">Rect</a>(<span class="n">0</span>, <span class="n">0</span>, bitmap.<span class="t">Width</span>, bitmap.<span class="t">Height</span>), <a class="t" href="../api/Doqua.GUI.Color.html">Color</a>.<span class="t">Black</span>, <span class="n">2</span>);
+
+        <span class="c">// The loaded image, scaled down, and a translucent white band with text on it.</span>
+        logo.<span class="t">Draw</span>(dc, <span class="k">new</span> <a class="t" href="../api/Doqua.GUI.Rect.html">Rect</a>(<span class="n">120</span>, <span class="n">12</span>, <span class="n">108</span>, <span class="n">72</span>));
+        dc.<span class="t">FillRectangle</span>(<span class="n">2</span>, <span class="n">104</span>, bitmap.<span class="t">Width</span> - <span class="n">4</span>, <span class="n">40</span>, <span class="k">new</span> <a class="t" href="../api/Doqua.GUI.Color.html">Color</a>(<span class="n">255</span>, <span class="n">255</span>, <span class="n">255</span>, <span class="n">140</span>));
+        dc.<span class="t">DrawText</span>(<span class="s">&quot;Drawn in code&quot;</span>, <a class="t" href="../api/Doqua.GUI.Font.html">Font</a>.<span class="t">Default</span> <span class="k">with</span> { <a class="t" href="../api/Doqua.GUI.Size.html">Size</a> = <span class="n">20</span>, <span class="t">Style</span> = <a class="t" href="../api/Doqua.GUI.FontStyle.html">FontStyle</a>.<span class="t">Bold</span> }, <a class="t" href="../api/Doqua.GUI.Color.html">Color</a>.<span class="t">Black</span>, <span class="n">14</span>, <span class="n">110</span>);
+
+        <span class="c">// Clear inside a clip cuts a transparent hole: the dark background shows through.</span>
+        <span class="k">using</span> (dc.<span class="t">PushClip</span>(<span class="k">new</span> <a class="t" href="../api/Doqua.GUI.Rect.html">Rect</a>(<span class="n">16</span>, <span class="n">16</span>, <span class="n">60</span>, <span class="n">60</span>)))
+            dc.<span class="t">Clear</span>(<a class="t" href="../api/Doqua.GUI.Color.html">Color</a>.<span class="t">Transparent</span>);
+        dc.<span class="t">DrawRectangle</span>(<span class="k">new</span> <a class="t" href="../api/Doqua.GUI.Rect.html">Rect</a>(<span class="n">16</span>, <span class="n">16</span>, <span class="n">60</span>, <span class="n">60</span>), <span class="k">new</span> <a class="t" href="../api/Doqua.GUI.Color.html">Color</a>(<span class="n">0</span>, <span class="n">0</span>, <span class="n">0</span>, <span class="n">100</span>));
+
+        <span class="k">return</span> bitmap;
+    }
+
+    <span class="k">private</span> <span class="k">static</span> <span class="k">bool</span> <span class="t">AreEqual</span>(<a class="t" href="../api/Doqua.GUI.Bitmap.html">Bitmap</a> a, <a class="t" href="../api/Doqua.GUI.Bitmap.html">Bitmap</a> b)
+    {
+        <span class="k">if</span> (a.<span class="t">Width</span> != b.<span class="t">Width</span> || a.<span class="t">Height</span> != b.<span class="t">Height</span>)
+            <span class="k">return</span> <span class="k">false</span>;
+        <span class="k">for</span> (<span class="k">var</span> y = <span class="n">0</span>; y &lt; a.<span class="t">Height</span>; y++)
+        {
+            <span class="k">for</span> (<span class="k">var</span> x = <span class="n">0</span>; x &lt; a.<span class="t">Width</span>; x++)
+            {
+                <span class="k">if</span> (a.<span class="t">GetPixel</span>(x, y) != b.<span class="t">GetPixel</span>(x, y))
+                    <span class="k">return</span> <span class="k">false</span>;
+            }
+        }
+        <span class="k">return</span> <span class="k">true</span>;
+    }
+}
+
+<span class="k">static</span> <span class="k">class</span> <span class="t">Program</span>
+{
+<span class="a">    [STAThread]</span>
+    <span class="k">static</span> <span class="k">int</span> <span class="t">Main</span>() =&gt; <a class="t" href="../api/Doqua.GUI.Application.html">Application</a>.<span class="t">Run</span>(<span class="k">new</span> <span class="t">MainWindow</span>());
+}
+</code></pre>
+<footer>Doqua documentation · generated from the source code and its XML comments</footer>
+</main>
+</div>
+<script>const DOQUA_ROOT = "../";</script>
+<script src="../assets/search-index.js"></script>
+<script src="../assets/search.js"></script>
+</body>
+</html>

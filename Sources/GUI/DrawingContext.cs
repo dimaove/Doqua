@@ -38,9 +38,11 @@ public sealed class DrawingContext
 
     internal bool IsClipEmpty => _clip.IsEmpty;
 
+    /// <summary>Fills a rectangle (in the current control's coordinates) with <paramref name="color"/>; translucent colors are blended.</summary>
     public void FillRectangle(int x, int y, int width, int height, Color color) =>
         FillRectangle(new Rect(x, y, width, height), color);
 
+    /// <summary>Fills <paramref name="rect"/> (in the current control's coordinates) with <paramref name="color"/>; translucent colors are blended.</summary>
     public void FillRectangle(Rect rect, Color color)
     {
         if (color.A == 0)
@@ -403,6 +405,7 @@ public sealed class DrawingContext
 
     internal readonly record struct State(int OffsetX, int OffsetY, Rect Clip);
 
+    /// <summary>Returned by <see cref="PushClip"/>: disposing it restores the previous clip.</summary>
     public readonly struct ClipScope : IDisposable
     {
         private readonly DrawingContext? _context;
@@ -414,6 +417,7 @@ public sealed class DrawingContext
             _saved = saved;
         }
 
+        /// <summary>Restores the clip that was active before <see cref="PushClip"/>.</summary>
         public void Dispose() => _context?.Restore(_saved);
     }
 }

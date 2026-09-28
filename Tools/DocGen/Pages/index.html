@@ -1,0 +1,48 @@
+<div class="hero">
+  <img src="../logo.png" alt="Doqua logo">
+  <div>
+    <h1>Doqua</h1>
+    <p class="lead">A small cross-platform GUI library for .NET, in the classic desktop style.
+    One code base runs on Linux (X11) and Windows, with no native dependencies beyond what the system already has.</p>
+  </div>
+</div>
+
+<ul class="features">
+  <li>Windows, a control tree and anchored layout</li>
+  <li>Classic 3D look: buttons, tabs, check boxes, scroll bars</li>
+  <li>Text input, multi-line editor, selection, clipboard</li>
+  <li>Combo boxes, number and date inputs with a calendar</li>
+  <li>Tables with resizable columns, tree views, split panels</li>
+  <li>Context menus, keyboard focus, mouse cursors</li>
+  <li>Native font rendering, PNG images, custom drawing</li>
+  <li>Timers, window icons, localization (English by default)</li>
+</ul>
+
+<h2>A first window</h2>
+<pre class="cs">using Doqua.Controls;
+using Doqua.GUI;
+
+var status = new Label { X = 20, Y = 60, Text = "Not clicked yet" };
+var button = new Button { X = 20, Y = 20, Text = "Click me" };
+button.Click += (sender, e) => status.Text = "Clicked!";
+
+return Application.Run(new Window
+{
+    Title = "Hello, Doqua",
+    Width = 320,
+    Height = 120,
+    Content = new Panel { Children = { button, status } },
+});</pre>
+<p>[[Application.Run]] shows the window and runs the event loop until it is closed.
+Every window has one [[Window.Content]] control, usually a [[Panel]] that holds the other controls.
+Start with <a href="{root}guides/getting-started.html">Getting started</a>, or browse the examples:</p>
+
+{{gallery}}
+
+<h2>Where to go next</h2>
+<ul>
+  <li><a href="{root}guides/getting-started.html">Getting started</a>: set up a project and open a window.</li>
+  <li><a href="{root}guides/controls.html">Controls</a>: every ready-made control with a picture.</li>
+  <li><a href="{root}guides/layout.html">Layout</a>, <a href="{root}guides/input.html">Input</a> and <a href="{root}guides/drawing.html">Custom drawing</a>.</li>
+  <li><a href="{root}api/index.html">API reference</a>: every public type and member.</li>
+</ul>

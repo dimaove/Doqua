@@ -21,12 +21,14 @@ public abstract class ToggleControl : Control
     private Color _shadowColor = ClassicStyle.Shadow;
     private Color _darkShadowColor = ClassicStyle.DarkShadow;
 
+    /// <summary>Makes the control focusable and sizes it to its box.</summary>
     protected ToggleControl()
     {
         Focusable = true;
         UpdateSize();
     }
 
+    /// <summary>Text shown right of the box.</summary>
     public string Text
     {
         get => _text;
@@ -92,18 +94,21 @@ public abstract class ToggleControl : Control
         set => SetColor(ref _faceColor, value);
     }
 
+    /// <summary>Light edge of the sunken box.</summary>
     public Color HighlightColor
     {
         get => _highlightColor;
         set => SetColor(ref _highlightColor, value);
     }
 
+    /// <summary>Outer dark edge of the sunken box.</summary>
     public Color ShadowColor
     {
         get => _shadowColor;
         set => SetColor(ref _shadowColor, value);
     }
 
+    /// <summary>Inner dark edge of the sunken box.</summary>
     public Color DarkShadowColor
     {
         get => _darkShadowColor;

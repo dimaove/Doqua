@@ -11,6 +11,7 @@ public class Label : Control
     private Color _disabledColor = new(160, 160, 160);
     private bool _autoSize = true;
 
+    /// <summary>The text; '\n' starts a new line.</summary>
     public string Text
     {
         get => _text;
@@ -38,6 +39,7 @@ public class Label : Control
         }
     }
 
+    /// <summary>Text color.</summary>
     public Color Color
     {
         get => _color;

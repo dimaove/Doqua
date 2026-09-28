@@ -1,0 +1,30 @@
+<h1>How Doqua works</h1>
+<p>A short tour of the pieces, so that the rest of the documentation makes sense.</p>
+
+<h2>Windows and the event loop</h2>
+<p>[[Application.Run]] shows the main [[Window]] and processes events (mouse, keyboard, focus, resizing, timers) until that window
+is closed. All windows and controls belong to the thread that runs it; call them from there only.
+[[Timer]] callbacks and event handlers all run on that thread, one at a time.</p>
+
+<h2>The control tree</h2>
+<p>A window shows one [[Window.Content]] control that always fills it. Containers such as [[Panel]], [[TabControl]] and
+[[SplitContainer]] hold further controls; every control has a [[Control.Parent]], a position relative to it
+([[Control.X]], [[Control.Y]]) and a size. The last child is drawn on top and receives the mouse first.</p>
+<p>Controls are drawn by the framework: for each control it calls [[Control.OnRender]] with a [[DrawingContext]] whose origin is the
+control's top-left corner and whose clip is the control's bounds, then draws its children on top. See <a href="drawing.html">Custom drawing</a>.</p>
+
+<h2>Rendering</h2>
+<p>Doqua renders in software into a 32-bit pixel buffer and copies it to the window (<code>SetDIBitsToDevice</code> on Windows,
+<code>XPutImage</code> on X11). Changes do not redraw immediately: [[Control.Invalidate]] (called by every property setter) schedules
+one redraw, so many changes in one event handler produce a single frame.</p>
+<p>Text is drawn with the operating system's font engine (GDI on Windows, FreeType with fontconfig on Linux); PNG files are decoded
+and encoded by Doqua itself.</p>
+
+<h2>Events</h2>
+<p>Doqua uses ordinary .NET events: <code>button.Click += (sender, e) => ...</code>. Every event has a <code>protected virtual OnXxx</code>
+method that raises it, so a subclass can override the method instead of subscribing. Keyboard and mouse wheel events travel from the
+focused (or hovered) control up through its parents until one sets <code>Handled</code>. See <a href="input.html">Input</a>.</p>
+
+<h2>Platforms</h2>
+<p>A small internal interface separates the controls from the operating system; there is one implementation for Win32 and one for X11
+(<a href="platforms.html">Platform notes</a>). Everything above it — controls, layout, drawing, text layout — is shared.</p>

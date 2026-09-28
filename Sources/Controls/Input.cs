@@ -38,6 +38,7 @@ public class Input : Control
     private Color _selectionColor = Color.White;
     private Color _inactiveSelectionBackground = new(204, 204, 204);
 
+    /// <summary>Creates an empty input, 200 x 30 pixels.</summary>
     public Input()
     {
         Focusable = true;
@@ -49,6 +50,7 @@ public class Input : Control
     /// <summary>Raised after <see cref="Text"/> changes, by typing or from code.</summary>
     public event EventHandler? TextChanged;
 
+    /// <summary>The text. Line breaks in assigned text become spaces.</summary>
     public string Text
     {
         get => _text;
@@ -75,10 +77,12 @@ public class Input : Control
     /// <summary>Number of selected UTF-16 characters; 0 if nothing is selected.</summary>
     public int SelectionLength => Math.Abs(_caretIndex - _anchorIndex);
 
+    /// <summary>The selected part of the text.</summary>
     public string SelectedText => _text.Substring(SelectionStart, SelectionLength);
 
     private int SelectionEnd => Math.Max(_anchorIndex, _caretIndex);
 
+    /// <summary>Font of the text; <see cref="GUI.Font.Default"/> unless set.</summary>
     public Font Font
     {
         get => _font ??= Font.Default;
@@ -101,6 +105,7 @@ public class Input : Control
         }
     }
 
+    /// <summary>Background of the text field.</summary>
     public Color Background
     {
         get => _background;
@@ -111,6 +116,7 @@ public class Input : Control
         }
     }
 
+    /// <summary>Text color while disabled.</summary>
     public Color DisabledColor
     {
         get => _disabledColor;
@@ -121,6 +127,7 @@ public class Input : Control
         }
     }
 
+    /// <summary>Background while disabled.</summary>
     public Color DisabledBackground
     {
         get => _disabledBackground;
@@ -174,6 +181,7 @@ public class Input : Control
         MoveCaret(start + length, extendSelection: true);
     }
 
+    /// <summary>Selects the whole text.</summary>
     public void SelectAll() => Select(0, _text.Length);
 
     /// <summary>Copies the selection to the clipboard. Does nothing if nothing is selected.</summary>

@@ -26,8 +26,11 @@ public class PopupMenu
         set => _font = value ?? throw new ArgumentNullException(nameof(value));
     }
 
+    /// <summary>Text color of the items.</summary>
     public Color Color { get; set; } = Color.Black;
+    /// <summary>Text color of disabled items.</summary>
     public Color DisabledColor { get; set; } = ClassicStyle.Shadow;
+    /// <summary>Face color of the menu.</summary>
     public Color Background { get; set; } = ClassicStyle.Face;
 
     /// <summary>Background of the item under the pointer or chosen with the arrow keys.</summary>
@@ -36,6 +39,7 @@ public class PopupMenu
     /// <summary>Text color of the highlighted item.</summary>
     public Color SelectionColor { get; set; } = Color.White;
 
+    /// <summary>True while the menu is shown.</summary>
     public bool IsOpen => _window != null;
 
     /// <summary>Control that opened the menu most recently (kept after it closes, e.g. for <see cref="Closed"/> handlers).</summary>
@@ -104,18 +108,22 @@ public class PopupMenu
     }
 }
 
+/// <summary>An item of a <see cref="PopupMenu"/> (or a separator).</summary>
 public class MenuItem
 {
+    /// <summary>Creates an item without text.</summary>
     public MenuItem()
     {
     }
 
+    /// <summary>Creates an item with a text and an optional shortcut label.</summary>
     public MenuItem(string text, string? shortcutText = null)
     {
         Text = text;
         ShortcutText = shortcutText;
     }
 
+    /// <summary>Text of the item.</summary>
     public string Text { get; set; } = "";
 
     /// <summary>Shown right-aligned, e.g. "Ctrl+C". Display only: it does not register a shortcut.</summary>
@@ -133,6 +141,7 @@ public class MenuItem
     /// <summary>Raised when the item is chosen, before the menu's Closed event.</summary>
     public event EventHandler? Click;
 
+    /// <summary>Creates a separator: a line between groups of items.</summary>
     public static MenuItem Separator() => new() { IsSeparator = true };
 
     internal bool IsSelectable => Enabled && !IsSeparator;
@@ -140,6 +149,7 @@ public class MenuItem
     internal void RaiseClick() => Click?.Invoke(this, EventArgs.Empty);
 }
 
+/// <summary>Result of a closed <see cref="PopupMenu"/>.</summary>
 public class MenuClosedEventArgs(MenuItem? selectedItem) : EventArgs
 {
     /// <summary>The chosen item, or null if the menu was closed without choosing one.</summary>

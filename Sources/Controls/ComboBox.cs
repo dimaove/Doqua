@@ -34,6 +34,7 @@ public class ComboBox<T> : Control
     private Color _selectionBackground = new(0, 0, 128);
     private Color _selectionColor = Color.White;
 
+    /// <summary>Creates an empty combo box, 160 pixels wide.</summary>
     public ComboBox()
     {
         Items = new ComboBoxItemCollection<T>(this);
@@ -64,6 +65,7 @@ public class ComboBox<T> : Control
         }
     }
 
+    /// <summary>True when an item is selected.</summary>
     public bool HasSelection => _selectedIndex >= 0;
 
     /// <summary>
@@ -115,8 +117,10 @@ public class ComboBox<T> : Control
         }
     }
 
+    /// <summary>True while the list is open.</summary>
     public bool IsDroppedDown => _dropDown != null;
 
+    /// <summary>Font of the field and of the list; <see cref="GUI.Font.Default"/> unless set.</summary>
     public Font Font
     {
         get => _font ??= Font.Default;
@@ -127,30 +131,35 @@ public class ComboBox<T> : Control
         }
     }
 
+    /// <summary>Text color.</summary>
     public Color Color
     {
         get => _color;
         set => SetColor(ref _color, value);
     }
 
+    /// <summary>Text color while disabled.</summary>
     public Color DisabledColor
     {
         get => _disabledColor;
         set => SetColor(ref _disabledColor, value);
     }
 
+    /// <summary>Background of the field and of the list.</summary>
     public Color Background
     {
         get => _background;
         set => SetColor(ref _background, value);
     }
 
+    /// <summary>Background of the field while disabled.</summary>
     public Color DisabledBackground
     {
         get => _disabledBackground;
         set => SetColor(ref _disabledBackground, value);
     }
 
+    /// <summary>Color of <see cref="PlaceholderText"/>.</summary>
     public Color PlaceholderColor
     {
         get => _placeholderColor;
@@ -164,6 +173,7 @@ public class ComboBox<T> : Control
         set => SetColor(ref _selectionBackground, value);
     }
 
+    /// <summary>Text color of the highlighted item, and of the selected text while focused.</summary>
     public Color SelectionColor
     {
         get => _selectionColor;

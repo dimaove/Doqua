@@ -34,6 +34,7 @@ public class Window
     private Cursor _currentCursor = Cursor.Arrow;
     private Action? _popupClosed;
 
+    /// <summary>Creates an 800 x 600 window; it appears with <see cref="Show"/> or <see cref="Application.Run"/>.</summary>
     public Window()
     {
         _impl = Application.Platform.CreateWindow(_width, _height);
@@ -66,6 +67,7 @@ public class Window
         };
     }
 
+    /// <summary>Text of the title bar.</summary>
     public string Title
     {
         get => _title;
@@ -164,8 +166,10 @@ public class Window
     /// <summary>True while the window has the keyboard focus of the operating system.</summary>
     public bool IsActive { get; private set; }
 
+    /// <summary>True after the window has been closed.</summary>
     public bool IsClosed { get; private set; }
 
+    /// <summary>Raised after the window has closed.</summary>
     public event EventHandler? Closed;
 
     /// <summary>Raised for keys not handled by the focused control or its parents. Tab navigation runs after it.</summary>
@@ -177,12 +181,14 @@ public class Window
     /// </summary>
     public event EventHandler<MouseEventArgs>? MouseClick;
 
+    /// <summary>Shows the window (<see cref="Application.Run"/> shows the main window itself).</summary>
     public void Show()
     {
         ThrowIfClosed();
         _impl.Show();
     }
 
+    /// <summary>Closes the window; closing the main window ends <see cref="Application.Run"/>.</summary>
     public void Close()
     {
         if (!IsClosed)

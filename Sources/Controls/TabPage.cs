@@ -11,12 +11,15 @@ public class TabPage : Panel
 {
     private string _title = "";
 
+    /// <summary>Creates a page without a title.</summary>
     public TabPage()
     {
     }
 
+    /// <summary>Creates a page with a title.</summary>
     public TabPage(string title) => Title = title;
 
+    /// <summary>Text of the page's tab.</summary>
     public string Title
     {
         get => _title;

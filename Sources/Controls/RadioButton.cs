@@ -12,6 +12,7 @@ public abstract class RadioButton : ToggleControl
 {
     private RadioGroup? _group;
 
+    /// <summary>Adds the new button to <paramref name="group"/>.</summary>
     protected RadioButton(RadioGroup group, string text)
     {
         ArgumentNullException.ThrowIfNull(group);
@@ -23,6 +24,7 @@ public abstract class RadioButton : ToggleControl
     /// <summary>The group this button belongs to; null after <see cref="RadioGroup.Remove"/>.</summary>
     public RadioGroup? Group => _group;
 
+    /// <summary>True when this is the group's selected button.</summary>
     public bool Checked => _group?.SelectedButton == this;
 
     /// <summary>Raised when this button becomes checked or unchecked, before the group's ValueChanged.</summary>
@@ -104,8 +106,10 @@ public abstract class RadioButton : ToggleControl
 /// <summary>Radio button carrying a <see cref="Value"/> for its <see cref="RadioGroup{T}"/>.</summary>
 public class RadioButton<T> : RadioButton
 {
+    /// <summary>Creates a button of <paramref name="group"/> for <paramref name="value"/>.</summary>
     public RadioButton(RadioGroup<T> group, T value, string text = "")
         : base(group, text) => Value = value;
 
+    /// <summary>The value the group takes when this button is selected.</summary>
     public T Value { get; }
 }

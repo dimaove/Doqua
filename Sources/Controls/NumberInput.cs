@@ -28,6 +28,7 @@ public class NumberInput : Control
     private int _repeatTimer;
     private bool _updatingText;
 
+    /// <summary>Creates an input with the range 0 to 100, 80 pixels wide.</summary>
     public NumberInput()
     {
         _input = new Input { ShowFrame = false, TextFilter = IsAcceptable };
@@ -98,12 +99,14 @@ public class NumberInput : Control
         set => _input.Font = value;
     }
 
+    /// <summary>Color of the number.</summary>
     public Color Color
     {
         get => _input.Color;
         set => _input.Color = value;
     }
 
+    /// <summary>Background of the text field.</summary>
     public Color Background
     {
         get => _input.Background;

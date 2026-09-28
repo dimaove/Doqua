@@ -20,6 +20,7 @@ public readonly record struct Anchor(int? Left = null, int? Top = null, int? Rig
     /// <summary>Fills the parent, leaving <paramref name="margin"/> pixels on every side.</summary>
     public static Anchor Fill(int margin = 0) => new(margin, margin, margin, margin);
 
+    /// <summary>True when no edge is set: the control is neither moved nor resized.</summary>
     public bool IsNone => Left == null && Top == null && Right == null && Bottom == null;
 
     /// <summary>Position and size along one axis for a parent of size <paramref name="parentSize"/>.</summary>

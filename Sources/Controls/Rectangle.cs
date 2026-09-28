@@ -7,6 +7,7 @@ public class Rectangle : Control
 {
     private Color _color = Color.Black;
 
+    /// <summary>Fill color.</summary>
     public Color Color
     {
         get => _color;
