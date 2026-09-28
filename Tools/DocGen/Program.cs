@@ -22,6 +22,8 @@ List<ExampleInfo> examples =
         ["dictionary.png"], []),
     new("Editor", "Editor", "A multi-line TextArea with scroll bars and a caret position status line.", ["editor.png"], []),
     new("DateTime", "DateTime", "Two DateInputs whose ranges limit each other, and a date format selector.", ["datetime.png"], []),
+    new("Files", "Files", "FileInputs with different options: required, file masks, new files, folders and relative paths, with their validation messages.",
+        ["files.png", "files-browser.png"], []),
     new("Fonts", "Fonts", "All installed font families in a ComboBox, with size and style controls and a live preview.", ["fonts.png"], []),
     new("Localization", "Localization", "Switching the whole user interface between English and Russian at run time.",
         ["localization-en.png", "localization-ru.png"], ["ru.json"]),

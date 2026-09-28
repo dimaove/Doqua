@@ -21,6 +21,7 @@ and GDI on Windows.
 - Classic 3D look: buttons, tabs, check boxes, radio buttons, scroll bars
 - Single-line and multi-line text editors with selection, clipboard and context menus
 - Combo boxes, number inputs, and date inputs with a calendar
+- File and folder inputs with a built-in file browser, file masks and validation
 - Tables with resizable columns, tree views and split panels
 - Scrolling panels, keyboard focus and Tab navigation, mouse cursors
 - Native font rendering, PNG loading and saving, and custom drawing (lines, ellipses, bitmaps, alpha blending)
@@ -68,6 +69,7 @@ Build them all with `dotnet build Examples/examples.sln`, and run one with `dotn
 | [Dictionary](Examples/Dictionary) | TreeView and Table in a SplitContainer, with per-cell colors |
 | [Editor](Examples/Editor) | Multi-line TextArea with scroll bars |
 | [DateTime](Examples/DateTime) | DateInput with a calendar, and date formats |
+| [Files](Examples/Files) | FileInput: file masks, new files, folders, relative paths and validation |
 | [Fonts](Examples/Fonts) | Installed font families, NumberInput and a live preview |
 | [Localization](Examples/Localization) | Switching the user interface between English and Russian |
 | [Bitmap](Examples/Bitmap) | Loading, drawing, scaling and saving PNG images |

@@ -28,6 +28,22 @@ public static class Localization
         ["Doqua.Menu.SelectAll"] = "Select all",
         // DateInput calendar; {0} is today's date (short format).
         ["Doqua.Calendar.Today"] = "Today: {0}",
+        // FileInput: browser, filter, and the messages of FileInput.Error ({0}: the file masks).
+        ["Doqua.FileInput.Select"] = "Select",
+        ["Doqua.FileInput.Cancel"] = "Cancel",
+        ["Doqua.FileInput.Computer"] = "Computer",
+        ["Doqua.FileInput.Empty"] = "(empty)",
+        ["Doqua.FileInput.CannotRead"] = "This folder cannot be read.",
+        ["Doqua.FileInput.AllFiles"] = "All files",
+        ["Doqua.FileInput.FileRequired"] = "A file must be specified.",
+        ["Doqua.FileInput.FolderRequired"] = "A folder must be specified.",
+        ["Doqua.FileInput.InvalidPath"] = "The path is not valid.",
+        ["Doqua.FileInput.FileNotFound"] = "The file does not exist.",
+        ["Doqua.FileInput.FolderNotFound"] = "The folder does not exist.",
+        ["Doqua.FileInput.FolderOfFileNotFound"] = "The folder of the file does not exist.",
+        ["Doqua.FileInput.IsFolder"] = "This is a folder, not a file.",
+        ["Doqua.FileInput.IsFile"] = "This is a file, not a folder.",
+        ["Doqua.FileInput.FilterMismatch"] = "The file name must match {0}.",
 
         // Exception messages.
         ["Doqua.Error.ControlHasParent"] = "The control already has a parent.",
@@ -44,6 +60,7 @@ public static class Localization
         ["Doqua.Error.ItemNotInList"] = "The item '{0}' is not in the list.",
         ["Doqua.Error.NodeNotInTree"] = "The node does not belong to this tree view.",
         ["Doqua.Error.NodeHasParent"] = "The node already belongs to a tree.",
+        ["Doqua.Error.FilterPatterns"] = "A file filter needs at least one non-empty pattern.",
         ["Doqua.Error.NodeInsideItself"] = "A node cannot be added to itself or its descendant.",
         ["Doqua.Error.FontSize"] = "Font size must be a positive number.",
         ["Doqua.Error.BitmapTooLarge"] = "The bitmap is too large.",

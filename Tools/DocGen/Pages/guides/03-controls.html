@@ -24,6 +24,20 @@ both support selection, the clipboard and a Cut / Copy / Paste context menu.</p>
 <figure><img class="shot" src="{root}images/types/ComboBox.png" alt="ComboBox"></figure>
 <figure><img class="shot" src="{root}images/types/DateInput.png" alt="DateInput"></figure>
 
+<h2>Files and folders</h2>
+<p><b>[[FileInput]]</b> is a path field with a "..." button that opens a file browser. The path can also be typed;
+[[FileInput.Error]] says why it is not acceptable (the text is drawn red), or is null when it is.
+The options: [[FileInput.Mode]] (a file or a folder), [[FileInput.MustExist]], [[FileInput.Required]],
+[[FileInput.Filters]] with [[FileFilter]] masks and [[FileInput.MatchFilter]], and [[FileInput.BaseDirectory]] with
+[[FileInput.RelativePaths]] for paths relative to a folder.</p>
+<pre class="cs">var key = new FileInput
+{
+    Required = true,
+    Filters = { new FileFilter("Keys", "*.pem", "*.key"), FileFilter.AllFiles },
+};
+key.TextChanged += (sender, e) => status.Text = key.Error ?? "";</pre>
+<figure><img class="shot" src="{root}images/types/FileInput.png" alt="FileInput with the browser open"></figure>
+
 <h2>Data</h2>
 <p><b>[[Table]]</b> shows rows of text cells with resizable columns; each cell can have its own font and color.
 <b>[[TreeView]]</b> shows a hierarchy of [[TreeNode]]s.</p>
