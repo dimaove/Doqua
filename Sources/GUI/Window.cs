@@ -411,6 +411,8 @@ public class Window
             control.RaiseKeyDown(e);
         if (!e.Handled)
             OnKeyDown(e);
+        if (!e.Handled)
+            _content?.DispatchShortcut(e); // Menu shortcuts: after the focused control, so an Input keeps its Ctrl+C.
         if (!e.Handled && key == Key.Tab && (modifiers & ~KeyModifiers.Shift) == KeyModifiers.None)
             MoveFocus(forward: !modifiers.HasFlag(KeyModifiers.Shift));
 

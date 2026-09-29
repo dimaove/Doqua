@@ -25,6 +25,7 @@ and GDI on Windows.
 - Tables with row selection and resizable columns, tree views and split panels
 - Modal dialog windows (`Window.ShowModal`) and message boxes (OK, OK/Cancel, Yes/No) with a result callback
 - Group boxes
+- A menu bar (`MainMenu`) with Alt keys and keyboard shortcuts, and context menus
 - Scrolling panels, keyboard focus and Tab navigation, mouse cursors
 - Native font rendering, PNG loading and saving, and custom drawing (lines, ellipses, bitmaps, alpha blending)
 - Timers, window icons, and localization (English by default)
@@ -67,7 +68,7 @@ Build them all with `dotnet build Examples/examples.sln`, and run one with `dotn
 
 | Example | Shows |
 |---|---|
-| [Simple](Examples/Simple) | Anchored panels, clickable rectangles, buttons, an input and a live clock |
+| [Simple](Examples/Simple) | A menu bar, anchored panels, clickable rectangles, buttons, an input and a live clock |
 | [Tabs](Examples/Tabs) | TabControl, check boxes, radio groups, scrolling panels and context menus |
 | [Dictionary](Examples/Dictionary) | TreeView and Table in a SplitContainer: row selection, editing, message boxes, per-cell colors |
 | [Editor](Examples/Editor) | Multi-line TextArea with scroll bars |

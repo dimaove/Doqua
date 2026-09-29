@@ -206,6 +206,8 @@ internal static unsafe partial class User32
     public const nint HTCLIENT = 1;
     public const uint WM_ERASEBKGND = 0x0014;
     public const uint WM_KEYDOWN = 0x0100;
+    public const uint WM_SYSKEYDOWN = 0x0104;
+    public const uint WM_SYSCHAR = 0x0106;
     public const uint WM_CHAR = 0x0102;
     public const uint WM_MOUSEMOVE = 0x0200;
     public const uint WM_LBUTTONDOWN = 0x0201;

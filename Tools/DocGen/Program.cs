@@ -15,7 +15,7 @@ if (!File.Exists(xml))
 
 List<ExampleInfo> examples =
 [
-    new("Simple", "Simple", "Anchored panels with clickable rectangles, buttons, an input, a live clock and a status line.", ["simple.png"], []),
+    new("Simple", "Simple", "A menu bar (File, View, Help) with Alt keys and shortcuts, anchored panels with clickable rectangles, buttons, an input, a live clock and a status line.", ["simple.png"], []),
     new("Tabs", "Tabs", "A TabControl with pages for text, shapes, check boxes, radio groups in group boxes and scrolling panels, plus context menus.",
         ["tabs-general.png", "tabs-settings.png", "tabs-scrolling.png"], []),
     new("Dictionary", "Dictionary", "A TreeView and a Table in a SplitContainer: each node keeps its own key/value pairs and cell colors; rows can be selected, edited and removed (with a MessageBox asking first).",

@@ -171,7 +171,6 @@ public abstract class Control
     /// <summary>True while the mouse pointer is over this control (and not over one of its children).</summary>
     public bool IsMouseOver { get; private set; }
 
-    /// <summary>Raised when a mouse button is pressed over this control.</summary>
     /// <summary>Raised after <see cref="Visible"/> changed.</summary>
     public event EventHandler? VisibleChanged;
 
@@ -257,7 +256,7 @@ public abstract class Control
     /// <summary>Children in drawing order: the last one is drawn on top and hit-tested first.</summary>
     protected virtual IReadOnlyList<Control> VisualChildren => Array.Empty<Control>();
 
-    /// <summary>Moves keyboard focus to this control. Returns false if it <see cref="CanFocus"/> not.</summary>
+    /// <summary>Moves keyboard focus to this control. Returns false if it cannot take the focus (see <see cref="CanFocus"/>).</summary>
     public bool Focus() => GetWindow()?.TrySetFocus(this) ?? false;
 
     /// <summary>Requests a redraw of the window that contains this control.</summary>
@@ -369,6 +368,28 @@ public abstract class Control
             result.Add(this);
         foreach (var child in VisualChildren)
             child.CollectFocusable(result);
+    }
+
+    /// <summary>
+    /// Offers a key no control or window handler took to this control and its descendants (visible and enabled ones
+    /// only), until one sets <see cref="KeyEventArgs.Handled"/>: how a <see cref="MainMenu"/> gets its shortcuts.
+    /// </summary>
+    internal void DispatchShortcut(KeyEventArgs e)
+    {
+        if (!_visible || !_enabled)
+            return;
+        ProcessShortcut(e);
+        foreach (var child in VisualChildren)
+        {
+            if (e.Handled)
+                return;
+            child.DispatchShortcut(e);
+        }
+    }
+
+    /// <summary>Handles a window-wide shortcut, if this control has any (see <see cref="DispatchShortcut"/>).</summary>
+    internal virtual void ProcessShortcut(KeyEventArgs e)
+    {
     }
 
     internal void RaiseMouseDown(MouseEventArgs e) => OnMouseDown(e);

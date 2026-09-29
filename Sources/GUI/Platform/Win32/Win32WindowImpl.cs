@@ -221,7 +221,16 @@ internal sealed unsafe class Win32WindowImpl : IWindowImpl
                 Resized?.Invoke((int)(lParam & 0xFFFF), (int)((lParam >> 16) & 0xFFFF));
                 return 0;
 
-            // WM_SYSKEYDOWN (Alt combinations, F10) is left to DefWindowProcW so Alt+F4 keeps working.
+            // Alt combinations and F10 arrive as WM_SYSKEYDOWN: they are Doqua keys (menu mnemonics, F10), except
+            // Alt+F4 (close) and Alt+Space (system menu), which DefWindowProcW handles.
+            case User32.WM_SYSKEYDOWN when wParam is not (0x73 or 0x20) && ToKey((int)wParam) is var sysKey and not Key.None:
+                KeyDown?.Invoke(sysKey, GetModifiers());
+                return 0;
+
+            // The character of an Alt+letter: without this, DefWindowProcW beeps (no native menu to open).
+            case User32.WM_SYSCHAR when wParam != ' ':
+                return 0;
+
             case User32.WM_KEYDOWN:
                 var key = ToKey((int)wParam);
                 if (key != Key.None)

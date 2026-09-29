@@ -64,6 +64,25 @@ callback, so no <code>async</code> code is needed:</p>
 the message window; its title bar comes from the window manager.</figcaption></figure>
 
 <h2>Menus and shapes</h2>
+<p><b>[[MainMenu]]</b> is a window's menu bar: [[MainMenuItem]] titles across the top, each opening a list of
+[[MenuItem]]s. A '&amp;' in a title marks its Alt key ("&amp;File" opens with Alt+F), F10 opens the first menu, and the
+arrow keys move through the menus. An item's shortcut text ("Ctrl+O", "F5") is also its shortcut in the whole window.
+The bar anchors itself to the top of its parent; leave [[Control.Height]] pixels free for it there.</p>
+<pre class="cs">var open = new MenuItem("Open...", "Ctrl+O");
+open.Click += (sender, e) => OpenFile();
+var exit = new MenuItem("Exit", "Ctrl+Q");
+exit.Click += (sender, e) => window.Close();
+var menu = new MainMenu
+{
+    Items =
+    {
+        new MainMenuItem("&amp;File") { Items = { open, MenuItem.Separator(), exit } },
+        new MainMenuItem("&amp;Help") { Items = { new MenuItem("About") } },
+    },
+};
+var content = new Panel { Anchor = new Anchor(Left: 0, Top: menu.Height, Right: 0, Bottom: 0) };
+window.Content = new Panel { Children = { menu, content } };</pre>
+<figure><img class="shot" src="{root}images/types/MainMenu.png" alt="MainMenu with the View menu open"></figure>
 <p><b>[[PopupMenu]]</b> is a context or pop-up menu of [[MenuItem]]s. <b>[[Rectangle]]</b> is a filled rectangle,
 useful as a starting point for your own controls (see <a href="drawing.html">Custom drawing</a>).</p>
 <figure><img class="shot" src="{root}images/types/PopupMenu.png" alt="PopupMenu"></figure>

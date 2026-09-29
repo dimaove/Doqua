@@ -20,10 +20,13 @@ class MainWindow : Window
 
         const int bottomHeight = 100;
 
-        // Fills everything above the bottom panel and follows the window size.
+        // The menu bar anchors itself to the top edge; its items are filled in below, once the actions exist.
+        var menu = new MainMenu();
+
+        // Fills everything between the menu bar and the bottom panel and follows the window size.
         var rectanglesPanel = new Panel
         {
-            Anchor = new Anchor(Left: 0, Top: 0, Right: 0, Bottom: bottomHeight),
+            Anchor = new Anchor(Left: 0, Top: menu.Height, Right: 0, Bottom: bottomHeight),
             Background = Color.LightBlue,
             Children =
             {
@@ -51,18 +54,24 @@ class MainWindow : Window
 
         // Buttons keep their size and stick to the right edge.
         var hideButton = new Button { Anchor = new Anchor(Top: 10, Right: 220), Width = 90, Height = 34, Text = "Hide" };
-        hideButton.Click += (sender, e) =>
+        var disableButton = new Button { Anchor = new Anchor(Top: 10, Right: 120), Width = 90, Height = 34, Text = "Disable" };
+        // The buttons and the View menu share these actions (the menu items are declared further down).
+        MenuItem hideItem = new("Hide rectangles", "Ctrl+H"), disableItem = new("Disable rectangles", "Ctrl+D");
+        void ToggleVisible()
         {
             rectanglesPanel.Visible = !rectanglesPanel.Visible;
             hideButton.Text = rectanglesPanel.Visible ? "Hide" : "Show";
-        };
-
-        var disableButton = new Button { Anchor = new Anchor(Top: 10, Right: 120), Width = 90, Height = 34, Text = "Disable" };
-        disableButton.Click += (sender, e) =>
+            hideItem.Text = rectanglesPanel.Visible ? "Hide rectangles" : "Show rectangles";
+            disableItem.Enabled = rectanglesPanel.Visible; // Nothing to disable while hidden.
+        }
+        void ToggleEnabled()
         {
             rectanglesPanel.Enabled = !rectanglesPanel.Enabled;
             disableButton.Text = rectanglesPanel.Enabled ? "Disable" : "Enable";
-        };
+            disableItem.Text = rectanglesPanel.Enabled ? "Disable rectangles" : "Enable rectangles";
+        }
+        hideButton.Click += (sender, e) => ToggleVisible();
+        disableButton.Click += (sender, e) => ToggleEnabled();
 
         // Nothing to reset until a rectangle is clicked.
         _resetButton = new Button { Anchor = new Anchor(Top: 10, Right: 20), Width = 90, Height = 34, Text = "Reset", Enabled = false };
@@ -116,7 +125,31 @@ class MainWindow : Window
             },
         };
 
-        Content = new Panel { Children = { rectanglesPanel, bottomPanel } };
+        // File, View and Help. Each item's shortcut text is also its keyboard shortcut; Alt + the underlined letter opens a
+        // menu (Alt+F, Alt+V, Alt+H), F10 opens the first one.
+        var newItem = new MenuItem("New", "Ctrl+N");
+        newItem.Click += (sender, e) =>
+        {
+            nameInput.Text = "";
+            SetStatus(InitialStatus, Color.Gray);
+            nameInput.Focus();
+        };
+        var exitItem = new MenuItem("Exit", "Ctrl+Q");
+        exitItem.Click += (sender, e) => Close();
+        hideItem.Click += (sender, e) => ToggleVisible();
+        disableItem.Click += (sender, e) => ToggleEnabled();
+        var greetItem = new MenuItem("Greet", "F5");
+        greetItem.Click += (sender, e) => Greet();
+        var aboutItem = new MenuItem("About Doqua...", "F1");
+        aboutItem.Click += (sender, e) => MessageBox.Show(this,
+            $"{Doqua.Core.DoquaInfo.Name} {Doqua.Core.DoquaInfo.Version.ToString(2)}\nA small cross-platform GUI library for .NET.",
+            "About", icon: MessageBoxIcon.Information);
+        menu.Items.Add(new MainMenuItem("&File") { Items = { newItem, MenuItem.Separator(), exitItem } });
+        menu.Items.Add(new MainMenuItem("&View") { Items = { hideItem, disableItem, MenuItem.Separator(), greetItem } });
+        menu.Items.Add(new MainMenuItem("&Help") { Items = { aboutItem } });
+        menu.ItemClick += (sender, e) => SetStatus($"Menu: {e.Item.Text}", Color.Blue);
+
+        Content = new Panel { Children = { menu, rectanglesPanel, bottomPanel } };
         nameInput.Focus();
     }
 

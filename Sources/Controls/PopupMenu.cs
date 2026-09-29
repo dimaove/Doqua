@@ -59,7 +59,7 @@ public class PopupMenu
         var window = owner.GetWindow() ?? throw new InvalidOperationException(Localization.Get("Doqua.Error.NotInWindow"));
         Close();
 
-        var view = new PopupMenuView(this, [.. Items]);
+        var view = new PopupMenuView(this, [.. Items], Close);
         var (left, top) = owner.PointToWindow(x, y);
         // Near the right or bottom edge, open to the left of / above the point, like native menus.
         if (left + view.Width > window.Width)
@@ -156,7 +156,10 @@ public class MenuClosedEventArgs(MenuItem? selectedItem) : EventArgs
     public MenuItem? SelectedItem { get; } = selectedItem;
 }
 
-/// <summary>The open menu as a control, hosted by the window above its content.</summary>
+/// <summary>
+/// The open menu as a control, hosted by the window above its content (or inside the popup of a <see cref="MainMenu"/>).
+/// Choosing an item, or Escape (with null), calls the choose action given by the owner.
+/// </summary>
 internal sealed class PopupMenuView : Control
 {
     private const int Edge = 3;           // 3D frame plus 1 px padding.
@@ -167,15 +170,17 @@ internal sealed class PopupMenuView : Control
 
     private readonly PopupMenu _menu;
     private readonly MenuItem[] _items;
+    private readonly Action<MenuItem?> _choose;
     private readonly int[] _tops;
     private readonly int _itemHeight;
     private int _highlighted = -1;
 
-    public PopupMenuView(PopupMenu menu, MenuItem[] items)
+    public PopupMenuView(PopupMenu menu, MenuItem[] items, Action<MenuItem?> choose)
     {
         Cursor = Cursor.Arrow;
         _menu = menu;
         _items = items;
+        _choose = choose;
         _tops = new int[items.Length];
 
         var font = menu.Font;
@@ -216,29 +221,40 @@ internal sealed class PopupMenuView : Control
         base.OnMouseClick(e);
         var index = IndexAt(e.X, e.Y);
         if (index >= 0 && _items[index].IsSelectable && e.Button != MouseButton.Middle)
-            _menu.Close(_items[index]); // Separators and disabled items keep the menu open.
+            _choose(_items[index]); // Separators and disabled items keep the menu open.
     }
 
     protected override void OnKeyDown(KeyEventArgs e)
     {
         base.OnKeyDown(e);
+        HandleKey(e);
         e.Handled = true; // The menu takes all keys while it is open.
+    }
+
+    /// <summary>Up / Down move the highlight, Enter / Space choose, Escape closes; returns false for other keys.</summary>
+    internal bool HandleKey(KeyEventArgs e)
+    {
         switch (e.Key)
         {
             case Key.Up:
                 Highlight(NextSelectable(-1));
-                break;
+                return true;
             case Key.Down:
                 Highlight(NextSelectable(1));
-                break;
+                return true;
             case Key.Enter or Key.Space when _highlighted >= 0:
-                _menu.Close(_items[_highlighted]);
-                break;
+                _choose(_items[_highlighted]);
+                return true;
             case Key.Escape:
-                _menu.Close(null);
-                break;
+                _choose(null);
+                return true;
+            default:
+                return false;
         }
     }
+
+    /// <summary>Highlights the first item that can be chosen (a menu opened from the keyboard).</summary>
+    internal void HighlightFirst() => Highlight(NextSelectable(1));
 
     protected override void OnRender(DrawingContext dc)
     {
