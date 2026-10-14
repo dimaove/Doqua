@@ -4,7 +4,7 @@ using Doqua.GUI;
 namespace Doqua.Controls;
 
 /// <summary>
-/// A window's menu bar in the classic style: a strip of titles ("File", "Edit", ...) across the top of its parent, each
+/// A window's menu bar, drawn by <see cref="Style.Current"/>: a strip of titles ("File", "Edit", ...) across the top of its parent, each
 /// opening a drop-down list of <see cref="MenuItem"/>s. Add it to the window's root panel, above (or before) the other
 /// controls; it anchors itself to the top edge and stretches across. Leave <see cref="Control.Height"/> pixels free
 /// for it at the top.
@@ -40,9 +40,12 @@ public class MainMenu : Control
     private const int FirstTitleX = 2;
 
     private Font? _font;
-    private Color _color = Color.Black;
-    private Color _disabledColor = ClassicStyle.Shadow;
-    private Color _background = ClassicStyle.Face;
+    private Color? _color;
+    private Color? _disabledColor;
+    private Color? _background;
+    private Color? _menuBackground;
+    private Color? _selectionBackground;
+    private Color? _selectionColor;
     private int _hot = -1;               // Title under the pointer while no menu is open.
     private MainMenuPopup? _popup;
 
@@ -79,29 +82,44 @@ public class MainMenu : Control
     /// <summary>Text color of the titles and items.</summary>
     public Color Color
     {
-        get => _color;
+        get => _color ?? Style.Current.Text;
         set => SetColor(ref _color, value);
     }
 
     /// <summary>Text color of disabled titles and items.</summary>
     public Color DisabledColor
     {
-        get => _disabledColor;
+        get => _disabledColor ?? Style.Current.DisabledText;
         set => SetColor(ref _disabledColor, value);
     }
 
     /// <summary>Face color of the bar and of the menus.</summary>
     public Color Background
     {
-        get => _background;
+        get => _background ?? Style.Current.Face;
         set => SetColor(ref _background, value);
     }
 
-    /// <summary>Background of the highlighted item in a menu.</summary>
-    public Color SelectionBackground { get; set; } = new(0, 0, 128);
+    /// <summary>Background of the open menus; the style's menu background unless set.</summary>
+    public Color MenuBackground
+    {
+        get => _menuBackground ?? Style.Current.MenuBackground;
+        set => _menuBackground = value;
+    }
 
-    /// <summary>Text color of the highlighted item in a menu.</summary>
-    public Color SelectionColor { get; set; } = Color.White;
+    /// <summary>Background of the highlighted item in a menu; the style's menu selection color unless set.</summary>
+    public Color SelectionBackground
+    {
+        get => _selectionBackground ?? Style.Current.MenuSelectionBackground;
+        set => _selectionBackground = value;
+    }
+
+    /// <summary>Text color of the highlighted item in a menu; the style's menu selection text color unless set.</summary>
+    public Color SelectionColor
+    {
+        get => _selectionColor ?? Style.Current.MenuSelectionText;
+        set => _selectionColor = value;
+    }
 
     /// <summary>Opens the menu of the title at <paramref name="index"/> (if it and the bar are enabled and shown in a window).</summary>
     public void Open(int index) => Open(index, fromKeyboard: false);
@@ -132,7 +150,7 @@ public class MainMenu : Control
 
     protected override void OnRender(DrawingContext dc)
     {
-        dc.FillRectangle(0, 0, Width, Height, _background);
+        dc.FillRectangle(0, 0, Width, Height, Background);
         DrawTitles(dc, 0, 0, _popup?.OpenIndex ?? -1, _popup == null ? _hot : -1);
     }
 
@@ -227,29 +245,33 @@ public class MainMenu : Control
             var item = Items[i];
             var box = new Rect(x + left, y + 1, width, Height - 2);
             var itemEnabled = enabled && item.Enabled;
-            var shift = 0;
+            var state = itemEnabled ? PartState.Normal : PartState.Disabled;
             if (i == open)
-            {
-                DrawThinEdge(dc, box, ClassicStyle.Shadow, ClassicStyle.Highlight);
-                shift = 1;
-            }
-            else if (i == hot && itemEnabled)
-            {
-                DrawThinEdge(dc, box, ClassicStyle.Highlight, ClassicStyle.Shadow);
-            }
+                state |= PartState.Pressed;
+            else if (i == hot)
+                state |= PartState.Hot;
+            Style.Current.DrawMenuBarItem(dc, box, state);
+            var shift = i == open ? Style.Current.PressedOffset : 0;
             DrawMnemonicText(dc, item, font, itemEnabled, x + left + TitlePadding + shift, textY + shift);
         }
     }
 
-    internal PopupMenu CreatePopupMenu() => new()
+    /// <summary>A menu for a drop-down list, with this bar's font and the colors set on it (the others follow the style).</summary>
+    internal PopupMenu CreatePopupMenu()
     {
-        Font = Font,
-        Color = _color,
-        DisabledColor = _disabledColor,
-        Background = _background,
-        SelectionBackground = SelectionBackground,
-        SelectionColor = SelectionColor,
-    };
+        var menu = new PopupMenu { Font = Font };
+        if (_color is { } color)
+            menu.Color = color;
+        if (_disabledColor is { } disabled)
+            menu.DisabledColor = disabled;
+        if (_menuBackground is { } background)
+            menu.Background = background;
+        if (_selectionBackground is { } selection)
+            menu.SelectionBackground = selection;
+        if (_selectionColor is { } selectionColor)
+            menu.SelectionColor = selectionColor;
+        return menu;
+    }
 
     /// <summary>An item was chosen (or null: the menu was dismissed): close, then report it.</summary>
     internal void Choose(MenuItem? item)
@@ -292,25 +314,13 @@ public class MainMenu : Control
     private void DrawMnemonicText(DrawingContext dc, MainMenuItem item, Font font, bool enabled, int x, int y)
     {
         var text = item.DisplayText;
-        if (enabled)
-            dc.DrawText(text, font, _color, x, y);
-        else
-            ClassicStyle.DrawEmbossedText(dc, text, font, _disabledColor, ClassicStyle.Highlight, x, y);
+        Style.Current.DrawText(dc, text, font, enabled ? Color : DisabledColor, x, y, enabled ? PartState.Normal : PartState.Disabled);
         if (item.MnemonicIndex is var at and >= 0)
         {
             var left = x + font.MeasureText(text[..at]).Width;
             var width = font.MeasureText(text[at..(at + 1)]).Width;
-            dc.FillRectangle(left, y + font.Ascent + 1, width, 1, enabled ? _color : _disabledColor);
+            dc.FillRectangle(left, y + font.Ascent + 1, width, 1, enabled ? Color : DisabledColor);
         }
-    }
-
-    /// <summary>1 px edge: <paramref name="topLeft"/> on the top and left, <paramref name="bottomRight"/> on the bottom and right.</summary>
-    private static void DrawThinEdge(DrawingContext dc, Rect r, Color topLeft, Color bottomRight)
-    {
-        dc.FillRectangle(r.X, r.Y, r.Width - 1, 1, topLeft);
-        dc.FillRectangle(r.X, r.Y, 1, r.Height - 1, topLeft);
-        dc.FillRectangle(r.X, r.Bottom - 1, r.Width, 1, bottomRight);
-        dc.FillRectangle(r.Right - 1, r.Y, 1, r.Height, bottomRight);
     }
 
     private static char? KeyChar(Key key) => key switch
@@ -320,7 +330,7 @@ public class MainMenu : Control
         _ => null,
     };
 
-    private void SetColor(ref Color field, Color value)
+    private void SetColor(ref Color? field, Color value)
     {
         field = value;
         Invalidate();

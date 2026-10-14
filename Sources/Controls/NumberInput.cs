@@ -5,7 +5,7 @@ using Timer = Doqua.GUI.Timer;
 namespace Doqua.Controls;
 
 /// <summary>
-/// Integer input with classic up / down buttons (a "spin box"). <see cref="Value"/> always lies in
+/// Integer input with up / down buttons (a "spin box"). <see cref="Value"/> always lies in
 /// [<see cref="Min"/>, <see cref="Max"/>]. Typing accepts only digits (and a leading '-' when Min is
 /// negative) and refuses numbers that can no longer fit the range; a number below Min is allowed while
 /// typing and is corrected when the field loses focus or on Enter.
@@ -197,8 +197,8 @@ public class NumberInput : Control
     {
         var enabled = IsEffectivelyEnabled;
         var bounds = new Rect(0, 0, Width, Height);
-        dc.FillRectangle(bounds, enabled ? _input.Background : _input.DisabledBackground);
-        ClassicStyle.DrawSunkenEdge(dc, bounds, ClassicStyle.Highlight, ClassicStyle.Face, ClassicStyle.Shadow, ClassicStyle.DarkShadow);
+        Style.Current.DrawField(dc, bounds, enabled ? _input.Background : _input.DisabledBackground,
+            Input.FieldState(enabled, _input.Focused, IsMouseOver || _input.IsMouseOver));
 
         var left = Width - FrameSize - ButtonWidth;
         var top = FrameSize;
@@ -209,19 +209,17 @@ public class NumberInput : Control
         DrawSpinButton(dc, down, pointsUp: false, pressed: _pressedDirection < 0, enabled && _value > _min);
     }
 
-    /// <summary>Half-height classic button with a small 5 x 3 arrow; greyed when the value is at that end of the range.</summary>
+    /// <summary>Half-height tool button with a small 5 x 3 arrow; greyed when the value is at that end of the range.</summary>
     private static void DrawSpinButton(DrawingContext dc, Rect r, bool pointsUp, bool pressed, bool enabled)
     {
-        dc.FillRectangle(r, ClassicStyle.Face);
-        if (pressed)
-            dc.DrawRectangle(r, ClassicStyle.Shadow);
-        else
-            ClassicStyle.DrawRaisedEdge(dc, r, ClassicStyle.Highlight, ClassicStyle.Shadow, ClassicStyle.DarkShadow);
+        var style = Style.Current;
+        var state = !enabled ? PartState.Disabled : pressed ? PartState.Pressed : PartState.Normal;
+        style.DrawToolButton(dc, r, state);
 
-        var shift = pressed ? 1 : 0;
+        var shift = pressed ? style.PressedOffset : 0;
         var centerX = r.X + r.Width / 2 - 1 + shift;
         var top = r.Y + (r.Height - 3) / 2 + shift;
-        var color = enabled ? Color.Black : ClassicStyle.Shadow;
+        var color = style.GlyphColor(state);
         for (var row = 0; row < 3; row++)
         {
             var width = pointsUp ? row : 2 - row;

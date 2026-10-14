@@ -4,7 +4,7 @@ using Doqua.GUI;
 namespace Doqua.Controls;
 
 /// <summary>
-/// Grid of text cells with a header row, in the classic style. <see cref="Columns"/> define the headers and
+/// Grid of text cells with a header row, drawn by <see cref="Style.Current"/>. <see cref="Columns"/> define the headers and
 /// widths; <see cref="Rows"/> hold the cells (see also <see cref="SetData"/> and <see cref="AddRow"/>).
 /// Every cell uses the table's <see cref="Font"/> and <see cref="Color"/> unless its own are set.
 /// Drag a header border to resize a column, double-click it to fit the column to its contents.
@@ -32,15 +32,15 @@ public class Table : Control
     private (int X, int Y)? _lastRightPress;
     private bool _rowSelection;
     private int _selectedIndex = -1;
-    private Color _selectionBackground = new(0, 0, 128);
-    private Color _selectionColor = Color.White;
-    private Color _inactiveSelectionBackground = new(204, 204, 204);
+    private Color? _selectionBackground;
+    private Color? _selectionColor;
+    private Color? _inactiveSelectionBackground;
     private Font? _font;
-    private Color _color = Color.Black;
-    private Color _background = Color.White;
-    private Color _gridColor = new(192, 192, 192);
-    private Color _headerColor = Color.Black;
-    private Color _disabledColor = ClassicStyle.Shadow;
+    private Color? _color;
+    private Color? _background;
+    private Color? _gridColor;
+    private Color? _headerColor;
+    private Color? _disabledColor;
 
     /// <summary>Creates an empty table, 300 x 200 pixels.</summary>
     public Table()
@@ -130,21 +130,21 @@ public class Table : Control
     /// <summary>Background of the selected row while the table has the focus.</summary>
     public Color SelectionBackground
     {
-        get => _selectionBackground;
+        get => _selectionBackground ?? Style.Current.SelectionBackground;
         set => SetColor(ref _selectionBackground, value);
     }
 
     /// <summary>Text color of the selected row while the table has the focus (cells' own colors are not used then).</summary>
     public Color SelectionColor
     {
-        get => _selectionColor;
+        get => _selectionColor ?? Style.Current.SelectionText;
         set => SetColor(ref _selectionColor, value);
     }
 
     /// <summary>Background of the selected row while the table does not have the focus (cells keep their colors).</summary>
     public Color InactiveSelectionBackground
     {
-        get => _inactiveSelectionBackground;
+        get => _inactiveSelectionBackground ?? Style.Current.InactiveSelectionBackground;
         set => SetColor(ref _inactiveSelectionBackground, value);
     }
 
@@ -162,35 +162,35 @@ public class Table : Control
     /// <summary>Default text color of the cells.</summary>
     public Color Color
     {
-        get => _color;
+        get => _color ?? Style.Current.Text;
         set => SetColor(ref _color, value);
     }
 
     /// <summary>Background of the cells.</summary>
     public Color Background
     {
-        get => _background;
+        get => _background ?? Style.Current.FieldBackground;
         set => SetColor(ref _background, value);
     }
 
     /// <summary>Color of the grid lines.</summary>
     public Color GridColor
     {
-        get => _gridColor;
+        get => _gridColor ?? Style.Current.GridLine;
         set => SetColor(ref _gridColor, value);
     }
 
     /// <summary>Text color of the headers.</summary>
     public Color HeaderColor
     {
-        get => _headerColor;
+        get => _headerColor ?? Style.Current.Text;
         set => SetColor(ref _headerColor, value);
     }
 
     /// <summary>Text color while disabled.</summary>
     public Color DisabledColor
     {
-        get => _disabledColor;
+        get => _disabledColor ?? Style.Current.DisabledText;
         set => SetColor(ref _disabledColor, value);
     }
 
@@ -426,9 +426,9 @@ public class Table : Control
     protected override void OnRender(DrawingContext dc)
     {
         var enabled = IsEffectivelyEnabled;
+        var style = Style.Current;
         var bounds = new Rect(0, 0, Width, Height);
-        dc.FillRectangle(bounds, _background);
-        ClassicStyle.DrawSunkenEdge(dc, bounds, ClassicStyle.Highlight, ClassicStyle.Face, ClassicStyle.Shadow, ClassicStyle.DarkShadow);
+        style.DrawField(dc, bounds, Background, Input.FieldState(enabled, Focused && _rowSelection, IsMouseOver));
 
         var layout = GetLayout();
         ClampScroll(layout);
@@ -439,13 +439,13 @@ public class Table : Control
         var header = new Rect(body.X, EdgeSize, Math.Max(0, Width - 2 * EdgeSize), layout.HeaderHeight);
         using (dc.PushClip(header))
         {
-            dc.FillRectangle(header, ClassicStyle.Face);
+            dc.FillRectangle(header, style.Face);
             var x = body.X - _scrollX;
             foreach (var column in Columns)
             {
                 var rect = new Rect(x, header.Y, column.Width, header.Height);
-                ClassicStyle.DrawRaisedEdge(dc, rect, ClassicStyle.Highlight, ClassicStyle.Shadow, ClassicStyle.DarkShadow);
-                DrawCellText(dc, column.Header, HeaderFont, enabled ? _headerColor : _disabledColor, rect);
+                style.DrawHeaderCell(dc, rect, enabled ? PartState.Normal : PartState.Disabled);
+                DrawCellText(dc, column.Header, HeaderFont, enabled ? HeaderColor : DisabledColor, rect);
                 x += column.Width;
             }
         }
@@ -468,9 +468,9 @@ public class Table : Control
                     if (selected)
                     {
                         var highlight = new Rect(body.X - _scrollX, y, layout.ContentWidth, height - 1);
-                        dc.FillRectangle(highlight, focused ? _selectionBackground : enabled ? _inactiveSelectionBackground : ClassicStyle.Face);
+                        dc.FillRectangle(highlight, focused ? SelectionBackground : enabled ? InactiveSelectionBackground : style.Face);
                         if (focused)
-                            ClassicStyle.DrawFocusRectangle(dc, highlight, _selectionColor);
+                            style.DrawFocusRectangle(dc, highlight, SelectionColor);
                     }
                     var x = body.X - _scrollX;
                     for (var column = 0; column < Columns.Count; column++)
@@ -479,13 +479,13 @@ public class Table : Control
                         if (column < row.CellCount)
                         {
                             var cell = row[column];
-                            var color = !enabled ? _disabledColor : selected && focused ? _selectionColor : cell.Color ?? _color;
+                            var color = !enabled ? DisabledColor : selected && focused ? SelectionColor : cell.Color ?? Color;
                             DrawCellText(dc, cell.Text, cell.Font ?? Font, color, new Rect(x, y, width, height));
                         }
-                        dc.FillRectangle(x + width - 1, y, 1, height, _gridColor);
+                        dc.FillRectangle(x + width - 1, y, 1, height, GridColor);
                         x += width;
                     }
-                    dc.FillRectangle(body.X - _scrollX, y + height - 1, layout.ContentWidth, 1, _gridColor);
+                    dc.FillRectangle(body.X - _scrollX, y + height - 1, layout.ContentWidth, 1, GridColor);
                 }
                 y += height;
             }
@@ -498,7 +498,7 @@ public class Table : Control
         if (layout.Horizontal)
             _horizontalBar.Draw(dc, enabled);
         if (layout.Vertical && layout.Horizontal)
-            dc.FillRectangle(body.Right, body.Bottom, ClassicScrollBar.Thickness, ClassicScrollBar.Thickness, ClassicStyle.Face);
+            style.DrawScrollBarCorner(dc, new Rect(body.Right, body.Bottom, ClassicScrollBar.Thickness, ClassicScrollBar.Thickness));
     }
 
     internal void OnContentChanged() => Invalidate();
@@ -628,7 +628,7 @@ public class Table : Control
         _horizontalBar.LargeChange = Math.Max(16, body.Width - 16);
     }
 
-    private void SetColor(ref Color field, Color value)
+    private void SetColor(ref Color? field, Color value)
     {
         field = value;
         Invalidate();

@@ -4,7 +4,7 @@ using Doqua.GUI;
 namespace Doqua.Controls;
 
 /// <summary>
-/// Pages with a strip of tabs on top, drawn in the classic (Windows 9x/2000) style. The selected page
+/// Pages with a strip of tabs on top, drawn by <see cref="Style.Current"/>. The selected page
 /// fills the area below the tabs; the others are hidden. Disabled pages cannot be selected and their
 /// tabs are grey; if every page is disabled, no page is selected or shown.
 /// Keys (while focus is inside): Ctrl+Tab / Ctrl+PageDown next page, Ctrl+Shift+Tab / Ctrl+PageUp previous.
@@ -17,12 +17,10 @@ public class TabControl : Control
     private readonly ControlCollection _children; // Same pages, in the same order, as the control's children.
     private TabPage? _selectedPage;
     private Font? _font;
-    private Color _color = Color.Black;
-    private Color _disabledColor = new(128, 128, 128);
-    private Color _background = ClassicStyle.Face;
-    private Color _highlightColor = ClassicStyle.Highlight;
-    private Color _shadowColor = ClassicStyle.Shadow;
-    private Color _darkShadowColor = ClassicStyle.DarkShadow;
+    private Color? _color;
+    private Color? _disabledColor;
+    private Color? _background;
+    private TabPage? _hotPage; // Tab under the pointer.
 
     /// <summary>Creates an empty tab control, 300 x 200 pixels.</summary>
     public TabControl()
@@ -87,10 +85,10 @@ public class TabControl : Control
         }
     }
 
-    /// <summary>Tab title color.</summary>
+    /// <summary>Tab title color; the style's text color unless set.</summary>
     public Color Color
     {
-        get => _color;
+        get => _color ?? Style.Current.Text;
         set
         {
             _color = value;
@@ -98,10 +96,10 @@ public class TabControl : Control
         }
     }
 
-    /// <summary>Title color of disabled tabs (drawn embossed, with <see cref="HighlightColor"/>).</summary>
+    /// <summary>Title color of disabled tabs; the style's disabled text color unless set.</summary>
     public Color DisabledColor
     {
-        get => _disabledColor;
+        get => _disabledColor ?? Style.Current.DisabledText;
         set
         {
             _disabledColor = value;
@@ -109,46 +107,13 @@ public class TabControl : Control
         }
     }
 
-    /// <summary>Face color of the tabs and the page area.</summary>
+    /// <summary>Face color of the tabs and the page area; the style's face color unless set.</summary>
     public Color Background
     {
-        get => _background;
+        get => _background ?? Style.Current.Face;
         set
         {
             _background = value;
-            Invalidate();
-        }
-    }
-
-    /// <summary>Light edge of the raised 3D border (top and left).</summary>
-    public Color HighlightColor
-    {
-        get => _highlightColor;
-        set
-        {
-            _highlightColor = value;
-            Invalidate();
-        }
-    }
-
-    /// <summary>Inner dark edge of the raised 3D border (bottom and right).</summary>
-    public Color ShadowColor
-    {
-        get => _shadowColor;
-        set
-        {
-            _shadowColor = value;
-            Invalidate();
-        }
-    }
-
-    /// <summary>Outer dark edge of the raised 3D border (bottom and right).</summary>
-    public Color DarkShadowColor
-    {
-        get => _darkShadowColor;
-        set
-        {
-            _darkShadowColor = value;
             Invalidate();
         }
     }
@@ -220,12 +185,13 @@ public class TabControl : Control
     {
         var header = HeaderHeight;
         var body = new Rect(0, header, Width, Height - header);
-        dc.FillRectangle(body, _background);
-        ClassicStyle.DrawRaisedEdge(dc, body, _highlightColor, _shadowColor, _darkShadowColor);
+        var tabs = GetTabs().ToList();
+        var selectedRect = tabs.FirstOrDefault(tab => tab.Page == _selectedPage).Rect;
+        Style.Current.DrawTabPanel(dc, body, selectedRect, Background);
 
         // The selected tab is drawn last so that it overlaps its neighbours and the border below it.
         (TabPage Page, Rect Rect)? selected = null;
-        foreach (var tab in GetTabs())
+        foreach (var tab in tabs)
         {
             if (tab.Page == _selectedPage)
                 selected = tab;
@@ -234,6 +200,26 @@ public class TabControl : Control
         }
         if (selected is { } s)
             DrawTab(dc, s.Page, s.Rect, isSelected: true);
+    }
+
+    protected override void OnMouseMove(MouseMoveEventArgs e)
+    {
+        base.OnMouseMove(e);
+        SetHotPage(e.Y < HeaderHeight ? GetTabs().FirstOrDefault(tab => tab.Rect.Contains(e.X, e.Y)).Page : null);
+    }
+
+    protected override void OnMouseLeave(EventArgs e)
+    {
+        base.OnMouseLeave(e);
+        SetHotPage(null);
+    }
+
+    private void SetHotPage(TabPage? page)
+    {
+        if (_hotPage == page)
+            return;
+        _hotPage = page;
+        Invalidate();
     }
 
     /// <summary>Tabs from left to right; the selected one includes its extra size.</summary>
@@ -255,27 +241,20 @@ public class TabControl : Control
 
     private void DrawTab(DrawingContext dc, TabPage page, Rect r, bool isSelected)
     {
-        // Rounded top corners: the corner pixels are cut and replaced by one diagonal pixel.
-        dc.FillRectangle(r.X + 1, r.Y + 1, r.Width - 2, r.Height - 1, _background);
-        dc.FillRectangle(r.X + 2, r.Y, r.Width - 4, 1, _highlightColor);           // Top edge.
-        dc.FillRectangle(r.X + 1, r.Y + 1, 1, 1, _highlightColor);                 // Top-left corner.
-        dc.FillRectangle(r.X, r.Y + 2, 1, r.Height - 2, _highlightColor);          // Left edge.
-        dc.FillRectangle(r.Right - 2, r.Y + 1, 1, 1, _darkShadowColor);            // Top-right corner.
-        dc.FillRectangle(r.Right - 1, r.Y + 2, 1, r.Height - 2, _darkShadowColor); // Right edge, outer.
-        dc.FillRectangle(r.Right - 2, r.Y + 2, 1, r.Height - 2, _shadowColor);     // Right edge, inner.
+        var style = Style.Current;
+        var enabled = page.Enabled && IsEffectivelyEnabled;
+        var state = enabled ? PartState.Normal : PartState.Disabled;
+        if (isSelected)
+            state |= PartState.Selected;
+        if (page == _hotPage)
+            state |= PartState.Hot;
+        style.DrawTab(dc, r, Background, state);
 
         var font = Font;
         var textWidth = font.MeasureText(page.Title).Width;
         var textX = r.X + (r.Width - textWidth) / 2;
         var textY = r.Y + (HeaderHeight - SelectedGrowth - (font.Ascent + font.Descent)) / 2 + (isSelected ? 0 : 1);
-        if (page.Enabled && IsEffectivelyEnabled)
-        {
-            dc.DrawText(page.Title, font, _color, textX, textY);
-        }
-        else
-        {
-            ClassicStyle.DrawEmbossedText(dc, page.Title, font, _disabledColor, _highlightColor, textX, textY);
-        }
+        style.DrawText(dc, page.Title, font, enabled ? Color : DisabledColor, textX, textY, state);
     }
 
     private void LayoutPages()

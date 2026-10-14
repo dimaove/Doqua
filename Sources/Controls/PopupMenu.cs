@@ -3,7 +3,7 @@ using Doqua.GUI;
 namespace Doqua.Controls;
 
 /// <summary>
-/// Menu shown on top of a window's content, in the classic style. It closes when an item is chosen,
+/// Menu shown on top of a window's content, drawn by <see cref="Style.Current"/>. It closes when an item is chosen,
 /// on a click outside it, on Escape, or when the window is deactivated or resized; then
 /// <see cref="Closed"/> reports the chosen item, or null. Items: mouse (left or right button),
 /// Up/Down and Enter. Open it with <see cref="Show"/> or through <see cref="Control.ContextMenu"/>.
@@ -15,6 +15,11 @@ public class PopupMenu
     private Action<MenuItem?>? _onClosed;
     private MenuItem? _result;
     private Font? _font;
+    private Color? _color;
+    private Color? _disabledColor;
+    private Color? _background;
+    private Color? _selectionBackground;
+    private Color? _selectionColor;
 
     /// <summary>Items from top to bottom. An item may also be used in other menus.</summary>
     public List<MenuItem> Items { get; } = [];
@@ -26,18 +31,40 @@ public class PopupMenu
         set => _font = value ?? throw new ArgumentNullException(nameof(value));
     }
 
-    /// <summary>Text color of the items.</summary>
-    public Color Color { get; set; } = Color.Black;
-    /// <summary>Text color of disabled items.</summary>
-    public Color DisabledColor { get; set; } = ClassicStyle.Shadow;
-    /// <summary>Face color of the menu.</summary>
-    public Color Background { get; set; } = ClassicStyle.Face;
+    /// <summary>Text color of the items; the style's text color unless set.</summary>
+    public Color Color
+    {
+        get => _color ?? Style.Current.Text;
+        set => _color = value;
+    }
 
-    /// <summary>Background of the item under the pointer or chosen with the arrow keys.</summary>
-    public Color SelectionBackground { get; set; } = new(0, 0, 128);
+    /// <summary>Text color of disabled items; the style's disabled text color unless set.</summary>
+    public Color DisabledColor
+    {
+        get => _disabledColor ?? Style.Current.DisabledText;
+        set => _disabledColor = value;
+    }
 
-    /// <summary>Text color of the highlighted item.</summary>
-    public Color SelectionColor { get; set; } = Color.White;
+    /// <summary>Background of the menu; the style's menu background unless set.</summary>
+    public Color Background
+    {
+        get => _background ?? Style.Current.MenuBackground;
+        set => _background = value;
+    }
+
+    /// <summary>Background of the item under the pointer or chosen with the arrow keys; the style's menu selection color unless set.</summary>
+    public Color SelectionBackground
+    {
+        get => _selectionBackground ?? Style.Current.MenuSelectionBackground;
+        set => _selectionBackground = value;
+    }
+
+    /// <summary>Text color of the highlighted item; the style's menu selection text color unless set.</summary>
+    public Color SelectionColor
+    {
+        get => _selectionColor ?? Style.Current.MenuSelectionText;
+        set => _selectionColor = value;
+    }
 
     /// <summary>True while the menu is shown.</summary>
     public bool IsOpen => _window != null;
@@ -258,9 +285,9 @@ internal sealed class PopupMenuView : Control
 
     protected override void OnRender(DrawingContext dc)
     {
+        var style = Style.Current;
         var bounds = new Rect(0, 0, Width, Height);
-        dc.FillRectangle(bounds, _menu.Background);
-        ClassicStyle.DrawRaisedEdge(dc, bounds, ClassicStyle.Highlight, ClassicStyle.Shadow, ClassicStyle.DarkShadow);
+        style.DrawMenu(dc, bounds, _menu.Background);
 
         var font = _menu.Font;
         var textHeight = font.Ascent + font.Descent;
@@ -270,15 +297,13 @@ internal sealed class PopupMenuView : Control
             var top = _tops[i];
             if (item.IsSeparator)
             {
-                // Engraved line: shadow with a highlight line below.
-                dc.FillRectangle(Edge, top + SeparatorHeight / 2 - 1, Width - 2 * Edge, 1, ClassicStyle.Shadow);
-                dc.FillRectangle(Edge, top + SeparatorHeight / 2, Width - 2 * Edge, 1, ClassicStyle.Highlight);
+                style.DrawMenuSeparator(dc, new Rect(Edge, top, Width - 2 * Edge, SeparatorHeight));
                 continue;
             }
 
             var highlighted = i == _highlighted;
             if (highlighted)
-                dc.FillRectangle(Edge, top, Width - 2 * Edge, _itemHeight, _menu.SelectionBackground);
+                style.DrawMenuHighlight(dc, new Rect(Edge, top, Width - 2 * Edge, _itemHeight), _menu.SelectionBackground);
 
             var textY = top + (_itemHeight - textHeight) / 2;
             var shortcutX = item.ShortcutText is { Length: > 0 } shortcut
@@ -286,9 +311,9 @@ internal sealed class PopupMenuView : Control
                 : 0;
             if (!item.Enabled)
             {
-                ClassicStyle.DrawEmbossedText(dc, item.Text, font, _menu.DisabledColor, ClassicStyle.Highlight, Edge + TextLeft, textY);
+                style.DrawText(dc, item.Text, font, _menu.DisabledColor, Edge + TextLeft, textY, PartState.Disabled);
                 if (shortcutX > 0)
-                    ClassicStyle.DrawEmbossedText(dc, item.ShortcutText!, font, _menu.DisabledColor, ClassicStyle.Highlight, shortcutX, textY);
+                    style.DrawText(dc, item.ShortcutText!, font, _menu.DisabledColor, shortcutX, textY, PartState.Disabled);
                 continue;
             }
             var color = highlighted ? _menu.SelectionColor : _menu.Color;

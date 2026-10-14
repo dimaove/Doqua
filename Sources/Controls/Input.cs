@@ -31,13 +31,13 @@ public class Input : Control
     private bool _caretVisible = true;
     private int _scrollX; // Pixels of text hidden on the left; updated when rendering.
     private Font? _font;
-    private Color _color = Color.Black;
-    private Color _background = Color.White;
-    private Color _disabledColor = ClassicStyle.Shadow;
-    private Color _disabledBackground = ClassicStyle.Face;
-    private Color _selectionBackground = new(0, 120, 215);
-    private Color _selectionColor = Color.White;
-    private Color _inactiveSelectionBackground = new(204, 204, 204);
+    private Color? _color;
+    private Color? _background;
+    private Color? _disabledColor;
+    private Color? _disabledBackground;
+    private Color? _selectionBackground;
+    private Color? _selectionColor;
+    private Color? _inactiveSelectionBackground;
 
     /// <summary>Creates an empty input, 200 x 30 pixels.</summary>
     public Input()
@@ -112,7 +112,7 @@ public class Input : Control
     /// <summary>Text and caret color.</summary>
     public Color Color
     {
-        get => _color;
+        get => _color ?? Style.Current.Text;
         set
         {
             _color = value;
@@ -123,7 +123,7 @@ public class Input : Control
     /// <summary>Background of the text field.</summary>
     public Color Background
     {
-        get => _background;
+        get => _background ?? Style.Current.FieldBackground;
         set
         {
             _background = value;
@@ -134,7 +134,7 @@ public class Input : Control
     /// <summary>Text color while disabled.</summary>
     public Color DisabledColor
     {
-        get => _disabledColor;
+        get => _disabledColor ?? Style.Current.DisabledText;
         set
         {
             _disabledColor = value;
@@ -145,7 +145,7 @@ public class Input : Control
     /// <summary>Background while disabled.</summary>
     public Color DisabledBackground
     {
-        get => _disabledBackground;
+        get => _disabledBackground ?? Style.Current.DisabledFieldBackground;
         set
         {
             _disabledBackground = value;
@@ -156,7 +156,7 @@ public class Input : Control
     /// <summary>Background of selected text while the input is focused.</summary>
     public Color SelectionBackground
     {
-        get => _selectionBackground;
+        get => _selectionBackground ?? Style.Current.TextSelectionBackground;
         set
         {
             _selectionBackground = value;
@@ -167,7 +167,7 @@ public class Input : Control
     /// <summary>Color of selected text while the input is focused.</summary>
     public Color SelectionColor
     {
-        get => _selectionColor;
+        get => _selectionColor ?? Style.Current.TextSelectionText;
         set
         {
             _selectionColor = value;
@@ -178,7 +178,7 @@ public class Input : Control
     /// <summary>Background of selected text while the input (or its window) is not focused.</summary>
     public Color InactiveSelectionBackground
     {
-        get => _inactiveSelectionBackground;
+        get => _inactiveSelectionBackground ?? Style.Current.InactiveSelectionBackground;
         set
         {
             _inactiveSelectionBackground = value;
@@ -394,10 +394,11 @@ public class Input : Control
         var enabled = IsEffectivelyEnabled;
         var focused = Focused;
         var bounds = new Rect(0, 0, Width, Height);
-        dc.FillRectangle(bounds, enabled ? _background : _disabledBackground);
-        // Classic text box: a sunken edge; the caret alone shows the focus.
+        // The field's frame comes from the style; inside a NumberInput or FileInput the container draws it.
         if (ShowFrame)
-            ClassicStyle.DrawSunkenEdge(dc, bounds, ClassicStyle.Highlight, ClassicStyle.Face, ClassicStyle.Shadow, ClassicStyle.DarkShadow);
+            Style.Current.DrawField(dc, bounds, enabled ? Background : DisabledBackground, FieldState(enabled, focused, IsMouseOver));
+        else
+            dc.FillRectangle(bounds, enabled ? Background : DisabledBackground);
 
         var font = Font;
         var visibleWidth = Math.Max(0, Width - 2 * Padding);
@@ -408,14 +409,14 @@ public class Input : Control
 
         var active = focused && enabled && GetWindow()?.IsActive == true;
         var textX = Padding - _scrollX;
-        var textColor = enabled ? _color : _disabledColor;
+        var textColor = enabled ? Color : DisabledColor;
 
         // Clip to the text area; one extra pixel so the caret stays visible at the right edge.
         using (dc.PushClip(new Rect(Padding, 0, visibleWidth + 1, Height)))
         {
             var selection = Rect.FromEdges(textX + XFromIndex(SelectionStart), textY, textX + XFromIndex(SelectionEnd), textY + textHeight);
             if (!selection.IsEmpty)
-                dc.FillRectangle(selection, active ? _selectionBackground : _inactiveSelectionBackground);
+                dc.FillRectangle(selection, active ? SelectionBackground : InactiveSelectionBackground);
 
             dc.DrawText(_text, font, textColor, textX, textY);
 
@@ -423,13 +424,17 @@ public class Input : Control
             if (active && !selection.IsEmpty)
             {
                 using (dc.PushClip(selection with { Y = 0, Height = Height }))
-                    dc.DrawText(_text, font, _selectionColor, textX, textY);
+                    dc.DrawText(_text, font, SelectionColor, textX, textY);
             }
 
             if (active && _caretVisible)
-                dc.FillRectangle(textX + XFromIndex(_caretIndex), textY, 1, textHeight, _color);
+                dc.FillRectangle(textX + XFromIndex(_caretIndex), textY, 1, textHeight, Color);
         }
     }
+
+    /// <summary>The state of a text field for <see cref="Style.DrawField"/>.</summary>
+    internal static PartState FieldState(bool enabled, bool focused, bool hot) =>
+        !enabled ? PartState.Disabled : (focused ? PartState.Focused : 0) | (hot ? PartState.Hot : 0);
 
     private void SetText(string text, int caretIndex)
     {

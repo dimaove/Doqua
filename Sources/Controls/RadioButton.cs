@@ -3,7 +3,7 @@ using Doqua.GUI;
 namespace Doqua.Controls;
 
 /// <summary>
-/// Option button of a <see cref="RadioGroup"/>, drawn in the classic style: a sunken circle with a dot.
+/// Option button of a <see cref="RadioGroup"/>: a circle with a dot when selected, drawn by <see cref="Style.Current"/>.
 /// <see cref="Checked"/> is read from the group. Clicking or Space selects the button; the arrow keys
 /// select the next or previous button of the group; the whole group is a single Tab stop.
 /// Create <see cref="RadioButton{T}"/> instances.
@@ -74,20 +74,13 @@ public abstract class RadioButton : ToggleControl
         }
     }
 
-    /// <summary>
-    /// Classic sunken circle, built from offset discs: each darker top-left crescent is a disc shifted
-    /// up and left over a lighter one, the way the classic two-tone ring looks.
-    /// </summary>
-    protected override void DrawBox(DrawingContext dc, Rect box, bool enabled, bool pressed)
+    /// <summary>Draws the box with <see cref="Style.DrawRadioButton"/>.</summary>
+    protected override void DrawBox(DrawingContext dc, Rect box, PartState state)
     {
-        float r = box.Width / 2f, cx = box.X + r, cy = box.Y + r;
-        dc.FillEllipse(cx, cy, r, r, HighlightColor);                     // Outer ring, bottom-right.
-        dc.FillEllipse(cx - 0.5f, cy - 0.5f, r - 0.5f, r - 0.5f, ShadowColor); // Outer ring, top-left.
-        dc.FillEllipse(cx, cy, r - 1, r - 1, FaceColor);                  // Inner ring, bottom-right.
-        dc.FillEllipse(cx - 0.5f, cy - 0.5f, r - 1.5f, r - 1.5f, DarkShadowColor); // Inner ring, top-left.
-        dc.FillEllipse(cx, cy, r - 2, r - 2, enabled && !pressed ? BoxColor : FaceColor);
         if (Checked)
-            dc.FillEllipse(cx, cy, 2, 2, enabled ? Color : DisabledColor);
+            state |= PartState.Checked;
+        var enabled = !state.HasFlag(PartState.Disabled);
+        Style.Current.DrawRadioButton(dc, box, BoxColor, enabled ? Color : DisabledColor, state);
     }
 
     internal void RaiseCheckedChanged()

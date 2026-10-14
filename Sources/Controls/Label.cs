@@ -7,8 +7,8 @@ public class Label : Control
 {
     private string _text = "";
     private Font? _font;
-    private Color _color = Color.Black;
-    private Color _disabledColor = new(160, 160, 160);
+    private Color? _color;
+    private Color? _disabledColor;
     private bool _autoSize = true;
 
     /// <summary>The text; '\n' starts a new line.</summary>
@@ -42,7 +42,7 @@ public class Label : Control
     /// <summary>Text color.</summary>
     public Color Color
     {
-        get => _color;
+        get => _color ?? Style.Current.Text;
         set
         {
             _color = value;
@@ -53,7 +53,7 @@ public class Label : Control
     /// <summary>Text color used when the label is not <see cref="Control.IsEffectivelyEnabled"/>.</summary>
     public Color DisabledColor
     {
-        get => _disabledColor;
+        get => _disabledColor ?? Style.Current.DisabledText;
         set
         {
             _disabledColor = value;
@@ -75,7 +75,7 @@ public class Label : Control
     }
 
     protected override void OnRender(DrawingContext dc) =>
-        dc.DrawText(_text, Font, IsEffectivelyEnabled ? _color : _disabledColor, 0, 0);
+        dc.DrawText(_text, Font, IsEffectivelyEnabled ? Color : DisabledColor, 0, 0);
 
     private void UpdateSize()
     {

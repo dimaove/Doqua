@@ -15,7 +15,7 @@ public class Window
     private IReadOnlyList<Bitmap> _icons = [];
     private int _width = 800;
     private int _height = 600;
-    private Color _background = Color.White;
+    private Color? _background;
     private Control? _content;
     private int _pressedButtons; // Bit mask of MouseButton values pressed inside the client area.
     private readonly Control?[] _pressedControls = new Control?[3]; // Indexed by MouseButton.
@@ -121,10 +121,13 @@ public class Window
         set => Resize(_width, value);
     }
 
-    /// <summary>Color of the client area not covered by <see cref="Content"/>.</summary>
+    /// <summary>
+    /// Color of the client area not covered by <see cref="Content"/> (or seen through transparent panels); the current
+    /// style's window background unless set.
+    /// </summary>
     public Color Background
     {
-        get => _background;
+        get => _background ?? Doqua.Controls.Style.Current.WindowBackground;
         set
         {
             _background = value;
@@ -436,7 +439,7 @@ public class Window
     private void Render(Framebuffer framebuffer)
     {
         var dc = new DrawingContext(framebuffer);
-        dc.Clear(_background);
+        dc.Clear(Background);
         _content?.Render(dc);
         _popup?.Render(dc);
     }
@@ -580,6 +583,7 @@ public class Window
         _hoveredControl = control;
         previous?.SetMouseOver(false);
         control?.SetMouseOver(true);
+        Invalidate(); // Styles may draw the control under the pointer differently (hot fields, buttons, tabs).
     }
 
     /// <summary>Topmost control at a client-area point, or null outside the client area.</summary>

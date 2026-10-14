@@ -37,7 +37,7 @@ public class FileInput : Control
     private bool _matchFilter;
     private int _filterIndex;
     private string? _baseDirectory;
-    private Color _color = Color.Black;
+    private Color? _color;
     private Color _invalidColor = new(192, 0, 0);
     private bool _invalid;
 
@@ -175,7 +175,7 @@ public class FileInput : Control
     /// <summary>Color of a valid path.</summary>
     public Color Color
     {
-        get => _color;
+        get => _color ?? Style.Current.Text;
         set
         {
             _color = value;
@@ -268,29 +268,23 @@ public class FileInput : Control
     protected override void OnRender(DrawingContext dc)
     {
         var enabled = IsEffectivelyEnabled;
+        var style = Style.Current;
         var bounds = new Rect(0, 0, Width, Height);
-        dc.FillRectangle(bounds, enabled ? _input.Background : _input.DisabledBackground);
-        ClassicStyle.DrawSunkenEdge(dc, bounds, ClassicStyle.Highlight, ClassicStyle.Face, ClassicStyle.Shadow, ClassicStyle.DarkShadow);
+        style.DrawField(dc, bounds, enabled ? _input.Background : _input.DisabledBackground,
+            Input.FieldState(enabled, _input.Focused || IsDroppedDown, IsMouseOver || _input.IsMouseOver));
 
         var button = Rect.FromEdges(Math.Max(FrameSize, Width - FrameSize - ButtonWidth), FrameSize, Width - FrameSize, Height - FrameSize);
         var pressed = IsDroppedDown;
-        dc.FillRectangle(button, ClassicStyle.Face);
-        if (pressed)
-            dc.DrawRectangle(button, ClassicStyle.Shadow);
-        else
-            ClassicStyle.DrawRaisedEdge(dc, button, ClassicStyle.Highlight, ClassicStyle.Shadow, ClassicStyle.DarkShadow);
+        var state = !enabled ? PartState.Disabled : pressed ? PartState.Pressed : PartState.Normal;
+        style.DrawToolButton(dc, button, state);
 
         // Three dots, like the classic "Browse..." button.
-        var shift = pressed ? 1 : 0;
+        var shift = pressed ? style.PressedOffset : 0;
         var dotsX = button.X + (button.Width - 8) / 2 + shift;
         var dotsY = button.Y + button.Height / 2 + 2 + shift;
-        var ink = enabled ? Color.Black : ClassicStyle.Shadow;
+        var ink = style.GlyphColor(state);
         for (var i = 0; i < 3; i++)
-        {
-            if (!enabled)
-                dc.FillRectangle(dotsX + i * 3 + 1, dotsY + 1, 2, 2, ClassicStyle.Highlight);
             dc.FillRectangle(dotsX + i * 3, dotsY, 2, 2, ink);
-        }
     }
 
     /// <summary>The browser chose <paramref name="fullPath"/>: write it (relative if configured), close and notify.</summary>
@@ -407,7 +401,7 @@ public class FileInput : Control
         UpdateInputColor();
     }
 
-    private void UpdateInputColor() => _input.Color = _invalid ? _invalidColor : _color;
+    private void UpdateInputColor() => _input.Color = _invalid ? _invalidColor : Color;
 
     private void SetOption<T>(ref T field, T value)
     {
@@ -614,9 +608,9 @@ internal sealed class FileInputBrowser : Control
 
     protected override void OnRender(DrawingContext dc)
     {
+        var style = Style.Current;
         var bounds = new Rect(0, 0, Width, Height);
-        dc.FillRectangle(bounds, ClassicStyle.Face);
-        dc.DrawRectangle(bounds, Color.Black);
+        style.DrawPopup(dc, bounds, style.Face);
         var font = Font;
         var color = _owner.Color;
 
@@ -628,13 +622,12 @@ internal sealed class FileInputBrowser : Control
 
         // List.
         var frame = ListFrame;
-        dc.FillRectangle(frame, _owner.Background);
-        ClassicStyle.DrawSunkenEdge(dc, frame, ClassicStyle.Highlight, ClassicStyle.Face, ClassicStyle.Shadow, ClassicStyle.DarkShadow);
+        style.DrawField(dc, frame, _owner.Background, PartState.Normal);
         var inner = ListInner;
         using (dc.PushClip(inner))
         {
             if (_message != null)
-                dc.DrawText(_message, font, ClassicStyle.Shadow, inner.X + 4, inner.Y + 4);
+                dc.DrawText(_message, font, style.DisabledText, inner.X + 4, inner.Y + 4);
             var textOffset = (RowHeight - (font.Ascent + font.Descent)) / 2;
             for (var i = 0; i < VisibleRows + 1 && _top + i < _entries.Count; i++)
             {
@@ -646,10 +639,10 @@ internal sealed class FileInputBrowser : Control
                 if (highlighted)
                 {
                     var width = Math.Min(inner.Right - nameX + 2, font.MeasureText(entry.Name).Width + 4);
-                    dc.FillRectangle(nameX - 2, y, width, RowHeight, SelectionBackground);
+                    style.DrawMenuHighlight(dc, new Rect(nameX - 2, y, width, RowHeight), style.SelectionBackground);
                 }
                 DrawIcon(dc, entry.Kind, inner.X + 4, y + (RowHeight - IconSize) / 2);
-                dc.DrawText(entry.Name, font, highlighted ? Color.White : color, nameX, y + textOffset);
+                dc.DrawText(entry.Name, font, highlighted ? style.SelectionText : color, nameX, y + textOffset);
             }
         }
         if (HasScrollBar)
@@ -671,8 +664,6 @@ internal sealed class FileInputBrowser : Control
         DrawButton(dc, SelectButton, Localization.Get("Doqua.FileInput.Select"), Part.Select);
         DrawButton(dc, CancelButton, Localization.Get("Doqua.FileInput.Cancel"), Part.Cancel);
     }
-
-    private static Color SelectionBackground => new(0, 0, 128);
 
     private Part PartAt(int x, int y)
     {
@@ -915,32 +906,19 @@ internal sealed class FileInputBrowser : Control
 
     private void DrawButton(DrawingContext dc, Rect r, string text, Part part)
     {
-        var pressed = _pressed == part;
+        var style = Style.Current;
         var enabled = IsPartEnabled(part);
-        dc.FillRectangle(r, ClassicStyle.Face);
-        if (pressed)
-        {
-            dc.DrawRectangle(r, ClassicStyle.DarkShadow);
-            dc.DrawRectangle(Rect.FromEdges(r.X + 1, r.Y + 1, r.Right - 1, r.Bottom - 1), ClassicStyle.Shadow);
-        }
-        else
-        {
-            ClassicStyle.DrawRaisedEdge(dc, r, ClassicStyle.Highlight, ClassicStyle.Shadow, ClassicStyle.DarkShadow);
-        }
-        var font = Font;
-        var shift = pressed ? 1 : 0;
-        var x = r.X + (r.Width - font.MeasureText(text).Width) / 2 + shift;
-        var y = r.Y + (r.Height - (font.Ascent + font.Descent)) / 2 + shift;
-        if (enabled)
-            dc.DrawText(text, font, Color.Black, x, y);
-        else
-            ClassicStyle.DrawEmbossedText(dc, text, font, ClassicStyle.Shadow, ClassicStyle.Highlight, x, y);
+        var state = !enabled ? PartState.Disabled : _pressed == part ? PartState.Pressed : PartState.Normal;
+        style.DrawButton(dc, r, text, Font, style.ButtonFace, enabled ? style.Text : style.DisabledText, state);
     }
 
-    /// <summary>16 x 16 classic icons: a yellow folder, a white page with a folded corner, a grey drive.</summary>
+    /// <summary>16 x 16 icons (the same in every style): a yellow folder, a white page with a folded corner, a grey drive.</summary>
     private static void DrawIcon(DrawingContext dc, Kind kind, int x, int y)
     {
-        var outline = ClassicStyle.DarkShadow;
+        // Pictures: the same colors in every style.
+        var outline = new Color(64, 64, 64);
+        var grey = new Color(212, 208, 200);
+        var line = new Color(128, 128, 128);
         switch (kind)
         {
             case Kind.Folder:
@@ -954,15 +932,15 @@ internal sealed class FileInputBrowser : Control
             case Kind.File:
                 dc.FillRectangle(x + 3, y + 1, 10, 14, Color.White);
                 dc.DrawRectangle(new Rect(x + 3, y + 1, 10, 14), outline);
-                dc.FillRectangle(x + 9, y + 1, 4, 4, ClassicStyle.Face); // Folded corner.
+                dc.FillRectangle(x + 9, y + 1, 4, 4, grey); // Folded corner.
                 dc.DrawRectangle(new Rect(x + 9, y + 1, 4, 4), outline);
-                for (var line = 0; line < 3; line++)
-                    dc.FillRectangle(x + 5, y + 7 + line * 2, 6, 1, ClassicStyle.Shadow);
+                for (var row = 0; row < 3; row++)
+                    dc.FillRectangle(x + 5, y + 7 + row * 2, 6, 1, line);
                 break;
             default:
-                dc.FillRectangle(x + 1, y + 5, 14, 7, ClassicStyle.Face);
+                dc.FillRectangle(x + 1, y + 5, 14, 7, grey);
                 dc.DrawRectangle(new Rect(x + 1, y + 5, 14, 7), outline);
-                dc.FillRectangle(x + 2, y + 10, 12, 1, ClassicStyle.Shadow);
+                dc.FillRectangle(x + 2, y + 10, 12, 1, line);
                 dc.FillRectangle(x + 11, y + 7, 2, 1, new Color(0, 160, 0)); // Activity light.
                 break;
         }

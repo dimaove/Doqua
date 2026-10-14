@@ -4,7 +4,7 @@
 
 <h1 align="center">Doqua</h1>
 
-<p align="center">A small cross-platform GUI library for .NET, in the classic desktop style.</p>
+<p align="center">A small cross-platform GUI library for .NET, in the classic desktop style or a modern flat one.</p>
 
 <p align="center">
   <img src="Docs/html/images/examples/tabs-settings.png" alt="Tabs example" width="49%">
@@ -18,7 +18,7 @@ and GDI on Windows.
 ## Features
 
 - Windows, a control tree and anchored layout
-- Classic 3D look: buttons, tabs, check boxes, radio buttons, scroll bars
+- Classic 3D look or modern flat design (`Style.Current`), switchable at run time; your own styles by overriding `Style`
 - Single-line and multi-line text editors with selection, clipboard and context menus
 - Combo boxes, number inputs, and date inputs with a calendar
 - File and folder inputs with a built-in file browser, file masks and validation
@@ -76,6 +76,7 @@ Build them all with `dotnet build Examples/examples.sln`, and run one with `dotn
 | [Files](Examples/Files) | FileInput: file masks, new files, folders, relative paths and validation |
 | [Fonts](Examples/Fonts) | Installed font families, NumberInput and a live preview |
 | [Localization](Examples/Localization) | Switching the user interface between English and Russian |
+| [Styles](Examples/Styles) | Most controls on tab pages, switching between the classic, flat and custom styles at run time |
 | [Threads](Examples/Threads) | Updating the GUI from a background thread, `await`, `Progress<T>` |
 | [Bitmap](Examples/Bitmap) | Loading, drawing, scaling and saving PNG images |
 | [Clock](Examples/Clock) | A custom control that draws an analog clock |

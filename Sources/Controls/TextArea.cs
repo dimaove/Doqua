@@ -4,7 +4,7 @@ using Timer = Doqua.GUI.Timer;
 namespace Doqua.Controls;
 
 /// <summary>
-/// Multi-line text editor in the classic style (sunken edge, vertical scroll bar when needed).
+/// Multi-line text editor in a field frame, with a vertical scroll bar when needed; drawn by <see cref="Style.Current"/>.
 /// <list type="bullet">
 /// <item>Enter starts a new line; Tab still moves the focus to the next control.</item>
 /// <item>Left/Right (Ctrl: by word), Up/Down, Home/End (Ctrl: whole text), PageUp/PageDown; with Shift they select.</item>
@@ -39,13 +39,13 @@ public class TextArea : Control
     private bool _caretVisible = true;
 
     private Font? _font;
-    private Color _color = Color.Black;
-    private Color _background = Color.White;
-    private Color _disabledColor = ClassicStyle.Shadow;
-    private Color _disabledBackground = ClassicStyle.Face;
-    private Color _selectionBackground = new(0, 120, 215);
-    private Color _selectionColor = Color.White;
-    private Color _inactiveSelectionBackground = new(204, 204, 204);
+    private Color? _color;
+    private Color? _background;
+    private Color? _disabledColor;
+    private Color? _disabledBackground;
+    private Color? _selectionBackground;
+    private Color? _selectionColor;
+    private Color? _inactiveSelectionBackground;
 
     private enum SelectionUnit
     {
@@ -124,49 +124,49 @@ public class TextArea : Control
     /// <summary>Text and caret color.</summary>
     public Color Color
     {
-        get => _color;
+        get => _color ?? Style.Current.Text;
         set => SetColor(ref _color, value);
     }
 
     /// <summary>Background of the text.</summary>
     public Color Background
     {
-        get => _background;
+        get => _background ?? Style.Current.FieldBackground;
         set => SetColor(ref _background, value);
     }
 
     /// <summary>Text color while disabled.</summary>
     public Color DisabledColor
     {
-        get => _disabledColor;
+        get => _disabledColor ?? Style.Current.DisabledText;
         set => SetColor(ref _disabledColor, value);
     }
 
     /// <summary>Background while disabled.</summary>
     public Color DisabledBackground
     {
-        get => _disabledBackground;
+        get => _disabledBackground ?? Style.Current.DisabledFieldBackground;
         set => SetColor(ref _disabledBackground, value);
     }
 
     /// <summary>Background of selected text while focused.</summary>
     public Color SelectionBackground
     {
-        get => _selectionBackground;
+        get => _selectionBackground ?? Style.Current.TextSelectionBackground;
         set => SetColor(ref _selectionBackground, value);
     }
 
     /// <summary>Color of selected text while focused.</summary>
     public Color SelectionColor
     {
-        get => _selectionColor;
+        get => _selectionColor ?? Style.Current.TextSelectionText;
         set => SetColor(ref _selectionColor, value);
     }
 
     /// <summary>Background of selected text while not focused.</summary>
     public Color InactiveSelectionBackground
     {
-        get => _inactiveSelectionBackground;
+        get => _inactiveSelectionBackground ?? Style.Current.InactiveSelectionBackground;
         set => SetColor(ref _inactiveSelectionBackground, value);
     }
 
@@ -423,8 +423,7 @@ public class TextArea : Control
     {
         var enabled = IsEffectivelyEnabled;
         var bounds = new Rect(0, 0, Width, Height);
-        dc.FillRectangle(bounds, enabled ? _background : _disabledBackground);
-        ClassicStyle.DrawSunkenEdge(dc, bounds, ClassicStyle.Highlight, ClassicStyle.Face, ClassicStyle.Shadow, ClassicStyle.DarkShadow);
+        Style.Current.DrawField(dc, bounds, enabled ? Background : DisabledBackground, Input.FieldState(enabled, Focused, IsMouseOver));
         ClampScroll();
 
         var font = Font;
@@ -432,7 +431,7 @@ public class TextArea : Control
         var textRect = TextRect;
         var textOffset = (lineHeight - (font.Ascent + font.Descent)) / 2;
         var active = Focused && enabled && GetWindow()?.IsActive == true;
-        var textColor = enabled ? _color : _disabledColor;
+        var textColor = enabled ? Color : DisabledColor;
         int selectionStart = SelectionStart, selectionEnd = SelectionEnd;
 
         // Clip to the area inside the edge and left of the scroll bar; lines may scroll into the padding.
@@ -453,7 +452,7 @@ public class TextArea : Control
                     var from = XInLine(Math.Max(selectionStart, start));
                     var to = XInLine(Math.Min(selectionEnd, end)) + (selectionEnd > end ? font.MeasureText(" ").Width : 0);
                     selection = Rect.FromEdges(x + from, y, x + to, y + lineHeight);
-                    dc.FillRectangle(selection, active ? _selectionBackground : _inactiveSelectionBackground);
+                    dc.FillRectangle(selection, active ? SelectionBackground : InactiveSelectionBackground);
                 }
 
                 var lineText = _text.Substring(start, end - start);
@@ -461,7 +460,7 @@ public class TextArea : Control
                 if (active && !selection.IsEmpty)
                 {
                     using (dc.PushClip(selection))
-                        dc.DrawText(lineText, font, _selectionColor, x, y + textOffset);
+                        dc.DrawText(lineText, font, SelectionColor, x, y + textOffset);
                 }
             }
 
@@ -469,7 +468,7 @@ public class TextArea : Control
             {
                 var caretLine = CaretLine;
                 dc.FillRectangle(textRect.X - _scrollX + XInLine(_caretIndex), textRect.Y + caretLine * lineHeight - _scrollY,
-                    1, lineHeight, _color);
+                    1, lineHeight, Color);
             }
         }
 
@@ -741,7 +740,7 @@ public class TextArea : Control
         Invalidate();
     }
 
-    private void SetColor(ref Color field, Color value)
+    private void SetColor(ref Color? field, Color value)
     {
         field = value;
         Invalidate();

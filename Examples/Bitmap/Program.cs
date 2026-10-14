@@ -68,6 +68,7 @@ class MainWindow : Window
     public MainWindow()
     {
         Title = "Doqua Bitmap";
+        Background = Color.White; // Windows follow the style (grey in the classic one); this one is white.
         Icons = ExampleIcon.Load();
         Width = 800;
         Height = 620;

@@ -82,7 +82,7 @@ public static class MessageBox
     {
         ArgumentNullException.ThrowIfNull(owner);
         ArgumentNullException.ThrowIfNull(text);
-        var window = new Window { Title = title ?? owner.Title, Icons = owner.Icons, Resizable = false, Background = ClassicStyle.Face };
+        var window = new Window { Title = title ?? owner.Title, Icons = owner.Icons, Resizable = false };
         var view = new MessageBoxView(window, text, buttons, icon);
         (window.Width, window.Height) = (view.Width, view.Height);
         window.Content = view;
@@ -227,7 +227,7 @@ internal sealed class MessageBoxView : Control
 
     protected override void OnRender(DrawingContext dc)
     {
-        dc.FillRectangle(new Rect(0, 0, Width, Height), ClassicStyle.Face);
+        dc.FillRectangle(new Rect(0, 0, Width, Height), Style.Current.Face);
 
         // Icon and text; one line of text is centred on the icon.
         var font = Font;
@@ -245,7 +245,7 @@ internal sealed class MessageBoxView : Control
         using (dc.PushClip(Rect.FromEdges(0, top, Width, ButtonRect(0).Y - 4)))
         {
             for (var i = 0; i < _lines.Count; i++)
-                dc.DrawText(_lines[i], font, Color.Black, textX, textTop + i * font.LineHeight);
+                dc.DrawText(_lines[i], font, Style.Current.Text, textX, textTop + i * font.LineHeight);
         }
 
         for (var i = 0; i < _buttons.Length; i++)
@@ -264,26 +264,12 @@ internal sealed class MessageBoxView : Control
         _window.Close();
     }
 
-    /// <summary>Classic push button; the focused (default) one has a black frame and a dotted focus rectangle.</summary>
+    /// <summary>A push button drawn by the current style; the focused one is the default (Enter presses it).</summary>
     private static void DrawButton(DrawingContext dc, Rect r, string text, bool focused, bool pressed)
     {
-        dc.FillRectangle(r, ClassicStyle.Face);
-        var face = r;
-        if (focused)
-        {
-            dc.DrawRectangle(r, Color.Black);
-            face = Rect.FromEdges(r.X + 1, r.Y + 1, r.Right - 1, r.Bottom - 1);
-        }
-        if (pressed)
-            dc.DrawRectangle(face, ClassicStyle.Shadow);
-        else
-            ClassicStyle.DrawRaisedEdge(dc, face, ClassicStyle.Highlight, ClassicStyle.Shadow, ClassicStyle.DarkShadow);
-        var font = Font;
-        var shift = pressed ? 1 : 0;
-        var width = font.MeasureText(text).Width;
-        dc.DrawText(text, font, Color.Black, r.X + (r.Width - width) / 2 + shift, r.Y + (r.Height - (font.Ascent + font.Descent)) / 2 + shift);
-        if (focused)
-            ClassicStyle.DrawFocusRectangle(dc, Rect.FromEdges(face.X + 3, face.Y + 3, face.Right - 3, face.Bottom - 3), Color.Black);
+        var style = Style.Current;
+        var state = (focused ? PartState.Focused : PartState.Normal) | (pressed ? PartState.Pressed : PartState.Normal);
+        style.DrawButton(dc, r, text, Font, style.ButtonFace, style.Text, state);
     }
 
     private static void DrawIcon(DrawingContext dc, MessageBoxIcon icon, int x, int y)

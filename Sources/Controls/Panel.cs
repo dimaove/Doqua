@@ -18,7 +18,7 @@ public enum ScrollBars
 /// <summary>
 /// Container for other controls, positioned by their own X/Y (or <see cref="Control.Anchor"/>).
 /// With <see cref="ScrollBars"/> set, the content (the children's right and bottom edges) can be
-/// larger than the panel: classic scroll bars appear when needed, the mouse wheel scrolls (Shift+wheel
+/// larger than the panel: scroll bars appear when needed, the mouse wheel scrolls (Shift+wheel
 /// horizontally), and a child that gets the keyboard focus is scrolled into view. Anchors then refer to
 /// the visible area, without the scroll bars, so stretched children never make the panel scroll.
 /// </summary>
@@ -157,7 +157,7 @@ public class Panel : Control
             _horizontalBar.Draw(dc, enabled);
         }
         if (layout.Vertical && layout.Horizontal) // The corner between the two bars.
-            dc.FillRectangle(layout.ViewWidth, layout.ViewHeight, ClassicScrollBar.Thickness, ClassicScrollBar.Thickness, ClassicStyle.Face);
+            Style.Current.DrawScrollBarCorner(dc, new Rect(layout.ViewWidth, layout.ViewHeight, ClassicScrollBar.Thickness, ClassicScrollBar.Thickness));
     }
 
     protected override void OnMouseDown(MouseEventArgs e)

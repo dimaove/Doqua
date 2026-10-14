@@ -4,8 +4,8 @@ using Doqua.GUI;
 namespace Doqua.Controls;
 
 /// <summary>
-/// Hierarchy of <see cref="TreeNode"/>s in the classic style: dotted lines, [+] / [-] boxes and a highlighted
-/// selection. Click a node to select it, its box (or double-click it) to expand or collapse it.
+/// Hierarchy of <see cref="TreeNode"/>s with expand boxes, lines (if the style draws them) and a highlighted selection,
+/// drawn by <see cref="Style.Current"/>. Click a node to select it, its box (or double-click it) to expand or collapse it.
 /// Keys: Up / Down / Home / End / PageUp / PageDown move the selection; Right expands (then goes to the first
 /// child); Left collapses (then goes to the parent); Enter toggles. Scroll bars appear when needed.
 /// </summary>
@@ -23,13 +23,13 @@ public class TreeView : Control
     private int _scrollX;
     private int _scrollY;
     private Font? _font;
-    private Color _color = Color.Black;
-    private Color _disabledColor = ClassicStyle.Shadow;
-    private Color _background = Color.White;
-    private Color _lineColor = ClassicStyle.Shadow;
-    private Color _selectionBackground = new(0, 0, 128);
-    private Color _selectionColor = Color.White;
-    private Color _inactiveSelectionBackground = new(204, 204, 204);
+    private Color? _color;
+    private Color? _disabledColor;
+    private Color? _background;
+    private Color? _lineColor;
+    private Color? _selectionBackground;
+    private Color? _selectionColor;
+    private Color? _inactiveSelectionBackground;
 
     /// <summary>Creates an empty tree view, 200 x 240 pixels.</summary>
     public TreeView()
@@ -85,49 +85,49 @@ public class TreeView : Control
     /// <summary>Text color.</summary>
     public Color Color
     {
-        get => _color;
+        get => _color ?? Style.Current.Text;
         set => SetColor(ref _color, value);
     }
 
     /// <summary>Text color while disabled.</summary>
     public Color DisabledColor
     {
-        get => _disabledColor;
+        get => _disabledColor ?? Style.Current.DisabledText;
         set => SetColor(ref _disabledColor, value);
     }
 
     /// <summary>Background color.</summary>
     public Color Background
     {
-        get => _background;
+        get => _background ?? Style.Current.FieldBackground;
         set => SetColor(ref _background, value);
     }
 
     /// <summary>Color of the dotted lines and of the expand boxes' frames.</summary>
     public Color LineColor
     {
-        get => _lineColor;
+        get => _lineColor ?? Style.Current.TreeLine;
         set => SetColor(ref _lineColor, value);
     }
 
     /// <summary>Background of the selected node while the tree view has the focus.</summary>
     public Color SelectionBackground
     {
-        get => _selectionBackground;
+        get => _selectionBackground ?? Style.Current.SelectionBackground;
         set => SetColor(ref _selectionBackground, value);
     }
 
     /// <summary>Text color of the selected node while the tree view has the focus.</summary>
     public Color SelectionColor
     {
-        get => _selectionColor;
+        get => _selectionColor ?? Style.Current.SelectionText;
         set => SetColor(ref _selectionColor, value);
     }
 
     /// <summary>Background of the selected node while the tree view does not have the focus.</summary>
     public Color InactiveSelectionBackground
     {
-        get => _inactiveSelectionBackground;
+        get => _inactiveSelectionBackground ?? Style.Current.InactiveSelectionBackground;
         set => SetColor(ref _inactiveSelectionBackground, value);
     }
 
@@ -280,9 +280,9 @@ public class TreeView : Control
     protected override void OnRender(DrawingContext dc)
     {
         var enabled = IsEffectivelyEnabled;
+        var style = Style.Current;
         var bounds = new Rect(0, 0, Width, Height);
-        dc.FillRectangle(bounds, _background);
-        ClassicStyle.DrawSunkenEdge(dc, bounds, ClassicStyle.Highlight, ClassicStyle.Face, ClassicStyle.Shadow, ClassicStyle.DarkShadow);
+        style.DrawField(dc, bounds, Background, Input.FieldState(enabled, Focused, IsMouseOver));
 
         var layout = GetLayout();
         ClampScroll(layout);
@@ -304,32 +304,38 @@ public class TreeView : Control
                 var centerY = top + itemHeight / 2;
                 var boxX = left + level * Indent + Indent / 2;
 
-                // Vertical lines of the ancestors that have more children below this row.
-                var ancestor = node.Parent;
-                for (var ancestorLevel = level - 1; ancestorLevel >= 0 && ancestor != null; ancestorLevel--, ancestor = ancestor.Parent)
+                if (style.TreeLines)
                 {
-                    if (NextSibling(ancestor) != null)
-                        DottedVertical(dc, left + ancestorLevel * Indent + Indent / 2, top, top + itemHeight);
+                    // Vertical lines of the ancestors that have more children below this row.
+                    var ancestor = node.Parent;
+                    for (var ancestorLevel = level - 1; ancestorLevel >= 0 && ancestor != null; ancestorLevel--, ancestor = ancestor.Parent)
+                    {
+                        if (NextSibling(ancestor) != null)
+                            DottedVertical(dc, left + ancestorLevel * Indent + Indent / 2, top, top + itemHeight);
+                    }
+                    // This node: up to the previous node (not for the very first one), down if a sibling follows,
+                    // and across to the text.
+                    var isFirst = node.Parent == null && Nodes.Count > 0 && Nodes[0] == node;
+                    DottedVertical(dc, boxX, isFirst ? centerY : top, NextSibling(node) != null ? top + itemHeight : centerY + 1);
+                    DottedHorizontal(dc, boxX, left + (level + 1) * Indent - 1, centerY);
                 }
-                // This node: up to the previous node (not for the very first one), down if a sibling follows,
-                // and across to the text.
-                var isFirst = node.Parent == null && Nodes.Count > 0 && Nodes[0] == node;
-                DottedVertical(dc, boxX, isFirst ? centerY : top, NextSibling(node) != null ? top + itemHeight : centerY + 1);
-                DottedHorizontal(dc, boxX, left + (level + 1) * Indent - 1, centerY);
 
                 if (node.Nodes.Count > 0)
-                    DrawExpandBox(dc, boxX, centerY, node.IsExpanded);
+                {
+                    var box = new Rect(boxX - BoxSize / 2, centerY - BoxSize / 2, BoxSize, BoxSize);
+                    style.DrawTreeExpander(dc, box, node.IsExpanded, Background, enabled ? PartState.Normal : PartState.Disabled);
+                }
 
                 var textX = left + (level + 1) * Indent + TextGap;
                 var textWidth = font.MeasureText(node.Text).Width;
                 var textRect = new Rect(textX - 2, top, textWidth + 4, itemHeight);
                 var selected = node == _selectedNode;
                 if (selected)
-                    dc.FillRectangle(textRect, active ? _selectionBackground : _inactiveSelectionBackground);
-                var color = !enabled ? _disabledColor : selected && active ? _selectionColor : _color;
+                    dc.FillRectangle(textRect, active ? SelectionBackground : InactiveSelectionBackground);
+                var color = !enabled ? DisabledColor : selected && active ? SelectionColor : Color;
                 dc.DrawText(node.Text, font, color, textX, top + (itemHeight - (font.Ascent + font.Descent)) / 2);
                 if (selected && active)
-                    ClassicStyle.DrawFocusRectangle(dc, textRect, _selectionColor);
+                    style.DrawFocusRectangle(dc, textRect, SelectionColor);
             }
         }
 
@@ -340,7 +346,7 @@ public class TreeView : Control
         if (layout.Horizontal)
             _horizontalBar.Draw(dc, enabled);
         if (layout.Vertical && layout.Horizontal)
-            dc.FillRectangle(body.Right, body.Bottom, ClassicScrollBar.Thickness, ClassicScrollBar.Thickness, ClassicStyle.Face);
+            style.DrawScrollBarCorner(dc, new Rect(body.Right, body.Bottom, ClassicScrollBar.Thickness, ClassicScrollBar.Thickness));
     }
 
     internal void OnTreeChanged()
@@ -427,24 +433,13 @@ public class TreeView : Control
     private void DottedVertical(DrawingContext dc, int x, int y1, int y2)
     {
         for (var y = y1 + ((x + y1) & 1); y < y2; y += 2)
-            dc.FillRectangle(x, y, 1, 1, _lineColor);
+            dc.FillRectangle(x, y, 1, 1, LineColor);
     }
 
     private void DottedHorizontal(DrawingContext dc, int x1, int x2, int y)
     {
         for (var x = x1 + ((x1 + y) & 1); x < x2; x += 2)
-            dc.FillRectangle(x, y, 1, 1, _lineColor);
-    }
-
-    /// <summary>The 9 x 9 [+] / [-] box: white, framed, with a minus and (when collapsed) a plus.</summary>
-    private void DrawExpandBox(DrawingContext dc, int centerX, int centerY, bool expanded)
-    {
-        var box = new Rect(centerX - BoxSize / 2, centerY - BoxSize / 2, BoxSize, BoxSize);
-        dc.FillRectangle(box, Color.White);
-        dc.DrawRectangle(box, _lineColor);
-        dc.FillRectangle(centerX - 2, centerY, 5, 1, Color.Black);
-        if (!expanded)
-            dc.FillRectangle(centerX, centerY - 2, 1, 5, Color.Black);
+            dc.FillRectangle(x, y, 1, 1, LineColor);
     }
 
     private void ScrollTo(int x, int y)
@@ -482,7 +477,7 @@ public class TreeView : Control
         _horizontalBar.LargeChange = Math.Max(Indent, body.Width - Indent);
     }
 
-    private void SetColor(ref Color field, Color value)
+    private void SetColor(ref Color? field, Color value)
     {
         field = value;
         Invalidate();

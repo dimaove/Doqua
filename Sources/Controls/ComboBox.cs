@@ -4,7 +4,7 @@ using Doqua.GUI;
 namespace Doqua.Controls;
 
 /// <summary>
-/// Drop-down list in the classic style: a sunken field showing the selected item and an arrow button;
+/// Drop-down list, drawn by <see cref="Style.Current"/>: a field showing the selected item and an arrow button;
 /// clicking opens the list below (or above) it. Items are values of type <typeparamref name="T"/>, shown
 /// with <see cref="ItemText"/>. The text cannot be edited.
 /// <list type="bullet">
@@ -26,13 +26,13 @@ public class ComboBox<T> : Control
     private int _maxDropDownItems = 8;
     private ComboBoxDropDown<T>? _dropDown;
     private Font? _font;
-    private Color _color = Color.Black;
-    private Color _disabledColor = ClassicStyle.Shadow;
-    private Color _background = Color.White;
-    private Color _disabledBackground = ClassicStyle.Face;
-    private Color _placeholderColor = ClassicStyle.Shadow;
-    private Color _selectionBackground = new(0, 0, 128);
-    private Color _selectionColor = Color.White;
+    private Color? _color;
+    private Color? _disabledColor;
+    private Color? _background;
+    private Color? _disabledBackground;
+    private Color? _placeholderColor;
+    private Color? _selectionBackground;
+    private Color? _selectionColor;
 
     /// <summary>Creates an empty combo box, 160 pixels wide.</summary>
     public ComboBox()
@@ -134,49 +134,49 @@ public class ComboBox<T> : Control
     /// <summary>Text color.</summary>
     public Color Color
     {
-        get => _color;
+        get => _color ?? Style.Current.Text;
         set => SetColor(ref _color, value);
     }
 
     /// <summary>Text color while disabled.</summary>
     public Color DisabledColor
     {
-        get => _disabledColor;
+        get => _disabledColor ?? Style.Current.DisabledText;
         set => SetColor(ref _disabledColor, value);
     }
 
     /// <summary>Background of the field and of the list.</summary>
     public Color Background
     {
-        get => _background;
+        get => _background ?? Style.Current.FieldBackground;
         set => SetColor(ref _background, value);
     }
 
     /// <summary>Background of the field while disabled.</summary>
     public Color DisabledBackground
     {
-        get => _disabledBackground;
+        get => _disabledBackground ?? Style.Current.DisabledFieldBackground;
         set => SetColor(ref _disabledBackground, value);
     }
 
     /// <summary>Color of <see cref="PlaceholderText"/>.</summary>
     public Color PlaceholderColor
     {
-        get => _placeholderColor;
+        get => _placeholderColor ?? Style.Current.PlaceholderText;
         set => SetColor(ref _placeholderColor, value);
     }
 
     /// <summary>Background of the highlighted item in the list, and of the selected text while focused.</summary>
     public Color SelectionBackground
     {
-        get => _selectionBackground;
+        get => _selectionBackground ?? Style.Current.SelectionBackground;
         set => SetColor(ref _selectionBackground, value);
     }
 
     /// <summary>Text color of the highlighted item, and of the selected text while focused.</summary>
     public Color SelectionColor
     {
-        get => _selectionColor;
+        get => _selectionColor ?? Style.Current.SelectionText;
         set => SetColor(ref _selectionColor, value);
     }
 
@@ -271,9 +271,10 @@ public class ComboBox<T> : Control
     protected override void OnRender(DrawingContext dc)
     {
         var enabled = IsEffectivelyEnabled;
+        var style = Style.Current;
         var bounds = new Rect(0, 0, Width, Height);
-        dc.FillRectangle(bounds, enabled ? _background : _disabledBackground);
-        ClassicStyle.DrawSunkenEdge(dc, bounds, ClassicStyle.Highlight, ClassicStyle.Face, ClassicStyle.Shadow, ClassicStyle.DarkShadow);
+        var hasFocus = enabled && Focused && GetWindow()?.IsActive == true;
+        style.DrawField(dc, bounds, enabled ? Background : DisabledBackground, Input.FieldState(enabled, hasFocus || IsDroppedDown, IsMouseOver));
 
         var inner = Rect.FromEdges(EdgeSize, EdgeSize, Width - EdgeSize, Height - EdgeSize);
         var button = Rect.FromEdges(Math.Max(inner.X, inner.Right - ButtonWidth), inner.Y, inner.Right, inner.Bottom);
@@ -283,28 +284,26 @@ public class ComboBox<T> : Control
         var font = Font;
         var textY = textArea.Y + (textArea.Height - (font.Ascent + font.Descent)) / 2;
         var textX = textArea.X + TextPadding;
-        var focused = enabled && Focused && !IsDroppedDown && GetWindow()?.IsActive == true;
+        // Classic focused drop-down list: the text is highlighted, with a focus rectangle (if the style does that).
+        var focused = hasFocus && !IsDroppedDown && style.HighlightFocusedValue;
         using (dc.PushClip(textArea))
         {
             if (focused)
             {
-                // Classic focused drop-down list: the text is highlighted, with a dotted focus rectangle.
                 var highlight = Rect.FromEdges(textArea.X + 1, textArea.Y + 1, textArea.Right - 1, textArea.Bottom - 1);
-                dc.FillRectangle(highlight, _selectionBackground);
-                ClassicStyle.DrawFocusRectangle(dc, highlight, _selectionColor);
+                dc.FillRectangle(highlight, SelectionBackground);
+                style.DrawFocusRectangle(dc, highlight, SelectionColor);
             }
 
             if (HasSelection)
             {
                 var text = ItemText(Items[_selectedIndex]);
-                if (!enabled)
-                    ClassicStyle.DrawEmbossedText(dc, text, font, _disabledColor, ClassicStyle.Highlight, textX, textY);
-                else
-                    dc.DrawText(text, font, focused ? _selectionColor : _color, textX, textY);
+                style.DrawText(dc, text, font, !enabled ? DisabledColor : focused ? SelectionColor : Color, textX, textY,
+                    enabled ? PartState.Normal : PartState.Disabled);
             }
             else if (_placeholderText.Length > 0)
             {
-                dc.DrawText(_placeholderText, font, focused ? _selectionColor : _placeholderColor, textX, textY);
+                dc.DrawText(_placeholderText, font, focused ? SelectionColor : PlaceholderColor, textX, textY);
             }
         }
     }
@@ -350,7 +349,7 @@ public class ComboBox<T> : Control
 
     internal int ItemHeight => Math.Max(16, Font.LineHeight + 2);
 
-    private void SetColor(ref Color field, Color value)
+    private void SetColor(ref Color? field, Color value)
     {
         field = value;
         Invalidate();
@@ -506,8 +505,8 @@ internal sealed class ComboBoxDropDown<T> : Control
     protected override void OnRender(DrawingContext dc)
     {
         var bounds = new Rect(0, 0, Width, Height);
-        dc.FillRectangle(bounds, _combo.Background);
-        dc.DrawRectangle(bounds, Color.Black); // Classic drop-down lists have a plain black frame.
+        var style = Style.Current;
+        style.DrawPopup(dc, bounds, _combo.Background);
 
         var font = _combo.Font;
         var textOffset = (_itemHeight - (font.Ascent + font.Descent)) / 2;
@@ -520,7 +519,7 @@ internal sealed class ComboBoxDropDown<T> : Control
                 var y = Border + i * _itemHeight;
                 var highlighted = index == _highlighted;
                 if (highlighted)
-                    dc.FillRectangle(Border, y, right - Border, _itemHeight, _combo.SelectionBackground);
+                    style.DrawMenuHighlight(dc, new Rect(Border, y, right - Border, _itemHeight), _combo.SelectionBackground);
                 dc.DrawText(_combo.ItemText(_combo.Items[index]), font, highlighted ? _combo.SelectionColor : _combo.Color,
                     Border + TextPadding, y + textOffset);
             }

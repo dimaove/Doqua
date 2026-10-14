@@ -27,6 +27,8 @@ List<ExampleInfo> examples =
     new("Fonts", "Fonts", "All installed font families in a ComboBox, with size and style controls and a live preview.", ["fonts.png"], []),
     new("Localization", "Localization", "Switching the whole user interface between English and Russian at run time.",
         ["localization-en.png", "localization-ru.png"], ["ru.json"]),
+    new("Styles", "Styles", "Most controls (buttons, check boxes, radio buttons, inputs, combo box, tabs, tree, table, menus) on tab pages, switching between the classic, flat and a customized flat style at run time.",
+        ["styles-classic.png", "styles-flat.png"], []),
     new("Threads", "Threads", "A background reader posting values to the GUI, an async button that awaits work on the thread pool, Progress<T>, and the error for a control touched from another thread.",
         ["threads.png"], []),
     new("Bitmap", "Bitmap", "Loading, drawing, scaling and saving PNG images, and drawing into a bitmap.", ["bitmap.png"], []),

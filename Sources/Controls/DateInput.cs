@@ -4,7 +4,7 @@ using Doqua.GUI;
 namespace Doqua.Controls;
 
 /// <summary>
-/// Date field in the classic style: a read-only field showing <see cref="Value"/> with <see cref="Format"/>, and a
+/// Date field, drawn by <see cref="Style.Current"/>: a read-only field showing <see cref="Value"/> with <see cref="Format"/>, and a
 /// button that opens a calendar. The calendar picks a day; its title switches to month and year grids.
 /// Dates outside [<see cref="Min"/>, <see cref="Max"/>] cannot be chosen.
 /// <list type="bullet">
@@ -27,12 +27,12 @@ public class DateInput : Control
     private CultureInfo? _culture;
     private DateInputCalendar? _calendar;
     private Font? _font;
-    private Color _color = Color.Black;
-    private Color _disabledColor = ClassicStyle.Shadow;
-    private Color _background = Color.White;
-    private Color _disabledBackground = ClassicStyle.Face;
-    private Color _selectionBackground = new(0, 0, 128);
-    private Color _selectionColor = Color.White;
+    private Color? _color;
+    private Color? _disabledColor;
+    private Color? _background;
+    private Color? _disabledBackground;
+    private Color? _selectionBackground;
+    private Color? _selectionColor;
 
     /// <summary>Creates a date input showing today, 140 pixels wide.</summary>
     public DateInput()
@@ -137,42 +137,42 @@ public class DateInput : Control
     /// <summary>Text color.</summary>
     public Color Color
     {
-        get => _color;
+        get => _color ?? Style.Current.Text;
         set => SetColor(ref _color, value);
     }
 
     /// <summary>Text color while disabled.</summary>
     public Color DisabledColor
     {
-        get => _disabledColor;
+        get => _disabledColor ?? Style.Current.DisabledText;
         set => SetColor(ref _disabledColor, value);
     }
 
     /// <summary>Background of the field and of the calendar.</summary>
     public Color Background
     {
-        get => _background;
+        get => _background ?? Style.Current.FieldBackground;
         set => SetColor(ref _background, value);
     }
 
     /// <summary>Background of the field while disabled.</summary>
     public Color DisabledBackground
     {
-        get => _disabledBackground;
+        get => _disabledBackground ?? Style.Current.DisabledFieldBackground;
         set => SetColor(ref _disabledBackground, value);
     }
 
     /// <summary>Background of the selected day, and of the field text while focused.</summary>
     public Color SelectionBackground
     {
-        get => _selectionBackground;
+        get => _selectionBackground ?? Style.Current.SelectionBackground;
         set => SetColor(ref _selectionBackground, value);
     }
 
     /// <summary>Text color of the selected day, and of the field text while focused.</summary>
     public Color SelectionColor
     {
-        get => _selectionColor;
+        get => _selectionColor ?? Style.Current.SelectionText;
         set => SetColor(ref _selectionColor, value);
     }
 
@@ -257,9 +257,10 @@ public class DateInput : Control
     protected override void OnRender(DrawingContext dc)
     {
         var enabled = IsEffectivelyEnabled;
+        var style = Style.Current;
         var bounds = new Rect(0, 0, Width, Height);
-        dc.FillRectangle(bounds, enabled ? _background : _disabledBackground);
-        ClassicStyle.DrawSunkenEdge(dc, bounds, ClassicStyle.Highlight, ClassicStyle.Face, ClassicStyle.Shadow, ClassicStyle.DarkShadow);
+        var hasFocus = enabled && Focused && GetWindow()?.IsActive == true;
+        style.DrawField(dc, bounds, enabled ? Background : DisabledBackground, Input.FieldState(enabled, hasFocus || IsDroppedDown, IsMouseOver));
 
         var inner = Rect.FromEdges(EdgeSize, EdgeSize, Width - EdgeSize, Height - EdgeSize);
         var button = Rect.FromEdges(Math.Max(inner.X, inner.Right - ButtonWidth), inner.Y, inner.Right, inner.Bottom);
@@ -268,37 +269,33 @@ public class DateInput : Control
         var textArea = Rect.FromEdges(inner.X, inner.Y, button.X, inner.Bottom);
         var font = Font;
         var textY = textArea.Y + (textArea.Height - (font.Ascent + font.Descent)) / 2;
-        var focused = enabled && Focused && !IsDroppedDown && GetWindow()?.IsActive == true;
+        var focused = hasFocus && !IsDroppedDown && style.HighlightFocusedValue;
         using (dc.PushClip(textArea))
         {
             if (focused)
             {
                 var highlight = Rect.FromEdges(textArea.X + 1, textArea.Y + 1, textArea.Right - 1, textArea.Bottom - 1);
-                dc.FillRectangle(highlight, _selectionBackground);
-                ClassicStyle.DrawFocusRectangle(dc, highlight, _selectionColor);
+                dc.FillRectangle(highlight, SelectionBackground);
+                style.DrawFocusRectangle(dc, highlight, SelectionColor);
             }
-            if (enabled)
-                dc.DrawText(Text, font, focused ? _selectionColor : _color, textArea.X + TextPadding, textY);
-            else
-                ClassicStyle.DrawEmbossedText(dc, Text, font, _disabledColor, ClassicStyle.Highlight, textArea.X + TextPadding, textY);
+            style.DrawText(dc, Text, font, !enabled ? DisabledColor : focused ? SelectionColor : Color, textArea.X + TextPadding, textY,
+                enabled ? PartState.Normal : PartState.Disabled);
         }
     }
 
-    /// <summary>Raised button with a small calendar page: a coloured top band with rings, and a grid of days.</summary>
+    /// <summary>A tool button with a small calendar page: a coloured top band with rings, and a grid of days.</summary>
     private static void DrawCalendarButton(DrawingContext dc, Rect r, bool pressed, bool enabled)
     {
-        dc.FillRectangle(r, ClassicStyle.Face);
-        if (pressed)
-            dc.DrawRectangle(r, ClassicStyle.Shadow);
-        else
-            ClassicStyle.DrawRaisedEdge(dc, r, ClassicStyle.Highlight, ClassicStyle.Shadow, ClassicStyle.DarkShadow);
+        var style = Style.Current;
+        var state = !enabled ? PartState.Disabled : pressed ? PartState.Pressed : PartState.Normal;
+        style.DrawToolButton(dc, r, state);
 
-        var shift = pressed ? 1 : 0;
+        var shift = pressed ? style.PressedOffset : 0;
         var x = r.X + (r.Width - 11) / 2 + shift;
         var y = r.Y + (r.Height - 11) / 2 + shift;
-        var ink = enabled ? Color.Black : ClassicStyle.Shadow;
-        var band = enabled ? new Color(0, 0, 128) : ClassicStyle.Shadow;
-        dc.FillRectangle(x, y + 1, 11, 10, Color.White);
+        var ink = style.GlyphColor(state);
+        var band = enabled ? style.SelectionBackground : style.DisabledText;
+        dc.FillRectangle(x, y + 1, 11, 10, style.FieldBackground);
         dc.DrawRectangle(new Rect(x, y + 1, 11, 10), ink);
         dc.FillRectangle(x, y + 1, 11, 3, band);           // Top band.
         dc.FillRectangle(x + 3, y, 1, 2, ink);              // Rings.
@@ -340,7 +337,7 @@ public class DateInput : Control
         return new DateTime(year, month, Math.Min(date.Day, DateTime.DaysInMonth(year, month)));
     }
 
-    private void SetColor(ref Color field, Color value)
+    private void SetColor(ref Color? field, Color value)
     {
         field = value;
         Invalidate();
@@ -464,12 +461,12 @@ internal sealed class DateInputCalendar : Control
 
     protected override void OnRender(DrawingContext dc)
     {
+        var style = Style.Current;
         var bounds = new Rect(0, 0, Width, Height);
-        dc.FillRectangle(bounds, _owner.Background);
-        dc.DrawRectangle(bounds, Color.Black);
+        style.DrawPopup(dc, bounds, _owner.Background);
 
         // Header: navigation buttons and the title (month and year, year, or decade).
-        dc.FillRectangle(Border, Border, Width - 2 * Border, HeaderHeight, ClassicStyle.Face);
+        dc.FillRectangle(Border, Border, Width - 2 * Border, HeaderHeight, style.Face);
         if (_view == View.Days)
         {
             DrawNavButton(dc, PreviousYearButton, ArrowDirection.Left, twice: true, CanNavigate(-12));
@@ -504,7 +501,7 @@ internal sealed class DateInputCalendar : Control
 
         // Footer: today.
         var footer = FooterArea;
-        dc.FillRectangle(footer.X, footer.Y, footer.Width, 1, ClassicStyle.Shadow);
+        dc.FillRectangle(footer.X, footer.Y, footer.Width, 1, style.DisabledText);
         // Always the short date: the field's format (e.g. "D") may be wider than the calendar.
         var todayText = Localization.Format("Doqua.Calendar.Today", DateTime.Today.ToString("d", Culture));
         DrawCentered(dc, todayText, _owner.Font, _owner.IsInRange(DateTime.Today) ? _owner.Color : OutOfRange, footer);
@@ -520,9 +517,9 @@ internal sealed class DateInputCalendar : Control
         for (var column = 0; column < 7; column++)
         {
             var name = Capitalize(Culture.DateTimeFormat.ShortestDayNames[(firstDay + column) % 7]);
-            DrawCentered(dc, name, font, ClassicStyle.Shadow, new Rect(area.X + column * CellWidth, area.Y, CellWidth, WeekdayHeight));
+            DrawCentered(dc, name, font, Style.Current.DisabledText, new Rect(area.X + column * CellWidth, area.Y, CellWidth, WeekdayHeight));
         }
-        dc.FillRectangle(area.X + 4, area.Y + WeekdayHeight - 1, area.Width - 8, 1, ClassicStyle.Face);
+        dc.FillRectangle(area.X + 4, area.Y + WeekdayHeight - 1, area.Width - 8, 1, Style.Current.Face);
 
         for (var index = 0; index < 42; index++)
         {
@@ -536,11 +533,11 @@ internal sealed class DateInputCalendar : Control
             if (day == DateTime.Today)
                 dc.DrawRectangle(Inset(cell, 1), new Color(128, 0, 0)); // Classic "today" frame.
             if (day == _cursor && !selected)
-                ClassicStyle.DrawFocusRectangle(dc, Inset(cell, 2), _owner.Color);
+                Style.Current.DrawFocusRectangle(dc, Inset(cell, 2), _owner.Color);
 
             var color = !inRange ? OutOfRange
                 : selected ? _owner.SelectionColor
-                : day.Month != _month.Month ? ClassicStyle.Shadow
+                : day.Month != _month.Month ? Style.Current.DisabledText
                 : _owner.Color;
             DrawCentered(dc, day.Day.ToString(Culture), font, color, cell);
         }
@@ -577,7 +574,7 @@ internal sealed class DateInputCalendar : Control
                 dc.FillRectangle(Inset(cell, 3), _owner.SelectionBackground);
             var color = !inRange ? OutOfRange
                 : current ? _owner.SelectionColor
-                : i is 0 or 11 ? ClassicStyle.Shadow
+                : i is 0 or 11 ? Style.Current.DisabledText
                 : _owner.Color;
             DrawCentered(dc, year.ToString(Culture), _owner.Font, color, cell);
         }

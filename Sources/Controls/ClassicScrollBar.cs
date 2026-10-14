@@ -3,17 +3,8 @@ using Timer = Doqua.GUI.Timer;
 
 namespace Doqua.Controls;
 
-/// <summary>Direction an arrow button points.</summary>
-internal enum ArrowDirection
-{
-    Up,
-    Down,
-    Left,
-    Right,
-}
-
 /// <summary>
-/// Classic scroll bar (vertical, or horizontal with <see cref="IsHorizontal"/>) drawn and driven by its owner control (not a control of its own):
+/// Scroll bar (vertical, or horizontal with <see cref="IsHorizontal"/>) drawn and driven by its owner control (not a control of its own):
 /// arrow buttons scroll by <see cref="SmallChange"/>, the track by <see cref="LargeChange"/> (both repeat
 /// while the button is held), and the thumb can be dragged. The owner forwards its mouse events and
 /// keeps <see cref="Bounds"/> and the range properties up to date; values are in the owner's own units.
@@ -120,60 +111,36 @@ internal sealed class ClassicScrollBar
         _owner.Invalidate();
     }
 
+    /// <summary>Draws the bar with <see cref="Style.Current"/>: the track and thumb, then the two arrow buttons.</summary>
     public void Draw(DrawingContext dc, bool enabled)
     {
+        var style = Style.Current;
         var (up, down, track, thumb) = Layout();
-
-        // Classic dotted track: face color with every other pixel in the highlight color.
-        dc.FillRectangle(track, ClassicStyle.Face);
-        for (var y = track.Y; y < track.Bottom; y++)
-        {
-            for (var x = track.X + (y & 1); x < track.Right; x += 2)
-                dc.FillRectangle(x, y, 1, 1, ClassicStyle.Highlight);
-        }
-        if (_pressedPart is Part.TrackAbove or Part.TrackBelow && enabled)
+        Rect? held = null;
+        if (_pressedPart is Part.TrackAbove or Part.TrackBelow)
         {
             var (from, to) = _pressedPart == Part.TrackAbove ? (Start(track), Start(thumb)) : (End(thumb), End(track));
-            dc.FillRectangle(Along(track, from, to - from), ClassicStyle.DarkShadow);
+            held = Along(track, from, to - from);
         }
+        var thumbState = !enabled ? PartState.Disabled : _pressedPart == Part.Thumb ? PartState.Pressed : PartState.Normal;
+        style.DrawScrollBar(dc, track, thumb, IsHorizontal, held, thumbState);
 
-        DrawArrowButton(dc, up, IsHorizontal ? ArrowDirection.Left : ArrowDirection.Up, _pressedPart == Part.UpButton, enabled);
-        DrawArrowButton(dc, down, IsHorizontal ? ArrowDirection.Right : ArrowDirection.Down, _pressedPart == Part.DownButton, enabled);
-        dc.FillRectangle(thumb, ClassicStyle.Face);
-        ClassicStyle.DrawRaisedEdge(dc, thumb, ClassicStyle.Highlight, ClassicStyle.Shadow, ClassicStyle.DarkShadow);
+        PartState ButtonState(Part part) => !enabled ? PartState.Disabled : _pressedPart == part ? PartState.Pressed : PartState.Normal;
+        style.DrawScrollBarButton(dc, up, IsHorizontal ? ArrowDirection.Left : ArrowDirection.Up, ButtonState(Part.UpButton));
+        style.DrawScrollBarButton(dc, down, IsHorizontal ? ArrowDirection.Right : ArrowDirection.Down, ButtonState(Part.DownButton));
     }
 
     /// <summary>
-    /// Raised button with a 7 x 4 arrow (<paramref name="arrows"/> arrows side by side, e.g. 2 for "«");
-    /// flat shadow frame and arrows moved 1 px while pressed.
+    /// A small button with an arrow (<paramref name="arrows"/> side by side, e.g. 2 for "«"), drawn with the current
+    /// style's tool button and arrow; the arrow moves by the style's <see cref="Style.PressedOffset"/> while pressed.
     /// </summary>
     public static void DrawArrowButton(DrawingContext dc, Rect r, ArrowDirection direction, bool pressed, bool enabled, int arrows = 1)
     {
-        dc.FillRectangle(r, ClassicStyle.Face);
-        if (pressed)
-            dc.DrawRectangle(r, ClassicStyle.Shadow);
-        else
-            ClassicStyle.DrawRaisedEdge(dc, r, ClassicStyle.Highlight, ClassicStyle.Shadow, ClassicStyle.DarkShadow);
-
-        var shift = pressed ? 1 : 0;
-        var color = enabled ? Color.Black : ClassicStyle.Shadow;
-        var vertical = direction is ArrowDirection.Up or ArrowDirection.Down;
-        for (var arrow = 0; arrow < arrows; arrow++)
-        {
-            // Arrows are 4 px deep with 1 px between them, centred together along the pointing direction.
-            var along = (arrow - (arrows - 1) / 2.0) * 5;
-            var centerX = r.X + r.Width / 2 + shift + (vertical ? 0 : (int)along);
-            var centerY = r.Y + r.Height / 2 + shift + (vertical ? (int)along : 0);
-            for (var i = 0; i < 4; i++)
-            {
-                // Row (or column) i of the triangle, from its tip: 1, 3, 5, 7 pixels.
-                var half = direction is ArrowDirection.Up or ArrowDirection.Left ? i : 3 - i;
-                if (vertical)
-                    dc.FillRectangle(centerX - half, centerY - 2 + i, 2 * half + 1, 1, color);
-                else
-                    dc.FillRectangle(centerX - 2 + i, centerY - half, 1, 2 * half + 1, color);
-            }
-        }
+        var style = Style.Current;
+        var state = !enabled ? PartState.Disabled : pressed ? PartState.Pressed : PartState.Normal;
+        style.DrawToolButton(dc, r, state);
+        var shift = pressed ? style.PressedOffset : 0;
+        style.DrawArrow(dc, new Rect(r.X + shift, r.Y + shift, r.Width, r.Height), direction, style.GlyphColor(state), arrows);
     }
 
     private void Step()

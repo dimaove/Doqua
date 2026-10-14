@@ -3,22 +3,16 @@ using Doqua.GUI;
 namespace Doqua.Controls;
 
 /// <summary>
-/// Push button with centered text, drawn in the classic 3D style: a raised edge, a sunken frame while
-/// pressed (the text moves 1 px down and right), a black frame and dotted rectangle when focused, and
-/// embossed grey text when disabled. Raises <see cref="Click"/> on a left-button click or Enter/Space.
+/// Push button with centered text, drawn by <see cref="Style.Current"/> (normal, under the pointer, pressed, focused
+/// and disabled looks). Raises <see cref="Click"/> on a left-button click or Enter/Space.
 /// </summary>
 public class Button : Control
 {
     private string _text = "";
     private Font? _font;
-    private Color _color = Color.Black;
-    private Color _background = ClassicStyle.Face;
-    private Color _highlightColor = ClassicStyle.Highlight;
-    private Color _shadowColor = ClassicStyle.Shadow;
-    private Color _darkShadowColor = ClassicStyle.DarkShadow;
-    private Color _focusedBorderColor = Color.Black;
-    private Color _disabledColor = ClassicStyle.Shadow;
-    private Color _disabledBackground = ClassicStyle.Face;
+    private Color? _color;
+    private Color? _background;
+    private Color? _disabledColor;
 
     /// <summary>Creates a 100 x 32 button without text.</summary>
     public Button()
@@ -55,10 +49,10 @@ public class Button : Control
         }
     }
 
-    /// <summary>Text color.</summary>
+    /// <summary>Text color; the style's text color unless set.</summary>
     public Color Color
     {
-        get => _color;
+        get => _color ?? Style.Current.Text;
         set
         {
             _color = value;
@@ -66,10 +60,10 @@ public class Button : Control
         }
     }
 
-    /// <summary>Face color; the hover color is derived from it.</summary>
+    /// <summary>Face color; the style's button face unless set. The style derives the hover and pressed looks from it.</summary>
     public Color Background
     {
-        get => _background;
+        get => _background ?? Style.Current.ButtonFace;
         set
         {
             _background = value;
@@ -77,68 +71,13 @@ public class Button : Control
         }
     }
 
-    /// <summary>Light edge on the top and left.</summary>
-    public Color HighlightColor
-    {
-        get => _highlightColor;
-        set
-        {
-            _highlightColor = value;
-            Invalidate();
-        }
-    }
-
-    /// <summary>Inner dark edge on the bottom and right (and the inner frame while pressed).</summary>
-    public Color ShadowColor
-    {
-        get => _shadowColor;
-        set
-        {
-            _shadowColor = value;
-            Invalidate();
-        }
-    }
-
-    /// <summary>Outer dark edge on the bottom and right (and the outer frame while pressed).</summary>
-    public Color DarkShadowColor
-    {
-        get => _darkShadowColor;
-        set
-        {
-            _darkShadowColor = value;
-            Invalidate();
-        }
-    }
-
-    /// <summary>Outer frame drawn around the button while it has keyboard focus.</summary>
-    public Color FocusedBorderColor
-    {
-        get => _focusedBorderColor;
-        set
-        {
-            _focusedBorderColor = value;
-            Invalidate();
-        }
-    }
-
-    /// <summary>Text color (embossed with <see cref="HighlightColor"/>) used when the button is not <see cref="Control.IsEffectivelyEnabled"/>.</summary>
+    /// <summary>Text color while the button is not <see cref="Control.IsEffectivelyEnabled"/>; the style's disabled text color unless set.</summary>
     public Color DisabledColor
     {
-        get => _disabledColor;
+        get => _disabledColor ?? Style.Current.DisabledText;
         set
         {
             _disabledColor = value;
-            Invalidate();
-        }
-    }
-
-    /// <summary>Face color while the button is disabled.</summary>
-    public Color DisabledBackground
-    {
-        get => _disabledBackground;
-        set
-        {
-            _disabledBackground = value;
             Invalidate();
         }
     }
@@ -210,51 +149,18 @@ public class Button : Control
         Invalidate();
     }
 
+    /// <summary>Draws the button with <see cref="Style.Current"/> (<see cref="Style.DrawButton"/>).</summary>
     protected override void OnRender(DrawingContext dc)
     {
         var enabled = IsEffectivelyEnabled;
+        var state = !enabled ? PartState.Disabled : PartState.Normal;
+        if (enabled && IsMouseOver)
+            state |= PartState.Hot;
         // Pressed look only while the pointer is still over the button, like native buttons.
-        var pressed = enabled && IsPressed && IsMouseOver;
-        var face = !enabled ? _disabledBackground
-            : IsMouseOver && !pressed ? Color.Lerp(_background, Color.White, 0.25f)
-            : _background;
-
-        var edge = new Rect(0, 0, Width, Height);
-        var focused = enabled && Focused;
-        if (focused)
-        {
-            dc.DrawRectangle(edge, _focusedBorderColor); // Classic focused / default button: a black frame.
-            edge = Shrink(edge, 1);
-        }
-        dc.FillRectangle(edge, face);
-        if (pressed)
-        {
-            dc.DrawRectangle(edge, _darkShadowColor);
-            dc.DrawRectangle(Shrink(edge, 1), _shadowColor);
-        }
-        else
-        {
-            ClassicStyle.DrawRaisedEdge(dc, edge, _highlightColor, _shadowColor, _darkShadowColor);
-        }
-
-        if (_text.Length > 0)
-        {
-            var font = Font;
-            var textWidth = font.MeasureText(_text).Width;
-            var textHeight = font.Ascent + font.Descent; // Visual height, without line gap.
-            var shift = pressed ? 1 : 0;
-            var textX = (Width - textWidth) / 2 + shift;
-            var textY = (Height - textHeight) / 2 + shift;
-            if (enabled)
-                dc.DrawText(_text, font, _color, textX, textY);
-            else
-                ClassicStyle.DrawEmbossedText(dc, _text, font, _disabledColor, _highlightColor, textX, textY);
-        }
-
-        if (focused)
-            ClassicStyle.DrawFocusRectangle(dc, Shrink(edge, 3), _color);
+        if (enabled && IsPressed && IsMouseOver)
+            state |= PartState.Pressed;
+        if (enabled && Focused)
+            state |= PartState.Focused;
+        Style.Current.DrawButton(dc, new Rect(0, 0, Width, Height), _text, Font, Background, enabled ? Color : DisabledColor, state);
     }
-
-    private static Rect Shrink(Rect r, int amount) =>
-        new(r.X + amount, r.Y + amount, Math.Max(0, r.Width - 2 * amount), Math.Max(0, r.Height - 2 * amount));
 }

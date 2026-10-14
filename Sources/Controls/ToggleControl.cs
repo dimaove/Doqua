@@ -3,7 +3,7 @@ using Doqua.GUI;
 namespace Doqua.Controls;
 
 /// <summary>
-/// Base of <see cref="CheckBox"/> and <see cref="RadioButton"/>: a small classic box followed by text.
+/// Base of <see cref="CheckBox"/> and <see cref="RadioButton"/>: a small box (drawn by <see cref="Style.Current"/>) followed by text.
 /// A left click (on the box or the text) or Space while focused calls <see cref="OnActivated"/>.
 /// </summary>
 public abstract class ToggleControl : Control
@@ -13,13 +13,9 @@ public abstract class ToggleControl : Control
     private string _text = "";
     private bool _autoSize = true;
     private Font? _font;
-    private Color _color = Color.Black;
-    private Color _disabledColor = ClassicStyle.Shadow;
-    private Color _boxColor = Color.White;
-    private Color _faceColor = ClassicStyle.Face;
-    private Color _highlightColor = ClassicStyle.Highlight;
-    private Color _shadowColor = ClassicStyle.Shadow;
-    private Color _darkShadowColor = ClassicStyle.DarkShadow;
+    private Color? _color;
+    private Color? _disabledColor;
+    private Color? _boxColor;
 
     /// <summary>Makes the control focusable and sizes it to its box.</summary>
     protected ToggleControl()
@@ -66,53 +62,25 @@ public abstract class ToggleControl : Control
     /// <summary>True while the left button is held after being pressed on the control.</summary>
     public bool IsPressed { get; private set; }
 
-    /// <summary>Text and mark color.</summary>
+    /// <summary>Text and mark color; the style's text color unless set.</summary>
     public Color Color
     {
-        get => _color;
+        get => _color ?? Style.Current.Text;
         set => SetColor(ref _color, value);
     }
 
-    /// <summary>Text and mark color when disabled (the text is embossed with <see cref="HighlightColor"/>).</summary>
+    /// <summary>Text and mark color when disabled; the style's disabled text color unless set.</summary>
     public Color DisabledColor
     {
-        get => _disabledColor;
+        get => _disabledColor ?? Style.Current.DisabledText;
         set => SetColor(ref _disabledColor, value);
     }
 
-    /// <summary>Inside of the box.</summary>
+    /// <summary>Inside of the box; the style's field background unless set.</summary>
     public Color BoxColor
     {
-        get => _boxColor;
+        get => _boxColor ?? Style.Current.FieldBackground;
         set => SetColor(ref _boxColor, value);
-    }
-
-    /// <summary>Inside of the box while pressed or disabled, and the inner light edge.</summary>
-    public Color FaceColor
-    {
-        get => _faceColor;
-        set => SetColor(ref _faceColor, value);
-    }
-
-    /// <summary>Light edge of the sunken box.</summary>
-    public Color HighlightColor
-    {
-        get => _highlightColor;
-        set => SetColor(ref _highlightColor, value);
-    }
-
-    /// <summary>Outer dark edge of the sunken box.</summary>
-    public Color ShadowColor
-    {
-        get => _shadowColor;
-        set => SetColor(ref _shadowColor, value);
-    }
-
-    /// <summary>Inner dark edge of the sunken box.</summary>
-    public Color DarkShadowColor
-    {
-        get => _darkShadowColor;
-        set => SetColor(ref _darkShadowColor, value);
     }
 
     /// <summary>Width and height of the box.</summary>
@@ -121,8 +89,11 @@ public abstract class ToggleControl : Control
     /// <summary>Called on a left click or Space: toggles a check box, selects a radio button.</summary>
     protected abstract void OnActivated();
 
-    /// <summary>Draws the box (edge, inside and mark) into <paramref name="box"/>.</summary>
-    protected abstract void DrawBox(DrawingContext dc, Rect box, bool enabled, bool pressed);
+    /// <summary>
+    /// Draws the box (edge, inside and mark) into <paramref name="box"/>, usually with <see cref="Style.Current"/>;
+    /// <paramref name="state"/> tells whether it is disabled, under the pointer, pressed and focused.
+    /// </summary>
+    protected abstract void DrawBox(DrawingContext dc, Rect box, PartState state);
 
     protected override void OnMouseDown(MouseEventArgs e)
     {
@@ -188,24 +159,29 @@ public abstract class ToggleControl : Control
     protected override void OnRender(DrawingContext dc)
     {
         var enabled = IsEffectivelyEnabled;
+        var state = enabled ? PartState.Normal : PartState.Disabled;
+        if (enabled && IsMouseOver)
+            state |= PartState.Hot;
+        if (enabled && IsPressed && IsMouseOver)
+            state |= PartState.Pressed;
+        if (Focused)
+            state |= PartState.Focused;
         var boxSize = BoxSize;
-        DrawBox(dc, new Rect(0, (Height - boxSize) / 2, boxSize, boxSize), enabled, IsPressed && IsMouseOver);
+        DrawBox(dc, new Rect(0, (Height - boxSize) / 2, boxSize, boxSize), state);
 
         if (_text.Length == 0)
             return;
+        var style = Style.Current;
         var font = Font;
         var textHeight = font.Ascent + font.Descent;
         var textX = boxSize + TextGap;
         var textY = (Height - textHeight) / 2;
-        if (enabled)
-            dc.DrawText(_text, font, _color, textX, textY);
-        else
-            ClassicStyle.DrawEmbossedText(dc, _text, font, _disabledColor, _highlightColor, textX, textY);
+        style.DrawText(dc, _text, font, enabled ? Color : DisabledColor, textX, textY, state);
 
         if (Focused)
         {
             var focus = new Rect(textX - 2, textY - 1, font.MeasureText(_text).Width + 4, textHeight + 2);
-            ClassicStyle.DrawFocusRectangle(dc, focus, enabled ? _color : _disabledColor);
+            style.DrawFocusRectangle(dc, focus, enabled ? Color : DisabledColor);
         }
     }
 
@@ -221,7 +197,7 @@ public abstract class ToggleControl : Control
         Invalidate();
     }
 
-    private void SetColor(ref Color field, Color value)
+    private void SetColor(ref Color? field, Color value)
     {
         field = value;
         Invalidate();

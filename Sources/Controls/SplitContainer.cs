@@ -140,7 +140,10 @@ public class SplitContainer : Control
     {
         base.OnMouseDown(e);
         if (e.Button == MouseButton.Left && BarBounds.Contains(e.X, e.Y))
+        {
             _dragOffset = (IsVertical ? e.X : e.Y) - SplitterDistance;
+            Invalidate();
+        }
     }
 
     protected override void OnMouseMove(MouseMoveEventArgs e)
@@ -153,11 +156,35 @@ public class SplitContainer : Control
     protected override void OnMouseUp(MouseEventArgs e)
     {
         base.OnMouseUp(e);
-        if (e.Button == MouseButton.Left)
+        if (e.Button == MouseButton.Left && _dragOffset >= 0)
+        {
             _dragOffset = -1;
+            Invalidate();
+        }
     }
 
-    protected override void OnRender(DrawingContext dc) => dc.FillRectangle(BarBounds, ClassicStyle.Face);
+    protected override void OnMouseEnter(EventArgs e)
+    {
+        base.OnMouseEnter(e);
+        Invalidate();
+    }
+
+    protected override void OnMouseLeave(EventArgs e)
+    {
+        base.OnMouseLeave(e);
+        Invalidate();
+    }
+
+    /// <summary>The bar, drawn with <see cref="Style.DrawSplitter"/> (hot under the pointer, pressed while dragged).</summary>
+    protected override void OnRender(DrawingContext dc)
+    {
+        var state = IsEffectivelyEnabled ? PartState.Normal : PartState.Disabled;
+        if (_dragOffset >= 0)
+            state |= PartState.Pressed;
+        else if (IsMouseOver)
+            state |= PartState.Hot;
+        Style.Current.DrawSplitter(dc, BarBounds, IsVertical, state);
+    }
 
     private int ClampDistance(int distance)
     {
